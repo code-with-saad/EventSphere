@@ -1,10 +1,14 @@
 ﻿import { Router, Request, Response } from 'express';
+import crypto from 'crypto';
+import { ObjectId } from 'mongodb';
 import asyncHandler from '../utils/asyncHandler';
 import UserModel from '../models/User.model';
-import { hashPassword, validatePassword } from '../utils/password.utils';
+import { hashPassword, validatePassword, comparePassword } from '../utils/password.utils';
 import { createOTPService } from '../services/otp.service';
 import { createEmailService } from '../services/email.service';
 import { getDatabase } from '../config/database';
+import { generateAccessToken, generateRefreshToken } from '../services/token.service';
+import { createRefreshToken } from '../models/RefreshToken.model';
 
 const router = Router();
 
@@ -374,6 +378,143 @@ router.post('/resend-otp', asyncHandler(async (req: Request, res: Response) => {
       message: 'An error occurred while resending OTP. Please try again later.'
     });
   }
+}));
+
+/**
+ * POST /api/auth/login
+ * 
+ * Authenticate user and issue tokens
+ * 
+ * Requirements:
+ * - 8.1: Accept email and password in request body
+ * - 8.2: Verify password with bcrypt compare
+ * - 8.3: Return 401 for invalid credentials
+ * - 8.4: Return 403 for pending status (Organizer awaiting approval)
+ * - 8.4: Return 403 for unverified email (Exhibitor/Attendee)
+ * - 8.5: Generate access token (15-minute expiry)
+ * - 8.6: Generate refresh token (7-day expiry)
+ * - 8.7: Return both tokens in response body
+ * - 8.8: Access token includes userId, email, and role in payload
+ * - 8.9: Store refresh token hash in database with userId and creation timestamp
+ */
+router.post('/login', asyncHandler(async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  // Validate required fields
+  if (!email || !password) {
+    return res.status(400).json({
+      success: false,
+      message: 'Missing required fields: email, password'
+    });
+  }
+
+  // Find user by email (Requirement 8.1)
+  const user = await UserModel.findByEmail(email);
+  
+  // Return 401 if user not found (Requirement 8.3)
+  // Generic message to prevent email enumeration
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid email or password'
+    });
+  }
+
+  // Verify password with bcrypt compare (Requirement 8.2)
+  const isPasswordValid = await comparePassword(password, user.passwordHash);
+  
+  // Return 401 if password invalid (Requirement 8.3)
+  if (!isPasswordValid) {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid email or password'
+    });
+  }
+
+  // Check user status: return 403 if pending (Requirement 8.4)
+  // Organizer awaiting SuperAdmin approval
+  if (user.status === 'pending') {
+    return res.status(403).json({
+      success: false,
+      message: 'Account pending approval',
+      code: 'PENDING_APPROVAL'
+    });
+  }
+
+  // Check user status: return 403 if suspended
+  if (user.status === 'suspended') {
+    return res.status(403).json({
+      success: false,
+      message: 'Account has been suspended',
+      code: 'ACCOUNT_SUSPENDED'
+    });
+  }
+
+  // Check email verification: return 403 if not verified (Requirement 8.4)
+  // Applies to Exhibitor/Attendee roles
+  if (!user.isEmailVerified && (user.role === 'exhibitor' || user.role === 'attendee')) {
+    return res.status(403).json({
+      success: false,
+      message: 'Please verify your email before logging in',
+      code: 'EMAIL_NOT_VERIFIED'
+    });
+  }
+
+  // Generate access token with 15-minute expiry (Requirements 8.5, 8.8)
+  const accessToken = generateAccessToken({
+    userId: user._id.toString(),
+    email: user.email,
+    role: user.role
+  });
+
+  // Generate refresh token with 7-day expiry (Requirement 8.6)
+  const refreshToken = generateRefreshToken({
+    userId: user._id.toString(),
+    type: 'refresh'
+  });
+
+  // Hash the refresh token for storage (Requirement 8.9)
+  const refreshTokenHash = crypto
+    .createHash('sha256')
+    .update(refreshToken)
+    .digest('hex');
+
+  // Store refresh token hash in database (Requirement 8.9)
+  // Calculate expiry: 7 days from now
+  const refreshTokenExpiry = new Date();
+  refreshTokenExpiry.setDate(refreshTokenExpiry.getDate() + 7);
+
+  try {
+    await createRefreshToken(
+      new ObjectId(user._id),
+      refreshTokenHash,
+      refreshTokenExpiry
+    );
+  } catch (error) {
+    console.error('Failed to store refresh token:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to complete login. Please try again.'
+    });
+  }
+
+  // Return user object (without passwordHash) and both tokens (Requirement 8.7)
+  return res.status(200).json({
+    success: true,
+    message: 'Login successful',
+    data: {
+      user: {
+        id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+        status: user.status,
+        isEmailVerified: user.isEmailVerified
+      },
+      accessToken,
+      refreshToken
+    }
+  });
 }));
 
 export default router;

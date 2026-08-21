@@ -528,3 +528,98 @@ No deviations from the original specification at this time. All implementation f
 **Current Phase**: Phase 0 - Project Setup ✅ COMPLETE  
 **Next Phase**: Phase 1a - Backend Authentication Core  
 **Current Task**: Ready to begin Task 8 (Create MongoDB data models)
+
+---
+
+### ✅ Task 12.4: Create login endpoint (POST /api/auth/login)
+**Status**: Completed  
+**Date**: 2026-08-21  
+**Validates Requirements**: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9
+
+**Completed Items:**
+- ✅ Implemented POST /api/auth/login endpoint in `backend/src/routes/auth.routes.ts`
+- ✅ Email and password validation in request body
+- ✅ User lookup by email with case-insensitive matching
+- ✅ Password verification using bcrypt.compare()
+- ✅ Status checks:
+  - 403 error for pending Organizers (awaiting SuperAdmin approval)
+  - 403 error for suspended accounts
+  - 403 error for unverified Exhibitor/Attendee accounts
+- ✅ JWT token generation:
+  - Access token with 15-minute expiry
+  - Refresh token with 7-day expiry
+  - Access token payload includes userId, email, and role
+- ✅ Refresh token hash storage in database using SHA-256
+- ✅ Secure error messages (no email enumeration)
+- ✅ Returns user object (without passwordHash) and both tokens in response body
+
+**Key Implementation Details:**
+- **Security**: Generic "Invalid email or password" message prevents email enumeration
+- **Token Storage**: Refresh token stored as SHA-256 hash in database for security
+- **Token Rotation**: Foundation laid for refresh token rotation (task 12.5)
+- **Status Codes**: 
+  - 400 for missing fields
+  - 401 for invalid credentials (email not found or wrong password)
+  - 403 for account status issues (pending, suspended, unverified)
+  - 500 for server errors (failed to store refresh token)
+  - 200 for successful login
+- **Error Codes**: Added machine-readable codes for frontend: `PENDING_APPROVAL`, `ACCOUNT_SUSPENDED`, `EMAIL_NOT_VERIFIED`
+
+**Implementation Details:**
+```typescript
+// Access Token Payload (15-minute expiry)
+{
+  userId: string,
+  email: string,
+  role: 'superadmin' | 'organizer' | 'exhibitor' | 'attendee'
+}
+
+// Refresh Token Payload (7-day expiry)
+{
+  userId: string,
+  type: 'refresh'
+}
+
+// Refresh Token Storage
+- Token is hashed using SHA-256 before storage
+- Stored with: userId, tokenHash, isValid=true, expiresAt (7 days)
+- Enables token rotation and revocation
+```
+
+**Testing Notes:**
+- Created manual test script: `backend/test-login.js`
+- Endpoint ready for integration testing
+- Validates all requirements for user authentication flow
+
+**Dependencies Added:**
+- crypto (Node.js built-in): For SHA-256 hashing of refresh tokens
+- comparePassword: From password.utils.ts
+- generateAccessToken, generateRefreshToken: From token.service.ts
+- createRefreshToken: From RefreshToken.model.ts
+
+**API Response Format:**
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "user": {
+      "id": "ObjectId",
+      "email": "user@example.com",
+      "fullName": "User Name",
+      "role": "organizer",
+      "status": "active",
+      "isEmailVerified": true
+    },
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+}
+```
+
+**Next Tasks:**
+- Task 12.5: Create token refresh endpoint (POST /api/auth/refresh)
+- Task 12.6: Create logout endpoint (POST /api/auth/logout)
+- Task 13: Create SuperAdmin seed script
+- Task 14: Configure CORS middleware
+
