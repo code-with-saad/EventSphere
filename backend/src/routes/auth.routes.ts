@@ -1,4 +1,4 @@
-﻿import { Router, Request, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
 import { ObjectId } from 'mongodb';
 import asyncHandler from '../utils/asyncHandler';
@@ -7,8 +7,8 @@ import { hashPassword, validatePassword, comparePassword } from '../utils/passwo
 import { createOTPService } from '../services/otp.service';
 import { createEmailService } from '../services/email.service';
 import { getDatabase } from '../config/database';
-import { generateAccessToken, generateRefreshToken } from '../services/token.service';
-import { createRefreshToken } from '../models/RefreshToken.model';
+import { generateAccessToken, generateRefreshToken, verifyToken } from '../services/token.service';
+import { createRefreshToken, findRefreshTokenByHash, invalidateRefreshToken } from '../models/RefreshToken.model';
 
 const router = Router();
 
@@ -515,6 +515,171 @@ router.post('/login', asyncHandler(async (req: Request, res: Response) => {
       refreshToken
     }
   });
+}));
+
+
+/**
+ * POST /api/auth/refresh
+ * 
+ * Refresh access token using refresh token
+ * 
+ * Requirements:
+ * - 9.3: Automatically call token refresh endpoint when Access_Token expires
+ * - 9.4: Accept Refresh_Token via Authorization header
+ * - 9.5: Generate new Access_Token when valid Refresh_Token submitted
+ * - 9.6: Generate new Refresh_Token when valid Refresh_Token submitted
+ * - 9.7: Invalidate old Refresh_Token when new tokens issued
+ */
+router.post('/refresh', asyncHandler(async (req: Request, res: Response) => {
+  // Extract refresh token from Authorization header (Requirement 9.4)
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({
+      success: false,
+      message: 'Refresh token is required',
+      code: 'MISSING_REFRESH_TOKEN'
+    });
+  }
+
+  const refreshToken = authHeader.substring(7); // Remove 'Bearer ' prefix
+
+  try {
+    // Verify refresh token signature and expiry (Requirement 9.4)
+    const decoded = verifyToken(refreshToken);
+    
+    // Ensure this is a refresh token (not an access token)
+    if (decoded.type !== 'refresh') {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid token type',
+        code: 'INVALID_TOKEN_TYPE'
+      });
+    }
+
+    // Hash the refresh token to look it up in database
+    const refreshTokenHash = crypto
+      .createHash('sha256')
+      .update(refreshToken)
+      .digest('hex');
+
+    // Find refresh token in database by hash (Requirement 9.4)
+    const tokenRecord = await findRefreshTokenByHash(refreshTokenHash);
+
+    if (!tokenRecord) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid refresh token',
+        code: 'INVALID_REFRESH_TOKEN'
+      });
+    }
+
+    // Check if token is valid (return 401 if already rotated) (Requirement 9.7)
+    if (!tokenRecord.isValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Refresh token has been revoked',
+        code: 'TOKEN_REVOKED'
+      });
+    }
+
+    // Get user details for new access token
+    const user = await UserModel.findById(decoded.userId);
+    
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not found',
+        code: 'USER_NOT_FOUND'
+      });
+    }
+
+    // Check if user account is still active
+    if (user.status !== 'active') {
+      return res.status(403).json({
+        success: false,
+        message: 'User account is not active',
+        code: 'ACCOUNT_INACTIVE'
+      });
+    }
+
+    // Mark old refresh token as invalid (Requirement 9.7)
+    await invalidateRefreshToken(refreshTokenHash);
+
+    // Generate new access token with 15-minute expiry (Requirement 9.5)
+    const newAccessToken = generateAccessToken({
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role
+    });
+
+    // Generate new refresh token with 7-day expiry (Requirement 9.6)
+    const newRefreshToken = generateRefreshToken({
+      userId: user._id.toString(),
+      type: 'refresh'
+    });
+
+    // Hash the new refresh token for storage
+    const newRefreshTokenHash = crypto
+      .createHash('sha256')
+      .update(newRefreshToken)
+      .digest('hex');
+
+    // Store new refresh token hash in database (Requirement 9.6)
+    const newRefreshTokenExpiry = new Date();
+    newRefreshTokenExpiry.setDate(newRefreshTokenExpiry.getDate() + 7);
+
+    try {
+      await createRefreshToken(
+        new ObjectId(user._id),
+        newRefreshTokenHash,
+        newRefreshTokenExpiry
+      );
+    } catch (error) {
+      console.error('Failed to store new refresh token:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to refresh token. Please login again.'
+      });
+    }
+
+    // Return both new tokens (Requirement 9.6)
+    return res.status(200).json({
+      success: true,
+      message: 'Token refreshed successfully',
+      data: {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken
+      }
+    });
+
+  } catch (error: any) {
+    console.error('Token refresh error:', error);
+
+    // Handle token expiry
+    if (error.message === 'Token expired') {
+      return res.status(401).json({
+        success: false,
+        message: 'Refresh token has expired',
+        code: 'TOKEN_EXPIRED'
+      });
+    }
+
+    // Handle invalid token
+    if (error.message === 'Invalid token') {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid refresh token',
+        code: 'INVALID_TOKEN'
+      });
+    }
+
+    // Generic server error
+    return res.status(500).json({
+      success: false,
+      message: 'An error occurred while refreshing token. Please login again.'
+    });
+  }
 }));
 
 export default router;

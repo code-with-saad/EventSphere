@@ -623,3 +623,75 @@ No deviations from the original specification at this time. All implementation f
 - Task 13: Create SuperAdmin seed script
 - Task 14: Configure CORS middleware
 
+
+
+---
+
+### ? Task 12.5: Create token refresh endpoint (POST /api/auth/refresh)
+**Status**: Completed  
+**Date**: 2026-08-21  
+**Validates Requirements**: 9.3, 9.4, 9.5, 9.6, 9.7
+
+**Completed Items:**
+- ? Updated imports in `backend/src/routes/auth.routes.ts`:
+  - Added `verifyToken` from token.service
+  - Added `findRefreshTokenByHash` and `invalidateRefreshToken` from RefreshToken.model
+- ? Implemented POST /api/auth/refresh endpoint with full token rotation
+- ? Accepts refresh token from `Authorization: Bearer <token>` header
+- ? Verifies refresh token JWT signature and expiry
+- ? Validates token type (must be 'refresh', not 'access')
+- ? Finds refresh token in database by SHA-256 hash
+- ? Checks if token is still valid (isValid: true)
+- ? Returns 401 with code `TOKEN_REVOKED` if token already rotated
+- ? Validates user account still exists and is active
+- ? Marks old refresh token as invalid before issuing new tokens
+- ? Generates new access token (15-minute expiry)
+- ? Generates new refresh token (7-day expiry)
+- ? Stores new refresh token hash in database
+- ? Returns both new tokens in response body
+
+**Key Implementation Details:**
+- **Token Rotation Security**: Old refresh token immediately invalidated after use (prevents reuse attacks)
+- **Type Validation**: Ensures only refresh tokens accepted, not access tokens
+- **User Validation**: Verifies user exists and account status is 'active'
+- **SHA-256 Hashing**: Refresh tokens hashed for secure database storage
+- **Comprehensive Error Codes**: 
+  - `MISSING_REFRESH_TOKEN`: No Authorization header provided
+  - `INVALID_TOKEN_TYPE`: Access token used instead of refresh token
+  - `INVALID_REFRESH_TOKEN`: Token not found in database
+  - `TOKEN_REVOKED`: Token already used (rotation detected)
+  - `TOKEN_EXPIRED`: JWT expiry exceeded
+  - `INVALID_TOKEN`: JWT signature verification failed
+  - `USER_NOT_FOUND`: User deleted after token issued
+  - `ACCOUNT_INACTIVE`: User account suspended or pending
+
+**API Response Format:**
+```json
+{
+  "success": true,
+  "message": "Token refreshed successfully",
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+}
+```
+
+**Testing Artifacts:**
+- Created `backend/src/routes/auth.routes.refresh.test.ts` - Jest test suite
+- Created `backend/test-refresh-endpoint.ps1` - Manual PowerShell test script
+
+**Security Features:**
+- Token rotation prevents reuse attacks
+- Old token invalidated immediately after use
+- If same token used twice, returns TOKEN_REVOKED error
+- User account status validated on every refresh
+- JWT signature verification prevents tampering
+
+**Next Tasks:**
+- Task 12.6: Create logout endpoint (POST /api/auth/logout)
+- Task 13: Create SuperAdmin seed script
+- Task 14: Configure CORS middleware
+- Task 15: Implement global error handler
+- Task 16: Create async error wrapper utility
+
