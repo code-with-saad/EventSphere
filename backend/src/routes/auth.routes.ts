@@ -259,4 +259,121 @@ router.post('/verify-otp', asyncHandler(async (req: Request, res: Response) => {
   }
 }));
 
+/**
+ * POST /api/auth/resend-otp
+ * 
+ * Resend OTP for email verification or password reset
+ * 
+ * Requirements:
+ * - 6.5: Accept email and purpose in request body
+ * - 6.6: Check resend count (max 3 attempts, return 429 if exceeded)
+ * - Generate new OTP and update existing OTP record (increment resendCount, new otpHash, new expiresAt)
+ * - Send OTP email via Resend
+ * - Return success with remaining attempts count
+ */
+router.post('/resend-otp', asyncHandler(async (req: Request, res: Response) => {
+  const { email, purpose } = req.body;
+
+  // Validate required fields
+  if (!email || !purpose) {
+    return res.status(400).json({
+      success: false,
+      message: 'Missing required fields: email, purpose'
+    });
+  }
+
+  // Validate purpose
+  if (purpose !== 'registration' && purpose !== 'password_reset') {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid purpose. Must be "registration" or "password_reset"'
+    });
+  }
+
+  try {
+    const db = getDatabase();
+    const otpService = createOTPService(db);
+    const emailService = createEmailService();
+
+    // Check if an OTP record exists for this email and purpose
+    const hasReachedLimit = await otpService.hasReachedResendLimit(email, purpose);
+    
+    if (hasReachedLimit) {
+      // Requirement 6.6: Return 429 if max resend attempts exceeded
+      return res.status(429).json({
+        success: false,
+        message: 'Maximum OTP resend attempts exceeded'
+      });
+    }
+
+    // Check if user exists (for registration purpose)
+    if (purpose === 'registration') {
+      const user = await UserModel.findByEmail(email);
+      
+      // If no user found, return generic error (don't reveal if account exists)
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'No pending OTP found'
+        });
+      }
+
+      // Check if account is already verified
+      if (user.isEmailVerified) {
+        return res.status(409).json({
+          success: false,
+          message: 'Account already verified'
+        });
+      }
+    }
+
+    // Generate new OTP (this will update existing record or throw if limit reached)
+    const otp = await otpService.createOTPRecord(email, purpose);
+    
+    // Send OTP email
+    await emailService.sendOTPEmail(email, otp, purpose);
+
+    // Get remaining attempts
+    const remainingAttempts = await otpService.getRemainingAttempts(email, purpose);
+    
+    // Calculate resend count (3 - remaining)
+    const resendCount = 3 - remainingAttempts;
+
+    return res.status(200).json({
+      success: true,
+      message: 'OTP resent successfully.',
+      data: {
+        otpExpiresIn: 300, // 5 minutes in seconds
+        resendCount: resendCount,
+        remainingAttempts: remainingAttempts
+      }
+    });
+
+  } catch (error: any) {
+    console.error('OTP resend error:', error);
+
+    // Handle maximum attempts exceeded error
+    if (error.message === 'Maximum OTP resend attempts exceeded') {
+      return res.status(429).json({
+        success: false,
+        message: 'Maximum OTP resend attempts exceeded'
+      });
+    }
+
+    // Handle email send failure
+    if (error.message.includes('Failed to send OTP email')) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send OTP email. Please try again later.'
+      });
+    }
+
+    // Generic server error
+    return res.status(500).json({
+      success: false,
+      message: 'An error occurred while resending OTP. Please try again later.'
+    });
+  }
+}));
+
 export default router;
