@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import env from './config/env';
 import { connectDatabase, isDatabaseConnected } from './config/database';
 import UserModel from './models/User.model';
+import authRoutes from './routes/auth.routes';
 
 const app = express();
 const PORT = env.PORT;
@@ -9,6 +10,9 @@ const PORT = env.PORT;
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// API Routes
+app.use('/api/auth', authRoutes);
 
 // Health check endpoint
 app.get('/health', (_req: Request, res: Response) => {

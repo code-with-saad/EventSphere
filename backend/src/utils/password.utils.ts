@@ -86,5 +86,5 @@ export function validatePassword(password: string): {
  * @returns true if password meets minimum length, false otherwise
  */
 export function isPasswordValid(password: string): boolean {
-  return password && password.length >= MIN_PASSWORD_LENGTH;
+  return !!(password && password.length >= MIN_PASSWORD_LENGTH);
 }
