@@ -4,7 +4,7 @@ This document describes the design tokens configured for EventSphere Phase 0 & P
 
 ## Overview
 
-EventSphere uses **Tailwind CSS v4** with custom design tokens defined via the `@theme` directive in `src/index.css`. The design system supports both dark and light modes with a focus on glass morphism effects and bento-style card layouts.
+EventSphere uses **Tailwind CSS v4** with custom design tokens defined via the `@theme` directive in `src/index.css`. The design system features a distinctive "Midnight Indigo + Cyan" theme with glass morphism effects and bento-style card layouts, supporting both dark and light modes.
 
 ## Configuration Method
 
@@ -13,15 +13,15 @@ EventSphere uses **Tailwind CSS v4** with custom design tokens defined via the `
 ## Color Tokens
 
 ### Base Colors
-- **Base Dark**: `#0a0a0f` (slate-950 equivalent) - Dark mode background
+- **Base Dark**: `#0B0F1A` (deep navy/indigo) - Dark mode background
 - **Base Light**: `#f8fafc` - Light mode background
 
 ### Bento Card Colors
 Bento cards are content containers with semi-transparent backgrounds and defined borders.
 
 - **Dark Mode:**
-  - Background: `rgba(15, 23, 42, 0.8)` (slate-900/80)
-  - Border: `#1e293b` (slate-800)
+  - Background: `rgba(20, 27, 55, 0.85)` (elevated indigo)
+  - Border: `#1e2a4a` (subtle indigo border)
   
 - **Light Mode:**
   - Background: `rgba(255, 255, 255, 0.9)`
@@ -32,19 +32,19 @@ Bento cards are content containers with semi-transparent backgrounds and defined
 ### Glass Component Colors
 Glass components use backdrop blur for a frosted glass effect (used for sidebar and sticky header).
 
-- **Dark Mode Background**: `rgba(15, 23, 42, 0.4)` (slate-900/40)
+- **Dark Mode Background**: `rgba(20, 27, 55, 0.5)` (subtle indigo glass)
 - **Light Mode Background**: `rgba(255, 255, 255, 0.6)`
 - **Backdrop Blur**: `12px`
 
 ### Accent Colors
 
-#### Emerald (Success/Active states)
-- **Primary**: `#10b981` (Emerald-500)
-- **Light**: `#d1fae5` (Emerald-100)
+#### Cyan (Success/Active states)
+- **Primary**: `#22D3EE` (Cyan-400)
+- **Light**: `#cffafe` (Cyan-100)
 
-#### Indigo (Info/Pending states)
-- **Primary**: `#6366f1` (Indigo-500)
-- **Light**: `#e0e7ff` (Indigo-100)
+#### Violet (Info/Pending states)
+- **Primary**: `#a78bfa` (Violet-400)
+- **Light**: `#ede9fe` (Violet-100)
 
 ## Usage Examples
 
@@ -54,8 +54,8 @@ Glass components use backdrop blur for a frosted glass effect (used for sidebar 
 <div 
   className="p-6 border hover:shadow-lg transition-shadow duration-200"
   style={{
-    backgroundColor: 'rgba(15, 23, 42, 0.8)',
-    borderColor: '#1e293b',
+    backgroundColor: 'rgba(20, 27, 55, 0.85)',
+    borderColor: '#1e2a4a',
     borderRadius: '1rem',
   }}
 >
@@ -70,7 +70,7 @@ Glass components use backdrop blur for a frosted glass effect (used for sidebar 
 <aside 
   className="fixed left-0 top-0 h-full w-64 p-6 border-r"
   style={{
-    backgroundColor: 'rgba(15, 23, 42, 0.4)',
+    backgroundColor: 'rgba(20, 27, 55, 0.5)',
     backdropFilter: 'blur(12px)',
     borderColor: 'rgba(100, 116, 139, 0.5)',
   }}
@@ -85,7 +85,7 @@ Glass components use backdrop blur for a frosted glass effect (used for sidebar 
 {/* Success badge */}
 <span 
   className="px-4 py-2 text-white rounded-lg font-medium"
-  style={{ backgroundColor: '#10b981' }}
+  style={{ backgroundColor: '#22D3EE' }}
 >
   ✓ Active
 </span>
@@ -93,7 +93,7 @@ Glass components use backdrop blur for a frosted glass effect (used for sidebar 
 {/* Info badge */}
 <span 
   className="px-4 py-2 text-white rounded-lg font-medium"
-  style={{ backgroundColor: '#6366f1' }}
+  style={{ backgroundColor: '#a78bfa' }}
 >
   ⏳ Pending
 </span>
@@ -128,10 +128,10 @@ Visit `/design-test` route to see all design tokens in action:
 This configuration satisfies the following requirements:
 
 - ✅ **Requirement 3.1**: Design tokens defined in Tailwind configuration (via CSS @theme)
-- ✅ **Requirement 3.2**: Base background color (slate-950/#0a0a0f) included
-- ✅ **Requirement 3.3**: Bento card tokens (slate-900/80, slate-800, rounded-xl) configured
-- ✅ **Requirement 3.4**: Glass component tokens (slate-900/40, backdrop-blur-md) configured
-- ✅ **Requirement 3.5**: Accent colors (Emerald and Indigo) for status badges included
+- ✅ **Requirement 3.2**: Base background color (#0B0F1A - deep navy/indigo) included
+- ✅ **Requirement 3.3**: Bento card tokens (rgba(20, 27, 55, 0.85), #1e2a4a, rounded-xl) configured
+- ✅ **Requirement 3.4**: Glass component tokens (rgba(20, 27, 55, 0.5), backdrop-blur-md) configured
+- ✅ **Requirement 3.5**: Accent colors (Cyan and Violet) for status badges included
 - ✅ **Requirement 3.6**: Dark mode enabled via `class` strategy
 - ✅ **Requirement 3.7**: Theme preference can be persisted (via localStorage in ThemeContext)
 

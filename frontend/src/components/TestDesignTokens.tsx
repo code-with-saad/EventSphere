@@ -24,15 +24,15 @@ export function TestDesignTokens() {
 
   // Design tokens
   const colors = {
-    baseDark: '#0a0a0f',
+    baseDark: '#0B0F1A',
     baseLight: '#f8fafc',
-    bentoBg: isDarkMode ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.9)',
-    bentoBorder: isDarkMode ? '#1e293b' : '#e2e8f0',
-    glassBg: isDarkMode ? 'rgba(15, 23, 42, 0.4)' : 'rgba(255, 255, 255, 0.6)',
-    accentEmerald: '#10b981',
-    accentEmeraldLight: '#d1fae5',
-    accentIndigo: '#6366f1',
-    accentIndigoLight: '#e0e7ff',
+    bentoBg: isDarkMode ? 'rgba(20, 27, 55, 0.85)' : 'rgba(255, 255, 255, 0.9)',
+    bentoBorder: isDarkMode ? '#1e2a4a' : '#e2e8f0',
+    glassBg: isDarkMode ? 'rgba(20, 27, 55, 0.5)' : 'rgba(255, 255, 255, 0.6)',
+    accentCyan: '#22D3EE',
+    accentCyanLight: '#cffafe',
+    accentViolet: '#a78bfa',
+    accentVioletLight: '#ede9fe',
   };
 
   return (
@@ -52,7 +52,7 @@ export function TestDesignTokens() {
           <button
             onClick={toggleTheme}
             className="px-4 py-2 text-white rounded-lg transition-all hover:opacity-90"
-            style={{ backgroundColor: colors.accentIndigo }}
+            style={{ backgroundColor: colors.accentCyan }}
           >
             {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
           </button>
@@ -118,30 +118,30 @@ export function TestDesignTokens() {
           <div className="flex flex-wrap gap-4">
             <span 
               className="px-4 py-2 text-white rounded-lg font-medium"
-              style={{ backgroundColor: colors.accentEmerald }}
+              style={{ backgroundColor: colors.accentCyan }}
             >
               ✓ Active
             </span>
             <span 
               className="px-4 py-2 rounded-lg font-medium"
               style={{ 
-                backgroundColor: colors.accentEmeraldLight,
-                color: colors.accentEmerald,
+                backgroundColor: colors.accentCyanLight,
+                color: colors.accentCyan,
               }}
             >
               ✓ Verified
             </span>
             <span 
               className="px-4 py-2 text-white rounded-lg font-medium"
-              style={{ backgroundColor: colors.accentIndigo }}
+              style={{ backgroundColor: colors.accentViolet }}
             >
               ⏳ Pending
             </span>
             <span 
               className="px-4 py-2 rounded-lg font-medium"
               style={{ 
-                backgroundColor: colors.accentIndigoLight,
-                color: colors.accentIndigo,
+                backgroundColor: colors.accentVioletLight,
+                color: colors.accentViolet,
               }}
             >
               ℹ Info
@@ -207,31 +207,31 @@ export function TestDesignTokens() {
                   style={{ backgroundColor: colors.baseDark }}
                 ></div>
                 <p className="text-sm font-medium">Base Dark</p>
-                <p className="text-xs text-gray-500">#0a0a0f</p>
+                <p className="text-xs text-gray-500">#0B0F1A</p>
               </div>
               <div>
                 <div 
                   className="w-full h-20 rounded-lg mb-2"
-                  style={{ backgroundColor: 'rgba(15, 23, 42, 0.8)' }}
+                  style={{ backgroundColor: 'rgba(20, 27, 55, 0.85)' }}
                 ></div>
                 <p className="text-sm font-medium">Bento BG</p>
-                <p className="text-xs text-gray-500">slate-900/80</p>
+                <p className="text-xs text-gray-500">rgba(20, 27, 55, 0.85)</p>
               </div>
               <div>
                 <div 
                   className="w-full h-20 rounded-lg mb-2"
-                  style={{ backgroundColor: colors.accentEmerald }}
+                  style={{ backgroundColor: colors.accentCyan }}
                 ></div>
-                <p className="text-sm font-medium">Accent Emerald</p>
-                <p className="text-xs text-gray-500">#10b981</p>
+                <p className="text-sm font-medium">Accent Cyan</p>
+                <p className="text-xs text-gray-500">#22D3EE</p>
               </div>
               <div>
                 <div 
                   className="w-full h-20 rounded-lg mb-2"
-                  style={{ backgroundColor: colors.accentIndigo }}
+                  style={{ backgroundColor: colors.accentViolet }}
                 ></div>
-                <p className="text-sm font-medium">Accent Indigo</p>
-                <p className="text-xs text-gray-500">#6366f1</p>
+                <p className="text-sm font-medium">Accent Violet</p>
+                <p className="text-xs text-gray-500">#a78bfa</p>
               </div>
             </div>
           </div>
@@ -255,15 +255,15 @@ export function TestDesignTokens() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Bento Background:</span>
-                <span>rgba(15, 23, 42, 0.8)</span>
+                <span>rgba(20, 27, 55, 0.85)</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Bento Border:</span>
-                <span>{isDarkMode ? '#1e293b' : '#e2e8f0'}</span>
+                <span>{isDarkMode ? '#1e2a4a' : '#e2e8f0'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Glass Background:</span>
-                <span>rgba(15, 23, 42, 0.4)</span>
+                <span>rgba(20, 27, 55, 0.5)</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Backdrop Blur:</span>
@@ -274,12 +274,12 @@ export function TestDesignTokens() {
                 <span>1rem (16px)</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-400">Accent Emerald:</span>
-                <span>{colors.accentEmerald}</span>
+                <span className="text-gray-400">Accent Cyan:</span>
+                <span>{colors.accentCyan}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-400">Accent Indigo:</span>
-                <span>{colors.accentIndigo}</span>
+                <span className="text-gray-400">Accent Violet:</span>
+                <span>{colors.accentViolet}</span>
               </div>
             </div>
           </div>

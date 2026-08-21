@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import env from './config/env';
 import { connectDatabase, isDatabaseConnected } from './config/database';
+import UserModel from './models/User.model';
 
 const app = express();
 const PORT = env.PORT;
@@ -39,6 +40,10 @@ async function startServer() {
   try {
     // Connect to database first (will exit process if it fails)
     await connectDatabase();
+
+    // Initialize database indexes
+    console.log('Initializing database indexes...');
+    await UserModel.createIndexes();
 
     // Only start accepting requests after successful database connection
     app.listen(PORT, () => {
