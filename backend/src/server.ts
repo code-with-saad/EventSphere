@@ -1,9 +1,9 @@
-import 'dotenv/config';
 import express, { Request, Response } from 'express';
+import env from './config/env';
 import { connectDatabase, isDatabaseConnected } from './config/database';
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = env.PORT;
 
 // Middleware
 app.use(express.json());

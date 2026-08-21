@@ -1,4 +1,5 @@
 import { MongoClient, Db } from 'mongodb';
+import env from './env';
 
 /**
  * Database Configuration Module
@@ -7,7 +8,7 @@ import { MongoClient, Db } from 'mongodb';
  * - Connection pooling (default settings)
  * - Connection verification before server startup
  * - Graceful error handling and process termination on failure
- * - Environment variable configuration
+ * - Environment variable configuration (validated via Zod)
  * 
  * Requirements: 2.1, 2.2, 2.3, 2.4, 2.5
  */
@@ -18,17 +19,13 @@ let db: Db | null = null;
 /**
  * Connect to MongoDB Atlas
  * 
- * @throws Error if MONGODB_URI is not defined
  * @throws Error if connection fails
  */
 export async function connectDatabase(): Promise<void> {
   try {
     // Requirement 2.5: Source connection string from MONGODB_URI environment variable
-    const MONGODB_URI = process.env.MONGODB_URI;
-
-    if (!MONGODB_URI) {
-      throw new Error('MONGODB_URI environment variable is not defined');
-    }
+    // (validated by env.ts using Zod schema)
+    const MONGODB_URI = env.MONGODB_URI;
 
     console.log('Connecting to MongoDB Atlas...');
 

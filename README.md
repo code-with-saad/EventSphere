@@ -112,22 +112,130 @@ Backend will be available at: `http://localhost:5000`
 
 ## Environment Variables
 
-### Frontend (.env)
+Both frontend and backend require environment configuration. Use the provided `.env.example` files as templates.
+
+### Frontend Environment Variables
+
+Create `frontend/.env` from `frontend/.env.example`:
+
+```bash
+cd frontend
+cp .env.example .env
 ```
+
+| Variable | Description | Example | Required |
+|----------|-------------|---------|----------|
+| `VITE_API_BASE_URL` | Backend API base URL | `http://localhost:5000` | Yes |
+
+**Development Setup:**
+```env
 VITE_API_BASE_URL=http://localhost:5000
 ```
 
-### Backend (.env)
+**Production Setup:**
+```env
+VITE_API_BASE_URL=https://api.yourdomain.com
 ```
+
+### Backend Environment Variables
+
+Create `backend/.env` from `backend/.env.example`:
+
+```bash
+cd backend
+cp .env.example .env
+```
+
+| Variable | Description | Example | Required | Validation |
+|----------|-------------|---------|----------|------------|
+| `PORT` | Server port number | `5000` | Yes | Must be a valid port number |
+| `NODE_ENV` | Application environment | `development`, `production`, `test` | Yes | Must be one of: development, production, test |
+| `MONGODB_URI` | MongoDB Atlas connection string | `mongodb+srv://user:pass@cluster.mongodb.net/eventsphere` | Yes | Must be a valid MongoDB connection string |
+| `JWT_SECRET` | Secret key for JWT signing | `your-super-secret-jwt-key-minimum-32-characters-long` | Yes | Minimum 32 characters |
+| `RESEND_API_KEY` | Resend email service API key | `re_xxxxxxxxxxxxxxxxxxxxxxxxxxxx` | Yes | Must be a valid Resend API key |
+| `SUPERADMIN_EMAIL` | SuperAdmin account email | `admin@eventsphere.com` | Yes | Must be a valid email address |
+| `SUPERADMIN_PASSWORD` | SuperAdmin account password | `SecureAdminPassword123` | Yes | Minimum 8 characters |
+| `FRONTEND_URL` | Frontend application URL for CORS | `http://localhost:5173` | Yes | Must be a valid URL |
+
+**Development Setup:**
+```env
 PORT=5000
 NODE_ENV=development
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret_min_32_chars
-RESEND_API_KEY=your_resend_api_key
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/eventsphere?retryWrites=true&w=majority
+JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters-long
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxx
 SUPERADMIN_EMAIL=admin@eventsphere.com
-SUPERADMIN_PASSWORD=your_secure_password
+SUPERADMIN_PASSWORD=SecureAdminPassword123
 FRONTEND_URL=http://localhost:5173
 ```
+
+**Production Setup:**
+```env
+PORT=5000
+NODE_ENV=production
+MONGODB_URI=mongodb+srv://prod_user:prod_pass@prod-cluster.mongodb.net/eventsphere?retryWrites=true&w=majority
+JWT_SECRET=use-a-cryptographically-secure-random-string-at-least-32-chars
+RESEND_API_KEY=re_your_production_resend_api_key
+SUPERADMIN_EMAIL=admin@yourdomain.com
+SUPERADMIN_PASSWORD=UseAVerySecurePasswordHere
+FRONTEND_URL=https://yourdomain.com
+```
+
+### Environment Variable Validation
+
+The backend uses **Zod** for runtime environment variable validation. When the server starts:
+
+1. All environment variables are validated against the schema in `backend/src/config/env.ts`
+2. If validation fails, the server will **not start** and will display detailed error messages
+3. This prevents runtime errors from missing or misconfigured environment variables
+
+**Example validation error:**
+```
+❌ Environment variable validation failed:
+  - JWT_SECRET: JWT_SECRET must be at least 32 characters long
+  - SUPERADMIN_EMAIL: SUPERADMIN_EMAIL must be a valid email address
+```
+
+### Getting Required Credentials
+
+#### MongoDB Atlas
+1. Sign up for a free account at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+2. Create a new cluster (M0 Sandbox - Free)
+3. Create a database user with read/write permissions
+4. Add your IP address to the IP Access List (or use `0.0.0.0/0` for development)
+5. Get your connection string from the "Connect" button
+6. Replace `<password>` with your database user password
+
+#### Resend API Key
+1. Sign up for a free account at [Resend](https://resend.com)
+2. Navigate to API Keys in the dashboard
+3. Create a new API key
+4. Copy the API key (starts with `re_`)
+
+#### JWT Secret
+Generate a secure random string (minimum 32 characters):
+
+**Using Node.js:**
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+**Using OpenSSL:**
+```bash
+openssl rand -hex 32
+```
+
+### Security Best Practices
+
+⚠️ **IMPORTANT SECURITY NOTES:**
+
+1. **Never commit `.env` files** to version control (already in `.gitignore`)
+2. **Use different credentials** for development and production
+3. **Rotate secrets regularly**, especially after team member changes
+4. **Use strong passwords** for SuperAdmin (minimum 12 characters recommended)
+5. **Restrict MongoDB IP access** in production (don't use `0.0.0.0/0`)
+6. **Keep API keys confidential** and never share them publicly
+7. **Use environment-specific values** (different JWT secrets per environment)
 
 ## Key Features (Phase 0 & Phase 1)
 

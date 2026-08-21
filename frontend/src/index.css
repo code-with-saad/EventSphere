@@ -2,24 +2,24 @@
 
 @theme {
   /* Base backgrounds */
-  --color-base-dark: #0a0a0f;
+  --color-base-dark: #0B0F1A;
   --color-base: #f8fafc;
 
   /* Bento card colors */
-  --color-bento-bg: rgba(15, 23, 42, 0.8);
-  --color-bento-border: #1e293b;
+  --color-bento-bg: rgba(20, 27, 55, 0.85);
+  --color-bento-border: #1e2a4a;
   --color-bento-bg-light: rgba(255, 255, 255, 0.9);
   --color-bento-border-light: #e2e8f0;
 
   /* Glass component colors */
-  --color-glass-bg: rgba(15, 23, 42, 0.4);
+  --color-glass-bg: rgba(20, 27, 55, 0.5);
   --color-glass-bg-light: rgba(255, 255, 255, 0.6);
 
   /* Accent colors */
-  --color-accent-emerald: #10b981;
-  --color-accent-emerald-light: #d1fae5;
-  --color-accent-indigo: #6366f1;
-  --color-accent-indigo-light: #e0e7ff;
+  --color-accent-cyan: #22D3EE;
+  --color-accent-cyan-light: #cffafe;
+  --color-accent-violet: #a78bfa;
+  --color-accent-violet-light: #ede9fe;
 
   /* Backdrop blur */
   --backdrop-blur-md: 12px;
