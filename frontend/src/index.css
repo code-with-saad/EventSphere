@@ -2,24 +2,34 @@
 
 @theme {
   /* Base backgrounds */
-  --color-base-dark: #0B0F1A;
-  --color-base: #f8fafc;
+  --color-base-dark: #1C1917;
+  --color-base: #FAFAF9;
 
   /* Bento card colors */
-  --color-bento-bg: rgba(20, 27, 55, 0.85);
-  --color-bento-border: #1e2a4a;
-  --color-bento-bg-light: rgba(255, 255, 255, 0.9);
-  --color-bento-border-light: #e2e8f0;
+  --color-bento-bg: #292524;
+  --color-bento-border: #44403C;
+  --color-bento-bg-light: rgba(250, 250, 249, 0.9);
+  --color-bento-border-light: #E7E5E4;
 
   /* Glass component colors */
-  --color-glass-bg: rgba(20, 27, 55, 0.5);
-  --color-glass-bg-light: rgba(255, 255, 255, 0.6);
+  --color-glass-bg: rgba(41, 37, 36, 0.5);
+  --color-glass-border: rgba(68, 64, 60, 0.5);
+  --color-glass-bg-light: rgba(245, 245, 244, 0.7);
+  --color-glass-border-light: rgba(231, 229, 228, 0.8);
 
-  /* Accent colors */
-  --color-accent-cyan: #22D3EE;
-  --color-accent-cyan-light: #cffafe;
-  --color-accent-violet: #a78bfa;
-  --color-accent-violet-light: #ede9fe;
+  /* Accent colors - CTAs and highlights */
+  --color-accent-amber: #F59E0B;
+  --color-accent-amber-light: #FEF3C7;
+  --color-accent-orange: #EA580C;
+  --color-accent-orange-light: #FFEDD5;
+
+  /* Status badge colors - Semantic */
+  --color-status-success: #22C55E;
+  --color-status-success-light: #DCFCE7;
+  --color-status-warning: #F59E0B;
+  --color-status-warning-light: #FEF3C7;
+  --color-status-error: #EF4444;
+  --color-status-error-light: #FEE2E2;
 
   /* Backdrop blur */
   --backdrop-blur-md: 12px;
