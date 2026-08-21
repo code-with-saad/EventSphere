@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { TestDesignTokens } from './components/TestDesignTokens';
 
 function Home() {
   return (
@@ -7,7 +8,7 @@ function Home() {
       <h1>EventSphere - Home</h1>
       <p>Welcome to EventSphere Frontend</p>
       <nav>
-        <Link to="/about">Go to About</Link>
+        <Link to="/about">Go to About</Link> | <Link to="/design-test">Design Tokens Test</Link>
       </nav>
     </div>
   );
@@ -32,6 +33,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
+        <Route path="/design-test" element={<TestDesignTokens />} />
       </Routes>
     </Router>
   );

@@ -1,53 +1,76 @@
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+@theme {
+  /* Base backgrounds */
+  --color-base-dark: #0a0a0f;
+  --color-base: #f8fafc;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Bento card colors */
+  --color-bento-bg: rgba(15, 23, 42, 0.8);
+  --color-bento-border: #1e293b;
+  --color-bento-bg-light: rgba(255, 255, 255, 0.9);
+  --color-bento-border-light: #e2e8f0;
+
+  /* Glass component colors */
+  --color-glass-bg: rgba(15, 23, 42, 0.4);
+  --color-glass-bg-light: rgba(255, 255, 255, 0.6);
+
+  /* Accent colors */
+  --color-accent-emerald: #10b981;
+  --color-accent-emerald-light: #d1fae5;
+  --color-accent-indigo: #6366f1;
+  --color-accent-indigo-light: #e0e7ff;
+
+  /* Backdrop blur */
+  --backdrop-blur-md: 12px;
+
+  /* Border radius */
+  --radius-xl: 1rem;
+
+  /* Animations */
+  --animate-fade-in: fade-in 0.3s ease-in-out;
+  --animate-slide-in: slide-in 0.3s ease-in-out;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-#root {
-  width: 100%;
-  margin: 0 auto;
-  text-align: center;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+@keyframes fade-in {
+  from {
+    opacity: 0;
   }
-  a:hover {
-    color: #747bff;
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@layer base {
+  :root {
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  /* Dark mode by default */
+  html {
+    background-color: var(--color-base-dark);
+    color: white;
+  }
+
+  /* Light mode when class is present */
+  html.light {
+    background-color: var(--color-base);
+    color: #111827;
   }
 }
