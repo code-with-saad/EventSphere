@@ -7,7 +7,8 @@
     "dev": "nodemon --watch src --exec tsx src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [
     "eventsphere",
@@ -22,10 +23,12 @@
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.2.0",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "mongodb": "^7.5.0",
     "nodemon": "^3.1.14",
     "zod": "^4.4.3"
@@ -33,6 +36,7 @@
   "devDependencies": {
     "ts-node": "^10.9.2",
     "tsx": "^4.23.12",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
   }
 }
