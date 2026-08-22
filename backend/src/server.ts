@@ -1,11 +1,26 @@
 import express, { Request, Response } from 'express';
+import cors from 'cors';
 import env from './config/env';
 import { connectDatabase, isDatabaseConnected } from './config/database';
 import UserModel from './models/User.model';
 import authRoutes from './routes/auth.routes';
+import errorHandler, { notFoundHandler } from './middleware/error.middleware';
 
 const app = express();
 const PORT = env.PORT;
+
+// CORS Configuration
+// Requirements: 23.1, 23.2, 23.3, 23.4, 23.5, 23.6
+const corsOptions = {
+  origin: env.FRONTEND_URL, // Allow requests from frontend origin (Req 23.1, 23.5)
+  credentials: true, // Allow credentials (cookies, authorization headers) (Req 23.2)
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed request headers (Req 23.3, 23.4)
+  optionsSuccessStatus: 200 // Legacy browser support
+};
+
+// Apply CORS middleware before routes (Req 23.6)
+app.use(cors(corsOptions));
 
 // Middleware
 app.use(express.json());
@@ -32,6 +47,12 @@ app.get('/', (_req: Request, res: Response) => {
     documentation: '/health',
   });
 });
+
+// 404 handler for undefined routes (must be after all route definitions)
+app.use(notFoundHandler);
+
+// Global error handler (must be the last middleware)
+app.use(errorHandler);
 
 /**
  * Initialize and start the server

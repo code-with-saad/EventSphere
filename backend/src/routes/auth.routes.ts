@@ -9,6 +9,7 @@ import { createEmailService } from '../services/email.service';
 import { getDatabase } from '../config/database';
 import { generateAccessToken, generateRefreshToken, verifyToken } from '../services/token.service';
 import { createRefreshToken, findRefreshTokenByHash, invalidateRefreshToken } from '../models/RefreshToken.model';
+import { authenticate, AuthRequest } from '../middleware/auth.middleware';
 
 const router = Router();
 
@@ -678,6 +679,64 @@ router.post('/refresh', asyncHandler(async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       message: 'An error occurred while refreshing token. Please login again.'
+    });
+  }
+}));
+
+/**
+ * POST /api/auth/logout
+ * 
+ * Invalidate refresh token (logout)
+ * 
+ * Requirements:
+ * - Require authentication middleware
+ * - Accept refreshToken in request body
+ * - Mark refresh token as invalid in database: { isValid: false }
+ * - Return success message
+ */
+router.post('/logout', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { refreshToken } = req.body;
+
+  // Validate refresh token is provided
+  if (!refreshToken) {
+    return res.status(400).json({
+      success: false,
+      message: 'Refresh token is required'
+    });
+  }
+
+  try {
+    // Hash the refresh token to look it up in database
+    const refreshTokenHash = crypto
+      .createHash('sha256')
+      .update(refreshToken)
+      .digest('hex');
+
+    // Mark refresh token as invalid in database
+    const invalidated = await invalidateRefreshToken(refreshTokenHash);
+
+    if (!invalidated) {
+      // Token not found in database, but still consider logout successful
+      // (client can clear tokens on their side)
+      return res.status(200).json({
+        success: true,
+        message: 'Logged out successfully'
+      });
+    }
+
+    // Return success message
+    return res.status(200).json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+
+  } catch (error: any) {
+    console.error('Logout error:', error);
+    
+    // Even if there's an error, return success since client should clear tokens
+    return res.status(200).json({
+      success: true,
+      message: 'Logged out successfully'
     });
   }
 }));
