@@ -1,65 +1,25 @@
-@import "tailwindcss";
-
-@theme {
-  /* Base backgrounds */
-  --color-base-dark: #1C1917;
-  --color-base: #FAFAF9;
-
-  /* Bento card colors */
-  --color-bento-bg: #292524;
-  --color-bento-border: #44403C;
-  --color-bento-bg-light: rgba(250, 250, 249, 0.9);
-  --color-bento-border-light: #E7E5E4;
-
-  /* Glass component colors */
-  --color-glass-bg: rgba(41, 37, 36, 0.5);
-  --color-glass-border: rgba(68, 64, 60, 0.5);
-  --color-glass-bg-light: rgba(245, 245, 244, 0.7);
-  --color-glass-border-light: rgba(231, 229, 228, 0.8);
-
-  /* Accent colors - CTAs and highlights */
-  --color-accent-amber: #F59E0B;
-  --color-accent-amber-light: #FEF3C7;
-  --color-accent-orange: #EA580C;
-  --color-accent-orange-light: #FFEDD5;
-
-  /* Status badge colors - Semantic */
-  --color-status-success: #22C55E;
-  --color-status-success-light: #DCFCE7;
-  --color-status-warning: #F59E0B;
-  --color-status-warning-light: #FEF3C7;
-  --color-status-error: #EF4444;
-  --color-status-error-light: #FEE2E2;
-
-  /* Backdrop blur */
-  --backdrop-blur-md: 12px;
-
-  /* Border radius */
-  --radius-xl: 1rem;
-
-  /* Animations */
-  --animate-fade-in: fade-in 0.3s ease-in-out;
-  --animate-slide-in: slide-in 0.3s ease-in-out;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes slide-in {
-  from {
-    transform: translateY(-10px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes shrink {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+@keyframes toast-shrink {
+  from { width: 100%; }
+  to { width: 0%; }
 }
 
 @layer base {
@@ -72,15 +32,13 @@
     min-height: 100vh;
   }
 
-  /* Dark mode by default */
   html {
-    background-color: var(--color-base-dark);
+    background-color: #0B1120;
     color: white;
   }
 
-  /* Light mode when class is present */
   html.light {
-    background-color: var(--color-base);
+    background-color: #F8FAFC;
     color: #111827;
   }
 }

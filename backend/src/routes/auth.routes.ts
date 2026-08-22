@@ -741,4 +741,249 @@ router.post('/logout', authenticate, asyncHandler(async (req: AuthRequest, res: 
   }
 }));
 
+
+/**
+ * POST /api/auth/forgot-password/request
+ * Request password reset via email
+ * Requirements: 12.1-12.7
+ */
+router.post('/forgot-password/request', asyncHandler(async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      message: 'Email is required'
+    });
+  }
+
+  try {
+    const user = await UserModel.findByEmail(email);
+    
+    const successResponse = {
+      success: true,
+      message: 'If an account exists, a password reset OTP has been sent to your email'
+    };
+
+    if (!user) {
+      return res.status(200).json(successResponse);
+    }
+
+    const db = getDatabase();
+    const otpService = createOTPService(db);
+    const emailService = createEmailService();
+
+    const otp = await otpService.createOTPRecord(email, 'password_reset');
+    await emailService.sendOTPEmail(email, otp, 'password_reset');
+
+    return res.status(200).json(successResponse);
+
+  } catch (error: any) {
+    console.error('Password reset request error:', error);
+    return res.status(200).json({
+      success: true,
+      message: 'If an account exists, a password reset OTP has been sent to your email'
+    });
+  }
+}));
+
+/**
+ * POST /api/auth/forgot-password/verify-otp
+ * Verify OTP for password reset
+ * Requirements: 13.1-13.8
+ */
+router.post('/forgot-password/verify-otp', asyncHandler(async (req: Request, res: Response) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({
+      success: false,
+      message: 'Email and OTP are required'
+    });
+  }
+
+  try {
+    const user = await UserModel.findByEmail(email);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    const db = getDatabase();
+    const otpService = createOTPService(db);
+
+    const isValid = await otpService.verifyAndDeleteOTP(email, otp, 'password_reset');
+
+    if (!isValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid OTP'
+      });
+    }
+
+    const resetToken = generateAccessToken({
+      userId: user._id.toString(),
+      purpose: 'password_reset'
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'OTP verified successfully',
+      data: {
+        resetToken,
+        expiresIn: 600
+      }
+    });
+
+  } catch (error: any) {
+    if (error.message === 'OTP has expired') {
+      return res.status(401).json({
+        success: false,
+        message: 'OTP has expired'
+      });
+    }
+
+    console.error('OTP verification error:', error);
+    return res.status(404).json({
+      success: false,
+      message: 'No pending OTP found'
+    });
+  }
+}));
+
+/**
+ * POST /api/auth/forgot-password/reset
+ * Reset password with reset token
+ * Requirements: 14.1-14.8
+ */
+router.post('/forgot-password/reset', asyncHandler(async (req: Request, res: Response) => {
+  const { resetToken, newPassword } = req.body;
+
+  if (!resetToken || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      message: 'Reset token and new password are required'
+    });
+  }
+
+  const passwordValidation = validatePassword(newPassword);
+  if (!passwordValidation.isValid) {
+    return res.status(400).json({
+      success: false,
+      message: passwordValidation.error || 'Invalid password'
+    });
+  }
+
+  try {
+    const decoded = verifyToken(resetToken);
+    
+    if (decoded.purpose !== 'password_reset') {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid reset token'
+      });
+    }
+
+    const user = await UserModel.findById(decoded.userId);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    const newPasswordHash = await hashPassword(newPassword);
+
+    await UserModel.updateById(user._id, {
+      passwordHash: newPasswordHash
+    });
+
+    const db = getDatabase();
+    await db.collection('refresh_tokens').updateMany(
+      { userId: new ObjectId(user._id) },
+      { $set: { isValid: false } }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password reset successfully. You can now log in with your new password.'
+    });
+
+  } catch (error: any) {
+    if (error.message === 'Token expired') {
+      return res.status(401).json({
+        success: false,
+        message: 'Reset token has expired. Please request a new password reset.'
+      });
+    }
+
+    console.error('Password reset error:', error);
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid or expired reset token'
+    });
+  }
+}));
+
+router.post('/forgot-password/resend-otp', asyncHandler(async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      message: 'Email is required'
+    });
+  }
+
+  try {
+    const user = await UserModel.findByEmail(email);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    const db = getDatabase();
+    const otpService = createOTPService(db);
+    const emailService = createEmailService();
+
+    const hasReachedLimit = await otpService.hasReachedResendLimit(email, 'password_reset');
+    
+    if (hasReachedLimit) {
+      return res.status(429).json({
+        success: false,
+        message: 'Maximum OTP resend attempts exceeded'
+      });
+    }
+
+    const otp = await otpService.createOTPRecord(email, 'password_reset');
+    await emailService.sendOTPEmail(email, otp, 'password_reset');
+
+    const remainingAttempts = await otpService.getRemainingAttempts(email, 'password_reset');
+    
+    return res.status(200).json({
+      success: true,
+      message: 'OTP resent successfully',
+      data: {
+        otpExpiresIn: 300,
+        remainingAttempts
+      }
+    });
+
+  } catch (error: any) {
+    console.error('Resend OTP error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to resend OTP'
+    });
+  }
+}));
+
 export default router;
+

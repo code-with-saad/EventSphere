@@ -6,8 +6,9 @@ import env from '../config/env';
  */
 export interface AccessTokenPayload {
   userId: string;
-  email: string;
-  role: string;
+  email?: string;
+  role?: string;
+  purpose?: 'password_reset' | 'email_verification';
 }
 
 /**

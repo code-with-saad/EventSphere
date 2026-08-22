@@ -38,12 +38,13 @@ interface LoginResponse {
 interface RegisterResponse {
   success: boolean;
   message: string;
-  data: {
-    userId: string;
+  user: {
+    id: string;
     email: string;
+    fullName: string;
     role: string;
-    status?: string;
-    otpExpiresIn?: number;
+    status: string;
+    isEmailVerified: boolean;
   };
 }
 

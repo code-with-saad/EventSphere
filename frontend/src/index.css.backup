@@ -1,0 +1,111 @@
+﻿@import "tailwindcss";
+
+@theme {
+  --color-bg-base-dark: #0B1120;
+  --color-bg-surface-dark: #1E293B;
+  --color-bg-hover-dark: rgba(129, 140, 248, 0.08);
+  --color-bg-success-dark: rgba(74, 222, 128, 0.15);
+  --color-bg-warning-dark: rgba(251, 191, 36, 0.15);
+  --color-bg-danger-dark: rgba(248, 113, 113, 0.15);
+
+  --color-bg-base-light: #F8FAFC;
+  --color-bg-surface-light: #FFFFFF;
+  --color-bg-hover-light: rgba(79, 70, 229, 0.05);
+  --color-bg-success-light: #D1FAE5;
+  --color-bg-warning-light: #FEF3C7;
+  --color-bg-danger-light: #FEE2E2;
+
+  --color-text-primary-dark: #F1F5F9;
+  --color-text-secondary-dark: #94A3B8;
+  --color-text-success-dark: #4ADE80;
+  --color-text-warning-dark: #FBBF24;
+  --color-text-danger-dark: #F87171;
+  --color-text-on-primary-dark: #FFFFFF;
+
+  --color-text-primary-light: #0F172A;
+  --color-text-secondary-light: #64748B;
+  --color-text-success-light: #065F46;
+  --color-text-warning-light: #92400E;
+  --color-text-danger-light: #991B1B;
+  --color-text-on-primary-light: #FFFFFF;
+
+  --color-border-base-dark: #334155;
+  --color-border-base-light: #E2E8F0;
+
+  --color-brand-primary-dark: #818CF8;
+  --color-brand-primary-glow-dark: rgba(129, 140, 248, 0.4);
+  --color-brand-secondary-dark: #22D3EE;
+
+  --color-brand-primary-light: #4F46E5;
+  --color-brand-primary-glow-light: rgba(79, 70, 229, 0.2);
+  --color-brand-secondary-light: #0891B2;
+
+  --radius-lg-token: 12px;
+
+  /* Backdrop blur */
+  --backdrop-blur-md: 12px;
+
+  /* Border radius */
+  --radius-xl: 1rem;
+
+  /* Animations */
+  --animate-fade-in: fade-in 0.3s ease-in-out;
+  --animate-slide-in: slide-in 0.3s ease-in-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+
+@keyframes toast-shrink {
+  from { width: 100%; }
+  to   { width: 0%; }
+}
+@layer base {
+  :root {
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  /* Dark mode by default */
+  html {
+    background-color: var(--color-base-dark);
+    color: white;
+  }
+
+  /* Light mode when class is present */
+  html.light {
+    background-color: var(--color-base);
+    color: #111827;
+  }
+}

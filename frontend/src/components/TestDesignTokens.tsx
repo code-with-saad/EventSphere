@@ -3,10 +3,10 @@ import { useState } from 'react';
 /**
  * Test page to verify EventSphere design tokens
  * This component demonstrates:
- * - Bento Card styling (warm stone theme)
- * - Glass Component styling (warm charcoal glass with backdrop blur)
- * - Accent colors (Amber/Orange for CTAs and highlights)
- * - Status colors (Green/Amber/Red semantic badges)
+ * - Design token classes from tailwind.config.js
+ * - Background, text, border, and brand colors
+ * - Typography tokens
+ * - Spacing and border radius tokens
  * - Dark/Light mode toggle
  */
 export function TestDesignTokens() {
@@ -23,53 +23,25 @@ export function TestDesignTokens() {
     }
   };
 
-  // Design tokens
-  const colors = {
-    // Base colors
-    baseDark: '#1C1917',
-    baseLight: '#FAFAF9',
-    
-    // Bento cards
-    bentoBg: isDarkMode ? '#292524' : 'rgba(250, 250, 249, 0.9)',
-    bentoBorder: isDarkMode ? '#44403C' : '#E7E5E4',
-    
-    // Glass components
-    glassBg: isDarkMode ? 'rgba(41, 37, 36, 0.5)' : 'rgba(245, 245, 244, 0.7)',
-    glassBorder: isDarkMode ? 'rgba(68, 64, 60, 0.5)' : 'rgba(231, 229, 228, 0.8)',
-    
-    // Accent colors - CTAs and highlights
-    accentAmber: '#F59E0B',
-    accentAmberLight: '#FEF3C7',
-    accentOrange: '#EA580C',
-    accentOrangeLight: '#FFEDD5',
-    
-    // Status badge colors - Semantic
-    statusSuccess: '#22C55E',
-    statusSuccessLight: '#DCFCE7',
-    statusWarning: '#F59E0B',
-    statusWarningLight: '#FEF3C7',
-    statusError: '#EF4444',
-    statusErrorLight: '#FEE2E2',
-  };
-
   return (
-    <div className="min-h-screen p-8 transition-colors duration-300">
+    <div className={`min-h-screen p-8 transition-colors duration-300 ${isDarkMode ? 'bg-bg-base-dark text-text-primary-dark' : 'bg-bg-base-light text-text-primary-light'}`}>
       {/* Header with Glass Effect */}
       <header 
-        className="border-b p-6 mb-8 sticky top-4"
-        style={{
-          backgroundColor: colors.glassBg,
-          backdropFilter: 'blur(12px)',
-          borderColor: colors.glassBorder,
-          borderRadius: '1rem',
-        }}
+        className={`border-b p-6 mb-8 sticky top-4 rounded-xl-token backdrop-blur-md ${
+          isDarkMode 
+            ? 'bg-bg-surface-dark/80 border-border-base-dark' 
+            : 'bg-bg-surface-light/80 border-border-base-light'
+        }`}
       >
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">EventSphere Design Tokens Test</h1>
           <button
             onClick={toggleTheme}
-            className="px-4 py-2 text-white rounded-lg transition-all hover:opacity-90"
-            style={{ backgroundColor: colors.accentAmber }}
+            className={`px-4 py-2 rounded-lg-token transition-all hover:opacity-90 ${
+              isDarkMode 
+                ? 'bg-brand-primary-dark text-text-on-primary-dark' 
+                : 'bg-brand-primary-light text-text-on-primary-light'
+            }`}
           >
             {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
           </button>
@@ -80,49 +52,46 @@ export function TestDesignTokens() {
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Section: Bento Cards */}
         <section>
-          <h2 className="text-2xl font-semibold mb-4">Bento Cards</h2>
+          <h2 className="text-2xl font-semibold mb-4">Component Cards</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Bento Card 1 */}
+            {/* Card 1 */}
             <div 
-              className="p-6 hover:shadow-lg transition-shadow duration-200 border"
-              style={{
-                backgroundColor: colors.bentoBg,
-                borderColor: colors.bentoBorder,
-                borderRadius: '1rem',
-              }}
+              className={`p-6 hover:shadow-lg transition-shadow duration-200 border rounded-xl-token ${
+                isDarkMode 
+                  ? 'bg-bg-surface-dark border-border-base-dark' 
+                  : 'bg-bg-surface-light border-border-base-light'
+              }`}
             >
               <h3 className="text-xl font-semibold mb-2">Dashboard</h3>
-              <p className={isDarkMode ? 'text-stone-400' : 'text-stone-600'}>
+              <p className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>
                 Role-specific dashboard view with key metrics and actions.
               </p>
             </div>
 
-            {/* Bento Card 2 */}
+            {/* Card 2 */}
             <div 
-              className="p-6 hover:shadow-lg transition-shadow duration-200 border"
-              style={{
-                backgroundColor: colors.bentoBg,
-                borderColor: colors.bentoBorder,
-                borderRadius: '1rem',
-              }}
+              className={`p-6 hover:shadow-lg transition-shadow duration-200 border rounded-xl-token ${
+                isDarkMode 
+                  ? 'bg-bg-surface-dark border-border-base-dark' 
+                  : 'bg-bg-surface-light border-border-base-light'
+              }`}
             >
               <h3 className="text-xl font-semibold mb-2">Events</h3>
-              <p className={isDarkMode ? 'text-stone-400' : 'text-stone-600'}>
+              <p className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>
                 Manage and browse upcoming events and expos.
               </p>
             </div>
 
-            {/* Bento Card 3 */}
+            {/* Card 3 */}
             <div 
-              className="p-6 hover:shadow-lg transition-shadow duration-200 border"
-              style={{
-                backgroundColor: colors.bentoBg,
-                borderColor: colors.bentoBorder,
-                borderRadius: '1rem',
-              }}
+              className={`p-6 hover:shadow-lg transition-shadow duration-200 border rounded-xl-token ${
+                isDarkMode 
+                  ? 'bg-bg-surface-dark border-border-base-dark' 
+                  : 'bg-bg-surface-light border-border-base-light'
+              }`}
             >
               <h3 className="text-xl font-semibold mb-2">Profile</h3>
-              <p className={isDarkMode ? 'text-stone-400' : 'text-stone-600'}>
+              <p className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>
                 View and edit your account information.
               </p>
             </div>
@@ -131,113 +100,126 @@ export function TestDesignTokens() {
 
         {/* Section: Accent Colors - CTAs & Highlights */}
         <section>
-          <h2 className="text-2xl font-semibold mb-4">Accent Colors - CTAs & Highlights</h2>
+          <h2 className="text-2xl font-semibold mb-4">Brand Colors - Buttons & Links</h2>
           <div className="flex flex-wrap gap-4">
             <button 
-              className="px-6 py-3 text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
-              style={{ backgroundColor: colors.accentAmber }}
+              className={`px-6 py-3 rounded-lg-token font-medium hover:opacity-90 transition-opacity ${
+                isDarkMode 
+                  ? 'bg-brand-primary-dark text-text-on-primary-dark' 
+                  : 'bg-brand-primary-light text-text-on-primary-light'
+              }`}
             >
               Primary CTA
             </button>
             <button 
-              className="px-6 py-3 text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
-              style={{ backgroundColor: colors.accentOrange }}
+              className={`px-6 py-3 rounded-lg-token font-medium hover:opacity-90 transition-opacity ${
+                isDarkMode 
+                  ? 'bg-brand-secondary-dark text-text-on-primary-dark' 
+                  : 'bg-brand-secondary-light text-text-on-primary-light'
+              }`}
             >
               Secondary CTA
             </button>
             <a 
-              className="px-4 py-2 rounded-lg font-medium inline-block"
-              style={{ color: colors.accentAmber }}
+              className={`px-4 py-2 rounded-lg-token font-medium inline-block ${
+                isDarkMode 
+                  ? 'text-brand-primary-dark hover:text-brand-secondary-dark' 
+                  : 'text-brand-primary-light hover:text-brand-secondary-light'
+              }`}
             >
-              Accent Link →
+              Brand Link →
             </a>
           </div>
         </section>
 
         {/* Section: Status Badges with Status Colors */}
         <section>
-          <h2 className="text-2xl font-semibold mb-4">Status Colors (Semantic) - State Badges</h2>
+          <h2 className="text-2xl font-semibold mb-4">Status Colors - State Badges</h2>
           <div className="flex flex-wrap gap-4">
             <span 
-              className="px-4 py-2 text-white rounded-lg font-medium"
-              style={{ backgroundColor: colors.statusSuccess }}
+              className={`px-4 py-2 rounded-lg-token font-medium ${
+                isDarkMode 
+                  ? 'text-text-success-dark bg-bg-success-dark' 
+                  : 'text-text-success-light bg-bg-success-light'
+              }`}
             >
               ✓ Active
             </span>
             <span 
-              className="px-4 py-2 rounded-lg font-medium"
-              style={{ 
-                backgroundColor: colors.statusSuccessLight,
-                color: colors.statusSuccess,
-              }}
+              className={`px-4 py-2 rounded-lg-token font-medium ${
+                isDarkMode 
+                  ? 'text-text-success-dark bg-bg-success-dark' 
+                  : 'text-text-success-light bg-bg-success-light'
+              }`}
             >
               ✓ Verified
             </span>
             <span 
-              className="px-4 py-2 text-white rounded-lg font-medium"
-              style={{ backgroundColor: colors.statusWarning }}
+              className={`px-4 py-2 rounded-lg-token font-medium ${
+                isDarkMode 
+                  ? 'text-text-warning-dark bg-bg-warning-dark' 
+                  : 'text-text-warning-light bg-bg-warning-light'
+              }`}
             >
               ⏳ Pending
             </span>
             <span 
-              className="px-4 py-2 text-white rounded-lg font-medium"
-              style={{ backgroundColor: colors.statusError }}
+              className={`px-4 py-2 rounded-lg-token font-medium ${
+                isDarkMode 
+                  ? 'text-text-danger-dark bg-bg-danger-dark' 
+                  : 'text-text-danger-light bg-bg-danger-light'
+              }`}
             >
               ✖ Error
             </span>
           </div>
         </section>
 
-        {/* Section: Glass Sidebar Preview */}
+        {/* Section: Glass Component Preview */}
         <section>
-          <h2 className="text-2xl font-semibold mb-4">Glass Component (Sidebar Preview)</h2>
+          <h2 className="text-2xl font-semibold mb-4">Glass Effect Component</h2>
           <div 
-            className="relative h-64 overflow-hidden"
-            style={{
-              background: isDarkMode 
-                ? 'radial-gradient(circle at top right, rgba(245, 158, 11, 0.15), rgba(41, 37, 36, 0.8) 50%, #1C1917)'
-                : 'linear-gradient(135deg, #FAFAF9, #F5F5F4 50%, rgba(245, 158, 11, 0.08))',
-              borderRadius: '1rem',
-            }}
+            className={`relative h-64 overflow-hidden rounded-xl-token ${
+              isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'
+            }`}
           >
             {/* Simulated sidebar with glass effect */}
             <div 
-              className="absolute left-0 top-0 bottom-0 w-64 p-6 border-r"
-              style={{
-                backgroundColor: colors.glassBg,
-                backdropFilter: 'blur(12px)',
-                borderColor: colors.glassBorder,
-              }}
+              className={`absolute left-0 top-0 bottom-0 w-64 p-6 border-r backdrop-blur-md ${
+                isDarkMode 
+                  ? 'bg-bg-surface-dark/50 border-border-base-dark' 
+                  : 'bg-bg-surface-light/70 border-border-base-light'
+              }`}
             >
               <div className="space-y-4">
-                <div 
-                  className="font-bold text-lg"
-                  style={{ color: isDarkMode ? '#FAFAF9' : '#1C1917' }}
-                >
+                <div className="font-bold text-lg">
                   Navigation
                 </div>
                 <div className="space-y-2">
                   <div 
-                    className="p-2 rounded transition-colors cursor-pointer"
-                    style={{ color: isDarkMode ? '#E7E5E4' : '#292524' }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    className={`p-2 rounded-md-token transition-colors cursor-pointer ${
+                      isDarkMode 
+                        ? 'text-text-primary-dark hover:bg-bg-hover-dark' 
+                        : 'text-text-primary-light hover:bg-bg-hover-light'
+                    }`}
                   >
                     Dashboard
                   </div>
                   <div 
-                    className="p-2 rounded transition-colors cursor-pointer"
-                    style={{ color: isDarkMode ? '#E7E5E4' : '#292524' }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    className={`p-2 rounded-md-token transition-colors cursor-pointer ${
+                      isDarkMode 
+                        ? 'text-text-primary-dark hover:bg-bg-hover-dark' 
+                        : 'text-text-primary-light hover:bg-bg-hover-light'
+                    }`}
                   >
                     Events
                   </div>
                   <div 
-                    className="p-2 rounded transition-colors cursor-pointer"
-                    style={{ color: isDarkMode ? '#E7E5E4' : '#292524' }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    className={`p-2 rounded-md-token transition-colors cursor-pointer ${
+                      isDarkMode 
+                        ? 'text-text-primary-dark hover:bg-bg-hover-dark' 
+                        : 'text-text-primary-light hover:bg-bg-hover-light'
+                    }`}
                   >
                     Profile
                   </div>
@@ -245,8 +227,9 @@ export function TestDesignTokens() {
               </div>
             </div>
             <div 
-              className="absolute right-4 top-4 text-sm"
-              style={{ color: isDarkMode ? '#E7E5E4' : '#44403C' }}
+              className={`absolute right-4 top-4 text-sm-token ${
+                isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+              }`}
             >
               ← Glass effect with backdrop blur
             </div>
@@ -255,71 +238,49 @@ export function TestDesignTokens() {
 
         {/* Section: Color Palette Reference */}
         <section>
-          <h2 className="text-2xl font-semibold mb-4">Color Palette Reference</h2>
+          <h2 className="text-2xl font-semibold mb-4">Design Token Reference</h2>
           <div 
-            className="p-6 border"
-            style={{
-              backgroundColor: colors.bentoBg,
-              borderColor: colors.bentoBorder,
-              borderRadius: '1rem',
-            }}
+            className={`p-6 border rounded-xl-token ${
+              isDarkMode 
+                ? 'bg-bg-surface-dark border-border-base-dark' 
+                : 'bg-bg-surface-light border-border-base-light'
+            }`}
           >
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <div 
-                  className="w-full h-20 rounded-lg mb-2"
-                  style={{ backgroundColor: colors.baseDark }}
-                ></div>
-                <p className="text-sm font-medium">Base Dark</p>
-                <p className="text-xs text-stone-500">#1C1917</p>
+                <div className="w-full h-20 rounded-lg-token mb-2 bg-bg-base-dark"></div>
+                <p className="text-sm-token font-medium">Base Dark</p>
+                <p className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>#0B1120</p>
               </div>
               <div>
-                <div 
-                  className="w-full h-20 rounded-lg mb-2 border"
-                  style={{ backgroundColor: colors.bentoBg, borderColor: colors.bentoBorder }}
-                ></div>
-                <p className="text-sm font-medium">Bento Card</p>
-                <p className="text-xs text-stone-500">#292524</p>
+                <div className="w-full h-20 rounded-lg-token mb-2 bg-bg-surface-dark border border-border-base-dark"></div>
+                <p className="text-sm-token font-medium">Surface Dark</p>
+                <p className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>#1E293B</p>
               </div>
               <div>
-                <div 
-                  className="w-full h-20 rounded-lg mb-2"
-                  style={{ backgroundColor: colors.accentAmber }}
-                ></div>
-                <p className="text-sm font-medium">Accent Amber</p>
-                <p className="text-xs text-stone-500">#F59E0B</p>
+                <div className="w-full h-20 rounded-lg-token mb-2 bg-brand-primary-dark"></div>
+                <p className="text-sm-token font-medium">Brand Primary Dark</p>
+                <p className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>#818CF8</p>
               </div>
               <div>
-                <div 
-                  className="w-full h-20 rounded-lg mb-2"
-                  style={{ backgroundColor: colors.accentOrange }}
-                ></div>
-                <p className="text-sm font-medium">Accent Orange</p>
-                <p className="text-xs text-stone-500">#EA580C</p>
+                <div className="w-full h-20 rounded-lg-token mb-2 bg-brand-secondary-dark"></div>
+                <p className="text-sm-token font-medium">Brand Secondary Dark</p>
+                <p className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>#22D3EE</p>
               </div>
               <div>
-                <div 
-                  className="w-full h-20 rounded-lg mb-2"
-                  style={{ backgroundColor: colors.statusSuccess }}
-                ></div>
-                <p className="text-sm font-medium">Success</p>
-                <p className="text-xs text-stone-500">#22C55E</p>
+                <div className="w-full h-20 rounded-lg-token mb-2 bg-text-success-dark"></div>
+                <p className="text-sm-token font-medium">Success</p>
+                <p className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>#4ADE80</p>
               </div>
               <div>
-                <div 
-                  className="w-full h-20 rounded-lg mb-2"
-                  style={{ backgroundColor: colors.statusWarning }}
-                ></div>
-                <p className="text-sm font-medium">Warning</p>
-                <p className="text-xs text-stone-500">#F59E0B</p>
+                <div className="w-full h-20 rounded-lg-token mb-2 bg-text-warning-dark"></div>
+                <p className="text-sm-token font-medium">Warning</p>
+                <p className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>#FBBF24</p>
               </div>
               <div>
-                <div 
-                  className="w-full h-20 rounded-lg mb-2"
-                  style={{ backgroundColor: colors.statusError }}
-                ></div>
-                <p className="text-sm font-medium">Error</p>
-                <p className="text-xs text-stone-500">#EF4444</p>
+                <div className="w-full h-20 rounded-lg-token mb-2 bg-text-danger-dark"></div>
+                <p className="text-sm-token font-medium">Danger</p>
+                <p className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>#F87171</p>
               </div>
             </div>
           </div>
@@ -327,59 +288,54 @@ export function TestDesignTokens() {
 
         {/* Section: Design Token Values */}
         <section>
-          <h2 className="text-2xl font-semibold mb-4">Verified Design Token Values</h2>
+          <h2 className="text-2xl font-semibold mb-4">EventSphere Design Token Classes</h2>
           <div 
-            className="p-6 border"
-            style={{
-              backgroundColor: colors.bentoBg,
-              borderColor: colors.bentoBorder,
-              borderRadius: '1rem',
-            }}
+            className={`p-6 border rounded-xl-token ${
+              isDarkMode 
+                ? 'bg-bg-surface-dark border-border-base-dark' 
+                : 'bg-bg-surface-light border-border-base-light'
+            }`}
           >
-            <div className="space-y-3 font-mono text-sm">
+            <div className="space-y-3 font-mono text-sm-token">
               <div className="flex justify-between">
-                <span className={isDarkMode ? 'text-stone-400' : 'text-stone-600'}>Base Dark:</span>
-                <span>{colors.baseDark}</span>
+                <span className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>Background Base:</span>
+                <span>bg-bg-base-dark / bg-bg-base-light</span>
               </div>
               <div className="flex justify-between">
-                <span className={isDarkMode ? 'text-stone-400' : 'text-stone-600'}>Bento Background:</span>
-                <span>{isDarkMode ? '#292524' : 'rgba(250, 250, 249, 0.9)'}</span>
+                <span className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>Background Surface:</span>
+                <span>bg-bg-surface-dark / bg-bg-surface-light</span>
               </div>
               <div className="flex justify-between">
-                <span className={isDarkMode ? 'text-stone-400' : 'text-stone-600'}>Bento Border:</span>
-                <span>{colors.bentoBorder}</span>
+                <span className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>Border:</span>
+                <span>border-border-base-dark / border-border-base-light</span>
               </div>
               <div className="flex justify-between">
-                <span className={isDarkMode ? 'text-stone-400' : 'text-stone-600'}>Glass Background:</span>
-                <span>{isDarkMode ? 'rgba(41, 37, 36, 0.5)' : 'rgba(245, 245, 244, 0.7)'}</span>
+                <span className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>Text Primary:</span>
+                <span>text-text-primary-dark / text-text-primary-light</span>
               </div>
               <div className="flex justify-between">
-                <span className={isDarkMode ? 'text-stone-400' : 'text-stone-600'}>Backdrop Blur:</span>
-                <span>12px</span>
+                <span className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>Text Secondary:</span>
+                <span>text-text-secondary-dark / text-text-secondary-light</span>
               </div>
               <div className="flex justify-between">
-                <span className={isDarkMode ? 'text-stone-400' : 'text-stone-600'}>Border Radius XL:</span>
-                <span>1rem (16px)</span>
+                <span className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>Brand Primary:</span>
+                <span>bg-brand-primary-dark / bg-brand-primary-light</span>
               </div>
               <div className="flex justify-between">
-                <span className={isDarkMode ? 'text-stone-400' : 'text-stone-600'}>Accent Amber:</span>
-                <span>{colors.accentAmber}</span>
+                <span className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>Brand Secondary:</span>
+                <span>bg-brand-secondary-dark / bg-brand-secondary-light</span>
               </div>
               <div className="flex justify-between">
-                <span className={isDarkMode ? 'text-stone-400' : 'text-stone-600'}>Accent Orange:</span>
-                <span>{colors.accentOrange}</span>
+                <span className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>Border Radius:</span>
+                <span>rounded-sm-token / md-token / lg-token / xl-token</span>
               </div>
               <div className="flex justify-between">
-                <span className={isDarkMode ? 'text-stone-400' : 'text-stone-600'}>Status Success:</span>
-                <span>{colors.statusSuccess}</span>
+                <span className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>Font Size:</span>
+                <span>text-xs-token / sm-token / base-token / lg-token / xl-token</span>
               </div>
               <div className="flex justify-between">
-                <span className={isDarkMode ? 'text-stone-400' : 'text-stone-600'}>Status Warning:</span>
-                <span>{colors.statusWarning}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className={isDarkMode ? 'text-stone-400' : 'text-stone-600'}>Status Error:</span>
-                <span>{colors.statusError}</span>
+                <span className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>Spacing:</span>
+                <span>xs-token / sm-token / md-token / lg-token / xl-token / xxl-token</span>
               </div>
             </div>
           </div>
