@@ -1,45 +1,68 @@
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from "react-router-dom";
-import { TestDesignTokens } from "./components/TestDesignTokens";
-import { TestContexts } from "./components/TestContexts";
-import { TestToast } from "./components/TestToast";
-import { AuthProvider, ThemeProvider } from "./contexts";
-import { useAuth } from "./contexts/AuthContext";
-import { ToastContainer } from "./components/common/ToastContainer";
-import { RegisterPage, VerifyOTPPage } from "./pages/auth";
-import { LoginPage } from "./pages/auth/LoginPage";
-import { RequestResetPage } from "./pages/auth/ForgotPassword/RequestResetPage";
-import { VerifyResetOTPPage } from "./pages/auth/ForgotPassword/VerifyResetOTPPage";
-import { ResetPasswordPage } from "./pages/auth/ForgotPassword/ResetPasswordPage";
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, ThemeProvider } from './contexts';
+import { useAuth } from './contexts/AuthContext';
+import { ToastContainer } from './components/common/ToastContainer';
 
-function Home() {
-  return (
-    <div style={{ padding: "2rem" }}>
-      <h1>EventSphere - Home</h1>
-      <p>Welcome to EventSphere Frontend</p>
-      <nav>
-        <Link to="/about">Go to About</Link> | <Link to="/design-test">Design Tokens Test</Link> | <Link to="/context-test">Context Test</Link> | <Link to="/toast-test">Toast Test</Link> | <Link to="/register">Register</Link>
-      </nav>
-    </div>
-  );
+// Auth pages
+import { RegisterPage, VerifyOTPPage } from './pages/auth';
+import { LoginPage } from './pages/auth/LoginPage';
+import { RequestResetPage } from './pages/auth/ForgotPassword/RequestResetPage';
+import { VerifyResetOTPPage } from './pages/auth/ForgotPassword/VerifyResetOTPPage';
+import { ResetPasswordPage } from './pages/auth/ForgotPassword/ResetPasswordPage';
+
+// Dashboard pages
+import SuperAdminDashboard from './pages/dashboard/SuperAdminDashboard';
+import OrganizerDashboard from './pages/dashboard/OrganizerDashboard';
+import ExhibitorDashboard from './pages/dashboard/ExhibitorDashboard';
+import AttendeeDashboard from './pages/dashboard/AttendeeDashboard';
+
+// Route guard
+import { ProtectedRoute } from './guards/ProtectedRoute';
+
+// Role → dashboard path mapping (mirrors the mapping in ProtectedRoute)
+const ROLE_DASHBOARD_ROUTES: Record<string, string> = {
+  superadmin: '/dashboard/superadmin',
+  organizer: '/dashboard/organizer',
+  exhibitor: '/dashboard/exhibitor',
+  attendee: '/dashboard/attendee',
+};
+
+/**
+ * Redirects an authenticated user to their role-specific dashboard,
+ * or to /login if they are not authenticated.
+ * Falls back to /dashboard if the role is unrecognised.
+ */
+function DashboardRedirect() {
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  // Wait for auth state to settle before redirecting
+  if (isLoading) {
+    return null;
+  }
+
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const destination = ROLE_DASHBOARD_ROUTES[user.role.toLowerCase()] ?? '/login';
+  return <Navigate to={destination} replace />;
 }
 
-function About() {
-  return (
-    <div style={{ padding: "2rem" }}>
-      <h1>About EventSphere</h1>
-      <p>This is the about page</p>
-      <nav>
-        <Link to="/">Go to Home</Link>
-      </nav>
-    </div>
-  );
-}
-
+/**
+ * Redirects the root path:
+ *  - Authenticated → their role-specific dashboard
+ *  - Not authenticated → /login
+ */
 function RootRedirect() {
-  const { isAuthenticated, user } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return null;
+  }
 
   if (isAuthenticated && user) {
-    return <Navigate to="/dashboard" replace />;
+    const destination = ROLE_DASHBOARD_ROUTES[user.role.toLowerCase()] ?? '/dashboard';
+    return <Navigate to={destination} replace />;
   }
 
   return <Navigate to="/login" replace />;
@@ -52,17 +75,55 @@ function App() {
         <Router>
           <ToastContainer />
           <Routes>
+            {/* ── Root ─────────────────────────────────────────────────────── */}
             <Route path="/" element={<RootRedirect />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/design-test" element={<TestDesignTokens />} />
-            <Route path="/context-test" element={<TestContexts />} />
-            <Route path="/toast-test" element={<TestToast />} />
+
+            {/* ── Public auth routes ───────────────────────────────────────── */}
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/verify-otp" element={<VerifyOTPPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/forgot-password/request" element={<RequestResetPage />} />
+            <Route path="/forgot-password" element={<RequestResetPage />} />
             <Route path="/forgot-password/verify-otp" element={<VerifyResetOTPPage />} />
             <Route path="/forgot-password/reset" element={<ResetPasswordPage />} />
+
+            {/* ── Smart /dashboard redirect (role-based) ───────────────────── */}
+            <Route path="/dashboard" element={<DashboardRedirect />} />
+
+            {/* ── Protected role-specific dashboards ──────────────────────── */}
+            <Route
+              path="/dashboard/superadmin"
+              element={
+                <ProtectedRoute allowedRoles={['superadmin']}>
+                  <SuperAdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/organizer"
+              element={
+                <ProtectedRoute allowedRoles={['organizer']}>
+                  <OrganizerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/exhibitor"
+              element={
+                <ProtectedRoute allowedRoles={['exhibitor']}>
+                  <ExhibitorDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/attendee"
+              element={
+                <ProtectedRoute allowedRoles={['attendee']}>
+                  <AttendeeDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* ── 404 fallback ─────────────────────────────────────────────── */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>
