@@ -4,7 +4,7 @@ import { showSuccess, showError, showWarning, showInfo, dismissToast, dismissAll
 
 // Mock react-hot-toast
 vi.mock('react-hot-toast', () => {
-  const mockToastFn = vi.fn((message: string, options?: any) => `toast-${message}`);
+  const mockToastFn = vi.fn((message: string, _options?: any) => `toast-${message}`);
   return {
     default: Object.assign(mockToastFn, {
       success: vi.fn((message: string) => `toast-success-${message}`),

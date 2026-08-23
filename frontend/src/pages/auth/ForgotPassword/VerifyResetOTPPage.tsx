@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent } from 'react';
+﻿import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { BentoCard } from '../../../components/common';
 import { showSuccess, showError } from '../../../utils/toast';
@@ -47,7 +47,7 @@ export function VerifyResetOTPPage() {
   useEffect(() => {
     if (!email) {
       showError('No email provided. Please request a password reset first.');
-      navigate('/forgot-password/request');
+      navigate('/forgot-password');
     }
   }, [email, navigate]);
 

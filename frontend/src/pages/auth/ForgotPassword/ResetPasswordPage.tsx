@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent } from 'react';
+﻿import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { BentoCard } from '../../../components/common';
 import { showSuccess, showError } from '../../../utils/toast';
@@ -59,7 +59,7 @@ export function ResetPasswordPage() {
         setResetToken(storedToken);
       } else {
         showError('No reset token provided. Please request a password reset.');
-        navigate('/forgot-password/request');
+        navigate('/forgot-password');
       }
     }
   }, [navigationToken, navigate]);
@@ -118,7 +118,7 @@ export function ResetPasswordPage() {
 
     if (!resetToken) {
       showError('Reset token not found. Please request a password reset.');
-      navigate('/forgot-password/request');
+      navigate('/forgot-password');
       return;
     }
 

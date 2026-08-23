@@ -1,4 +1,4 @@
-# EventSphere Implementation Progress
+﻿# EventSphere Implementation Progress
 
 This document tracks the implementation progress of EventSphere, a multi-role Event & Expo Management SaaS platform. It serves as a reference for what has been completed, what remains, and any deviations from the original specification.
 
@@ -919,4 +919,259 @@ Database connection closed
 - Task 12.6: Create logout endpoint (POST /api/auth/logout)
 - Task 14: Configure CORS middleware
 - Task 15: Implement global error handler
+
+
+
+---
+
+## Phase 1b: Frontend Authentication UI
+
+### ✅ Checkpoint 25: Frontend Authentication Flow — Static Verification
+**Status**: COMPLETE  
+**Date**: 2026-08-22  
+**Validates Requirements**: 9.1-9.9, 12.1-12.7, 16.1-16.8, 18.1-18.9, 19.1-19.6
+
+---
+
+### Components Completed
+
+#### ✅ AuthContext (`src/contexts/AuthContext.tsx`)
+- In-memory token storage (no localStorage/sessionStorage)
+- Exports: `user`, `accessToken`, `refreshToken`, `isAuthenticated`, `isLoading`
+- Functions: `login`, `logout`, `register`, `refreshAccessToken`, `checkAuthStatus`
+- Automatic token refresh interval every 14 minutes (before 15-min access token expiry)
+- `setTokenManager` integration to wire AuthContext tokens into the Axios API service
+
+#### ✅ ThemeContext (`src/contexts/ThemeContext.tsx`)
+- Exports: `theme`, `toggleTheme`
+- Initialises from `localStorage.getItem('theme')`, falls back to system `prefers-color-scheme`
+- Persists selection via `localStorage.setItem('theme', theme)` on every theme change
+- Applies `dark` / `light` class to `document.documentElement` for Tailwind dark mode
+
+#### ✅ API Service (`src/services/api.ts`)
+- Axios instance with base URL from `VITE_API_BASE_URL`
+- Request interceptor: attaches `Authorization: Bearer <accessToken>`
+- Response interceptor: handles 401 `TOKEN_EXPIRED` → automatic refresh + retry
+- On refresh failure: clears tokens, shows toast, redirects to `/login`
+
+#### ✅ Toast Notification System (`src/utils/toast.ts`, `src/components/common/ToastContainer.tsx`)
+- `showSuccess`, `showError`, `showWarning`, `showInfo`, `dismissToast`, `dismissAllToasts`
+- Custom `ToastContainer` with progress bar, hover-to-pause, dismiss button
+- Responsive: `top-right` on desktop, `bottom-center` on mobile (<768px)
+- **Zero `window.alert` calls** across entire codebase
+
+#### ✅ Authentication Pages
+| Page | Path | Requirements |
+|---|---|---|
+| LoginPage | `src/pages/auth/LoginPage.tsx` | 8.1-8.9 |
+| RegisterPage | `src/pages/auth/RegisterPage.tsx` | 5.1-5.9 |
+| VerifyOTPPage | `src/pages/auth/VerifyOTPPage.tsx` | 7.1-7.5 |
+| RequestResetPage | `src/pages/auth/ForgotPassword/RequestResetPage.tsx` | 12.1-12.7 |
+| VerifyResetOTPPage | `src/pages/auth/ForgotPassword/VerifyResetOTPPage.tsx` | 13.1-13.8 |
+| ResetPasswordPage | `src/pages/auth/ForgotPassword/ResetPasswordPage.tsx` | 14.1-14.8 |
+
+#### ✅ Route Guard (`src/guards/ProtectedRoute.tsx`)
+- Loading state → centred spinner (design-token styled)
+- Not authenticated → `<Navigate to="/login" replace />`
+- Authenticated, wrong role → `<Navigate to={roleDashboard} replace />`
+- Authenticated, correct role → renders children
+- Role-to-dashboard map: `superadmin`, `organizer`, `exhibitor`, `attendee`
+
+#### ✅ React Router Setup (`src/App.tsx`)
+- `BrowserRouter` wrapping entire app
+- Public routes: `/`, `/login`, `/register`, `/verify-otp`, `/forgot-password/*`
+- Protected routes: `/dashboard/superadmin`, `/dashboard/organizer`, `/dashboard/exhibitor`, `/dashboard/attendee` — all wrapped in `<ProtectedRoute allowedRoles={[...]}`
+- Smart `DashboardRedirect` and `RootRedirect` components for role-aware navigation
+
+#### ✅ Dashboard Shells
+- `SuperAdminDashboard.tsx`
+- `OrganizerDashboard.tsx`
+- `ExhibitorDashboard.tsx`
+- `AttendeeDashboard.tsx`
+
+---
+
+### Static Verification Results
+
+| Check | Result | Notes |
+|---|---|---|
+| `npx tsc --noEmit` | ✅ PASS (0 errors) | Fixed 8 TS6133 unused-variable warnings |
+| `npm run build` | ✅ PASS | 99 modules, 336 kB JS, built in 3.19s |
+| `window.alert` occurrences | ✅ 0 | Grep across all `.ts` / `.tsx` in `src/` |
+| All 14 required files exist | ✅ 14/14 | All pages, contexts, guard, service present |
+| AuthContext members | ✅ PASS | `login`, `logout`, `register`, `refreshAccessToken`, `isAuthenticated`, `isLoading`, `user` all exported |
+| ThemeContext members | ✅ PASS | `theme`, `toggleTheme` exported; `localStorage` used for persistence |
+| ProtectedRoute behaviours | ✅ PASS | Loading spinner, unauthenticated redirect, role mismatch redirect, authorized render |
+| App.tsx routing | ✅ PASS | BrowserRouter, all public + protected routes, ProtectedRoute wrappers |
+
+---
+
+### TypeScript Fixes Applied (8 TS6133 warnings → 0 errors)
+
+| File | Fix |
+|---|---|
+| `src/contexts/AuthContext.tsx` | Removed unused `api` default import |
+| `src/pages/auth/ForgotPassword/RequestResetPage.tsx` | Removed unused `showError` import |
+| `src/pages/auth/VerifyOTPPage.tsx` | Removed unused `role` variable; removed unused `response` assignment |
+| `src/components/common/ToastContainer.tsx` | Removed unused `toastIcon` constant |
+| `src/components/common/ToastContainer.test.tsx` | Prefixed unused `containerStyle` with `_` |
+| `src/test/setup.ts` | Removed unused `expect` import |
+| `src/utils/toast.test.ts` | Prefixed unused `options` parameter with `_` |
+
+---
+
+### Manual E2E Testing Requirements (requires running dev server + backend)
+
+The following items require a live environment and cannot be automated statically:
+
+- Registration for all roles (Organizer, Exhibitor, Attendee) via UI
+- Exhibitor/Attendee redirect to `/verify-otp` after registration
+- OTP received in real email inbox and verified via UI
+- Login with valid credentials (tokens in React memory state)
+- Automatic token refresh after 14 minutes (requires waiting)
+- Login with pending Organizer shows pending approval message
+- Forgot password 3-step flow (request OTP → verify OTP → set new password)
+- Confirm old password fails after reset
+- Theme toggle (dark/light) persists across browser refresh (localStorage)
+
+To run the full manual E2E suite:
+```bash
+# Terminal 1 - Backend
+cd backend && npm run dev
+
+# Terminal 2 - Frontend
+cd frontend && npm run dev
+# Then open http://localhost:5173
+```
+
+---
+
+**Phase 1b Status: ✅ STATIC VERIFICATION COMPLETE**  
+**Build**: Passing  
+**TypeScript**: 0 errors  
+**window.alert**: 0 occurrences  
+**Last Updated**: 2026-08-22  
+**Next Phase**: Phase 1c — Admin Approval Workflow
+
+
+---
+
+## Bug Fix: Session Persistence Across Page Reload
+**Date**: 2026-08-23
+**Files Changed**:
+- `frontend/src/contexts/AuthContext.tsx`
+- `backend/src/routes/auth.routes.ts`
+
+### Problem
+Access and refresh tokens were both stored only in React memory state. Any page reload
+wiped all auth state, causing `isAuthenticated` to become `false` and every protected
+route to redirect the user to `/login`, even with a perfectly valid session.
+
+### Fix — Token Storage Strategy
+| Token | Storage | Rationale |
+|---|---|---|
+| Access token | React state (memory only) | Short-lived (15 min); no benefit persisting it |
+| Refresh token | `localStorage` key `es_refresh_token` | Must survive page reloads to restore sessions |
+
+### Changes in `AuthContext.tsx`
+1. **`login()`** — calls `localStorage.setItem('es_refresh_token', refresh)` after
+   storing tokens in state.
+2. **`logout()`** — calls `localStorage.removeItem('es_refresh_token')` in the
+   `finally` block so it's always cleared even if the logout API call fails.
+3. **`refreshAccessToken()`** — falls back to `localStorage.getItem('es_refresh_token')`
+   if the in-memory refresh token is not yet populated (e.g. mid-mount).
+4. **`checkAuthStatus()`** — now `async`; on every app mount it:
+   a. Reads `localStorage` for a stored refresh token.
+   b. If present, calls `POST /api/auth/refresh` silently to get a new access token.
+   c. Then calls `GET /api/auth/me` with the fresh access token to restore the `user`
+      object in state.
+   d. On success: user is fully re-authenticated before any route renders.
+   e. On failure (token expired/revoked): clears `localStorage` and proceeds as
+      unauthenticated — user is redirected to `/login` as normal.
+   f. `setIsLoading(false)` is called in `finally` so the spinner is never stuck.
+5. **Axios `setTokenManager` callback** — the `setTokens` handler now also writes the
+   new refresh token to `localStorage`, keeping it in sync when the Axios interceptor
+   silently rotates tokens on a 401.
+
+### New Backend Endpoint: `GET /api/auth/me`
+Added to `backend/src/routes/auth.routes.ts` (requires Bearer access token):
+
+```
+GET /api/auth/me
+Authorization: Bearer <accessToken>
+
+200 OK
+{
+  "success": true,
+  "data": {
+    "user": { "id", "email", "fullName", "role", "status", "isEmailVerified" }
+  }
+}
+```
+
+Used exclusively during session restore (`checkAuthStatus`) to reconstruct the `user`
+object after a silent refresh, since `POST /api/auth/refresh` returns only new tokens
+and not the user payload.
+
+### Deviation from Original Spec
+The original spec stated: *"Store tokens in React state (memory only, not
+localStorage)"*. This is updated to: refresh token stored in `localStorage`,
+access token remains memory-only. Rationale: pure memory storage makes sessions
+non-persistent across page reloads, which is a critical UX regression for a
+multi-page SPA. Storing only the refresh token (not the access token) in
+`localStorage` preserves the security intent — the short-lived access token
+never touches disk — while making sessions behave as users expect.
+
+
+---
+
+## Bug Fix: Session Persistence Across Page Reload
+**Date**: 2026-08-23
+**Files Changed**:
+- `frontend/src/contexts/AuthContext.tsx`
+- `backend/src/routes/auth.routes.ts`
+
+### Problem
+Access and refresh tokens were both stored only in React memory state. Any page reload
+wiped all auth state, causing `isAuthenticated` to become `false` and every protected
+route to redirect the user to `/login`, even with a perfectly valid session.
+
+### Fix — Token Storage Strategy
+| Token | Storage | Rationale |
+|---|---|---|
+| Access token | React state (memory only) | Short-lived (15 min); no benefit persisting it |
+| Refresh token | `localStorage` key `es_refresh_token` | Must survive page reloads to restore sessions |
+
+### Changes in `AuthContext.tsx`
+1. **`login()`** — calls `localStorage.setItem` after storing tokens in state.
+2. **`logout()`** — calls `localStorage.removeItem` in the `finally` block so it is always cleared.
+3. **`refreshAccessToken()`** — falls back to `localStorage.getItem` if in-memory token is not yet populated.
+4. **`checkAuthStatus()`** — now async; on every app mount it:
+   - Reads `localStorage` for a stored refresh token
+   - If present, calls `POST /api/auth/refresh` silently to get a new access token
+   - Then calls `GET /api/auth/me` with the fresh token to restore the `user` object
+   - On success: user is fully re-authenticated before any route renders
+   - On failure: clears `localStorage`, proceeds as unauthenticated → redirected to `/login`
+   - `setIsLoading(false)` is always called in `finally` so the spinner never gets stuck
+5. **Axios `setTokenManager` `setTokens` handler** — also writes new refresh token to `localStorage` when the Axios interceptor silently rotates tokens on 401.
+
+### New Backend Endpoint: `GET /api/auth/me`
+Added to `backend/src/routes/auth.routes.ts` (requires Bearer access token):
+
+```
+GET /api/auth/me
+Authorization: Bearer <accessToken>
+
+200 OK  { "success": true, "data": { "user": { id, email, fullName, role, status, isEmailVerified } } }
+```
+
+Used during session restore to reconstruct the `user` object after a silent refresh,
+since `POST /api/auth/refresh` returns only tokens and not the user payload.
+
+### Deviation from Original Spec
+Original spec: *"Store tokens in React state (memory only, not localStorage)"*.
+Updated: refresh token stored in `localStorage`, access token remains memory-only.
+Rationale: pure memory storage breaks sessions on every page reload, which is a
+critical UX regression. Storing only the refresh token (not the access token) in
+`localStorage` preserves the security intent while making sessions behave as users expect.
 

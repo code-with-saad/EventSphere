@@ -1,7 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BentoCard } from '../../../components/common';
-import { showSuccess, showError } from '../../../utils/toast';
+import { showSuccess } from '../../../utils/toast';
 import api from '../../../services/api';
 
 /**

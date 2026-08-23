@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+﻿import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
 import { ObjectId } from 'mongodb';
 import asyncHandler from '../utils/asyncHandler';
@@ -741,6 +741,52 @@ router.post('/logout', authenticate, asyncHandler(async (req: AuthRequest, res: 
   }
 }));
 
+
+/**
+ * GET /api/auth/me
+ *
+ * Returns the authenticated user's profile.
+ * Used by the frontend on page reload to restore session state after
+ * a successful silent token refresh.
+ *
+ * Requires: valid access token in Authorization header.
+ */
+router.get('/me', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.userId;
+
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: 'Not authenticated',
+      code: 'NOT_AUTHENTICATED'
+    });
+  }
+
+  const user = await UserModel.findById(userId);
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found',
+      code: 'USER_NOT_FOUND'
+    });
+  }
+
+  return res.status(200).json({
+    success: true,
+    message: 'User profile retrieved successfully',
+    data: {
+      user: {
+        id: user._id.toString(),
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+        status: user.status,
+        isEmailVerified: user.isEmailVerified
+      }
+    }
+  });
+}));
 
 /**
  * POST /api/auth/forgot-password/request

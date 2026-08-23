@@ -9,13 +9,6 @@ const toastBg: Record<string, string> = {
   blank:   '#FBBF24',
 };
 
-const toastIcon: Record<string, string> = {
-  success: 'checkmark',
-  error:   'cross',
-  blank:   'warning',
-  loading: 'info',
-  custom:  'info',
-};
 
 const ToastItem = ({ t }: { t: Toast }) => {
   const [paused, setPaused] = useState(false);

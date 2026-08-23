@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+﻿import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { BentoCard } from '../../components/common';
@@ -217,7 +217,7 @@ export function LoginPage() {
             <div className="text-right">
               <button
                 type="button"
-                onClick={() => navigate('/forgot-password/request')}
+                onClick={() => navigate('/forgot-password')}
                 className="text-brand-primary-dark hover:text-brand-secondary-dark text-sm-token font-medium transition-colors"
                 disabled={isLoading}
               >

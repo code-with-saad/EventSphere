@@ -4,7 +4,7 @@ import { ToastContainer } from './ToastContainer';
 
 // Mock react-hot-toast
 vi.mock('react-hot-toast', () => ({
-  Toaster: ({ position, toastOptions, gapClassName, containerStyle }: any) => (
+  Toaster: ({ position, toastOptions, gapClassName, containerStyle: _containerStyle }: any) => (
     <div 
       data-testid="toaster"
       data-position={position}

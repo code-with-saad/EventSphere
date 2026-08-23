@@ -26,7 +26,6 @@ export function VerifyOTPPage() {
   
   // Extract email from navigation state (passed from RegisterPage)
   const email = location.state?.email as string | undefined;
-  const role = location.state?.role as string | undefined;
 
   // OTP input state
   const [otp, setOtp] = useState('');
@@ -124,7 +123,7 @@ export function VerifyOTPPage() {
     setIsLoading(true);
 
     try {
-      const response = await api.post('/api/auth/verify-otp', {
+      await api.post('/api/auth/verify-otp', {
         email,
         otp,
         purpose: 'registration',

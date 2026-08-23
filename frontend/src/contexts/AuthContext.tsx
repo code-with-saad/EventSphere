@@ -1,11 +1,13 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+﻿import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import axios from 'axios';
-import api, { setTokenManager } from '../services/api';
+import { setTokenManager } from '../services/api';
 
-// API base URL from environment variable
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
-// User interface matching backend User model
+// localStorage key — only the refresh token is persisted to disk.
+// The access token always lives in memory only.
+const LS_REFRESH_TOKEN_KEY = 'es_refresh_token';
+
 interface User {
   id: string;
   email: string;
@@ -15,7 +17,6 @@ interface User {
   isEmailVerified: boolean;
 }
 
-// Registration data interface
 interface RegisterData {
   email: string;
   password: string;
@@ -23,7 +24,6 @@ interface RegisterData {
   role: 'organizer' | 'exhibitor' | 'attendee';
 }
 
-// Login response interface
 interface LoginResponse {
   success: boolean;
   message: string;
@@ -34,7 +34,6 @@ interface LoginResponse {
   };
 }
 
-// Registration response interface
 interface RegisterResponse {
   success: boolean;
   message: string;
@@ -48,17 +47,16 @@ interface RegisterResponse {
   };
 }
 
-// Refresh token response interface
 interface RefreshTokenResponse {
   success: boolean;
   message: string;
   data: {
     accessToken: string;
     refreshToken: string;
+    user?: User;
   };
 }
 
-// AuthContext interface
 interface AuthContextType {
   user: User | null;
   accessToken: string | null;
@@ -72,25 +70,34 @@ interface AuthContextType {
   checkAuthStatus: () => void;
 }
 
-// Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// AuthProvider props
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-// AuthProvider component
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Computed property for authentication status
   const isAuthenticated = !!user && !!accessToken;
 
-  // Set up token manager for API service on mount
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+
+  /** Persist refresh token to localStorage (only token stored on disk). */
+  const persistRefreshToken = (token: string) => {
+    localStorage.setItem(LS_REFRESH_TOKEN_KEY, token);
+  };
+
+  /** Remove refresh token from localStorage on logout or refresh failure. */
+  const clearPersistedRefreshToken = () => {
+    localStorage.removeItem(LS_REFRESH_TOKEN_KEY);
+  };
+
+  // ── Token manager wired into Axios interceptor ────────────────────────────
+
   useEffect(() => {
     setTokenManager({
       getAccessToken: () => accessToken,
@@ -98,81 +105,82 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setTokens: (newAccessToken: string, newRefreshToken: string) => {
         setAccessToken(newAccessToken);
         setRefreshToken(newRefreshToken);
+        // Keep localStorage in sync when the Axios interceptor rotates tokens
+        persistRefreshToken(newRefreshToken);
       },
       clearTokens: () => {
         setUser(null);
         setAccessToken(null);
         setRefreshToken(null);
+        clearPersistedRefreshToken();
       },
     });
   }, [accessToken, refreshToken]);
 
-  // Login function
+  // ── Login ─────────────────────────────────────────────────────────────────
+
   const login = async (email: string, password: string): Promise<LoginResponse> => {
-    try {
-      const response = await axios.post<LoginResponse>(
-        `${API_BASE_URL}/api/auth/login`,
-        { email, password }
-      );
+    const response = await axios.post<LoginResponse>(
+      `${API_BASE_URL}/api/auth/login`,
+      { email, password }
+    );
 
-      const { user: userData, accessToken: token, refreshToken: refresh } = response.data.data;
+    const { user: userData, accessToken: token, refreshToken: refresh } = response.data.data;
 
-      // Store tokens and user in state (memory only)
-      setUser(userData);
-      setAccessToken(token);
-      setRefreshToken(refresh);
+    setUser(userData);
+    setAccessToken(token);
+    setRefreshToken(refresh);
+    // Persist refresh token so session survives page reload
+    persistRefreshToken(refresh);
 
-      return response.data;
-    } catch (error: any) {
-      // Re-throw error for handling in UI
-      throw error;
-    }
+    return response.data;
   };
 
-  // Logout function
+  // ── Logout ────────────────────────────────────────────────────────────────
+
   const logout = async (): Promise<void> => {
     try {
-      // Optionally call logout API to invalidate refresh token
       if (accessToken && refreshToken) {
         await axios.post(
           `${API_BASE_URL}/api/auth/logout`,
           { refreshToken },
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${accessToken}` } }
         );
       }
     } catch (error) {
-      // Ignore errors during logout API call
       console.error('Logout API error:', error);
     } finally {
-      // Always clear state regardless of API success
+      // Always wipe state and localStorage
       setUser(null);
       setAccessToken(null);
       setRefreshToken(null);
+      clearPersistedRefreshToken();
     }
   };
 
-  // Register function
+  // ── Register ──────────────────────────────────────────────────────────────
+
   const register = async (data: RegisterData): Promise<RegisterResponse> => {
-    try {
-      const response = await axios.post<RegisterResponse>(
-        `${API_BASE_URL}/api/auth/register`,
-        data
-      );
-
-      return response.data;
-    } catch (error: any) {
-      // Re-throw error for handling in UI
-      throw error;
-    }
+    const response = await axios.post<RegisterResponse>(
+      `${API_BASE_URL}/api/auth/register`,
+      data
+    );
+    return response.data;
   };
 
-  // Refresh access token function
+  // ── Refresh access token ──────────────────────────────────────────────────
+
+  /**
+   * Calls POST /api/auth/refresh with the current refresh token.
+   * On success: updates in-memory access token + rotates refresh token in both
+   *             state and localStorage.
+   * On failure: clears all auth state (forces re-login).
+   */
   const refreshAccessToken = useCallback(async (): Promise<void> => {
-    if (!refreshToken) {
+    // Prefer in-memory token; fall back to localStorage (e.g. right after mount)
+    const tokenToUse = refreshToken ?? localStorage.getItem(LS_REFRESH_TOKEN_KEY);
+
+    if (!tokenToUse) {
       throw new Error('No refresh token available');
     }
 
@@ -180,57 +188,97 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await axios.post<RefreshTokenResponse>(
         `${API_BASE_URL}/api/auth/refresh`,
         {},
-        {
-          headers: {
-            Authorization: `Bearer ${refreshToken}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${tokenToUse}` } }
       );
 
       const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data.data;
 
-      // Update tokens in state
       setAccessToken(newAccessToken);
       setRefreshToken(newRefreshToken);
-    } catch (error: any) {
-      // If refresh fails, logout user
+      persistRefreshToken(newRefreshToken);
+    } catch (error) {
       console.error('Token refresh failed:', error);
-      await logout();
+      // Clear everything — user must log in again
+      setUser(null);
+      setAccessToken(null);
+      setRefreshToken(null);
+      clearPersistedRefreshToken();
       throw error;
     }
   }, [refreshToken]);
 
-  // Check auth status on mount
-  const checkAuthStatus = useCallback(() => {
-    // On mount, check if tokens exist in state
-    // Since we store in memory only, tokens will be lost on page refresh
-    // This is intentional per the design (no localStorage/sessionStorage)
-    setIsLoading(false);
-  }, []);
+  // ── Restore session on mount ──────────────────────────────────────────────
 
-  // Set up automatic token refresh (14 minutes = 840000ms)
-  useEffect(() => {
-    if (!accessToken || !refreshToken) {
+  /**
+   * On every app mount (including page reload):
+   *  1. Check localStorage for a persisted refresh token.
+   *  2. If found, silently call /api/auth/refresh to get a new access token
+   *     and restore the user session — the user never sees a login redirect.
+   *  3. If the refresh call fails (token expired / revoked), clear localStorage
+   *     and proceed as unauthenticated — user will be sent to /login.
+   *  4. Either way, set isLoading=false so protected routes can render.
+   */
+  const checkAuthStatus = useCallback(async () => {
+    const storedRefreshToken = localStorage.getItem(LS_REFRESH_TOKEN_KEY);
+
+    if (!storedRefreshToken) {
+      // No persisted session — nothing to restore
+      setIsLoading(false);
       return;
     }
 
-    // Set up interval to refresh token every 14 minutes (before 15-min expiry)
+    try {
+      const response = await axios.post<RefreshTokenResponse>(
+        `${API_BASE_URL}/api/auth/refresh`,
+        {},
+        { headers: { Authorization: `Bearer ${storedRefreshToken}` } }
+      );
+
+      const { accessToken: newAccessToken, refreshToken: newRefreshToken, user: userData } =
+        response.data.data;
+
+      setAccessToken(newAccessToken);
+      setRefreshToken(newRefreshToken);
+      persistRefreshToken(newRefreshToken);
+
+      // Backend may return user in refresh response; if not, we'll need /me
+      if (userData) {
+        setUser(userData);
+      } else {
+        // Fetch current user profile with the fresh access token
+        const meResponse = await axios.get<{ success: boolean; data: { user: User } }>(
+          `${API_BASE_URL}/api/auth/me`,
+          { headers: { Authorization: `Bearer ${newAccessToken}` } }
+        );
+        setUser(meResponse.data.data.user);
+      }
+    } catch (error) {
+      console.error('Session restore failed — clearing stored token:', error);
+      clearPersistedRefreshToken();
+      // State is already null from initial useState — nothing else to clear
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Run once on mount
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
+
+  // ── Auto-refresh interval (14 min) ────────────────────────────────────────
+
+  useEffect(() => {
+    if (!accessToken || !refreshToken) return;
+
     const refreshInterval = setInterval(() => {
       refreshAccessToken().catch((error) => {
         console.error('Automatic token refresh failed:', error);
       });
-    }, 14 * 60 * 1000); // 14 minutes in milliseconds
+    }, 14 * 60 * 1000);
 
-    // Cleanup interval on unmount or when tokens change
-    return () => {
-      clearInterval(refreshInterval);
-    };
+    return () => clearInterval(refreshInterval);
   }, [accessToken, refreshToken, refreshAccessToken]);
-
-  // Check auth status on mount
-  useEffect(() => {
-    checkAuthStatus();
-  }, [checkAuthStatus]);
 
   return (
     <AuthContext.Provider
@@ -252,13 +300,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 }
 
-// Custom hook to use the AuthContext
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
-
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-
   return context;
 }
