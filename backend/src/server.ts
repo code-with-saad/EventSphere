@@ -4,6 +4,7 @@ import env from './config/env';
 import { connectDatabase, isDatabaseConnected } from './config/database';
 import UserModel from './models/User.model';
 import authRoutes from './routes/auth.routes';
+import adminRoutes from './routes/admin.routes';
 import errorHandler, { notFoundHandler } from './middleware/error.middleware';
 
 const app = express();
@@ -28,6 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
 app.get('/health', (_req: Request, res: Response) => {

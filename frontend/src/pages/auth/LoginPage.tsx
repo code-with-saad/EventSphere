@@ -12,11 +12,8 @@ import { showSuccess, showError } from '../../utils/toast';
  * - Client-side validation: email format, password presence
  * - Inline error display below each field
  * - Loading spinner on submit button during API call
- * - Success: redirect to /dashboard (role-based routing handled by backend/ProtectedRoute)
- * - Error handling:
- *   - "Account pending approval" for Organizer with pending status
- *   - "Please verify your email" for Exhibitor/Attendee with unverified email
- *   - Generic error toast for other errors
+ * - Success: auth state updates → PublicOnlyRoute redirects automatically (no navigate() needed)
+ * - Error handling: displays the backend's error message directly via toast
  * - "Forgot Password?" link below password field
  * - "Create Account" link at footer to navigate to register page
  * - Styled with Tailwind and BentoCard component
@@ -99,33 +96,13 @@ export function LoginPage() {
 
     try {
       await login(formData.email, formData.password);
-
-      // Success: show toast and redirect to dashboard
-      showSuccess('Login successful. Redirecting to your dashboard...');
-      
-      // Redirect to dashboard after a short delay
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1500);
+      // Auth state is now set. PublicOnlyRoute will automatically redirect
+      // to the correct destination (including /dashboard/pending-approval for
+      // pending organizers) when it re-renders. No navigate() needed here.
+      showSuccess('Login successful. Redirecting...');
     } catch (error: any) {
-      // Handle API errors with specific messages
-      const errorStatus = error.response?.status;
       const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
-
-      // Check for specific error cases
-      if (errorStatus === 403) {
-        // Check if it's a pending approval or email verification issue
-        if (errorMessage.includes('pending approval') || errorMessage.includes('Pending')) {
-          showError('Account pending approval');
-        } else if (errorMessage.includes('email') || errorMessage.includes('verified')) {
-          showError('Please verify your email');
-        } else {
-          showError(errorMessage);
-        }
-      } else {
-        // Generic error handling
-        showError(errorMessage);
-      }
+      showError(errorMessage);
     } finally {
       setIsLoading(false);
     }

@@ -9,39 +9,67 @@ import { RequestResetPage } from './pages/auth/ForgotPassword/RequestResetPage';
 import { VerifyResetOTPPage } from './pages/auth/ForgotPassword/VerifyResetOTPPage';
 import { ResetPasswordPage } from './pages/auth/ForgotPassword/ResetPasswordPage';
 import SuperAdminDashboard from './pages/dashboard/SuperAdminDashboard';
+import AdminApprovalsPage from './pages/admin/AdminApprovalsPage';
+import AllOrganizersPage from './pages/admin/AllOrganizersPage';
 import OrganizerDashboard from './pages/dashboard/OrganizerDashboard';
 import ExhibitorDashboard from './pages/dashboard/ExhibitorDashboard';
 import AttendeeDashboard from './pages/dashboard/AttendeeDashboard';
+import PendingApprovalScreen from './components/dashboard/PendingApprovalScreen';
+import RejectedScreen from './components/dashboard/RejectedScreen';
 import { ProtectedRoute } from './guards/ProtectedRoute';
 
-const ROLE_DASHBOARD_ROUTES: Record<string, string> = {
-  superadmin: '/dashboard/superadmin',
-  organizer: '/dashboard/organizer',
-  exhibitor: '/dashboard/exhibitor',
-  attendee: '/dashboard/attendee',
-};
+/**
+ * Single source of truth for where an authenticated user should land.
+ *
+ * Rules:
+ *  - Organizer with status 'pending'  → /dashboard/pending-approval
+ *  - All other roles / active users   → role-specific dashboard
+ */
+export function getHomeRoute(user: { role: string; status: string }): string {
+  if (user.role === 'organizer' && user.status === 'pending') {
+    return '/dashboard/pending-approval';
+  }
+  if (user.role === 'organizer' && user.status === 'rejected') {
+    return '/dashboard/rejected';
+  }
+  const routes: Record<string, string> = {
+    superadmin: '/dashboard/superadmin',
+    organizer:  '/dashboard/organizer',
+    exhibitor:  '/dashboard/exhibitor',
+    attendee:   '/dashboard/attendee',
+  };
+  return routes[user.role.toLowerCase()] ?? '/dashboard';
+}
 
 function DashboardRedirect() {
   const { user, isAuthenticated, isLoading } = useAuth();
   if (isLoading) return null;
   if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
-  return <Navigate to={ROLE_DASHBOARD_ROUTES[user.role.toLowerCase()] ?? '/login'} replace />;
+  return <Navigate to={getHomeRoute(user)} replace />;
 }
 
 function RootRedirect() {
   const { user, isAuthenticated, isLoading } = useAuth();
   if (isLoading) return null;
   if (isAuthenticated && user) {
-    return <Navigate to={ROLE_DASHBOARD_ROUTES[user.role.toLowerCase()] ?? '/dashboard'} replace />;
+    return <Navigate to={getHomeRoute(user)} replace />;
   }
   return <Navigate to="/login" replace />;
 }
 
+/**
+ * Wraps public-only pages (login, register).
+ * If the user is already authenticated, redirect them to their correct home
+ * using getHomeRoute — which handles the pending-organizer case too.
+ * This is what makes the post-login redirect work without any navigate() call
+ * inside LoginPage: as soon as login() sets auth state, this re-renders and
+ * sends the user to the right place.
+ */
 function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, isLoading } = useAuth();
   if (isLoading) return null;
   if (isAuthenticated && user) {
-    return <Navigate to={ROLE_DASHBOARD_ROUTES[user.role.toLowerCase()] ?? '/dashboard'} replace />;
+    return <Navigate to={getHomeRoute(user)} replace />;
   }
   return <>{children}</>;
 }
@@ -62,7 +90,11 @@ function App() {
             <Route path="/forgot-password/reset" element={<ResetPasswordPage />} />
             <Route path="/dashboard" element={<DashboardRedirect />} />
             <Route path="/dashboard/superadmin" element={<ProtectedRoute allowedRoles={['superadmin']}><SuperAdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/approvals" element={<ProtectedRoute allowedRoles={['superadmin']}><AdminApprovalsPage /></ProtectedRoute>} />
+            <Route path="/admin/organizers" element={<ProtectedRoute allowedRoles={['superadmin']}><AllOrganizersPage /></ProtectedRoute>} />
             <Route path="/dashboard/organizer" element={<ProtectedRoute allowedRoles={['organizer']}><OrganizerDashboard /></ProtectedRoute>} />
+            <Route path="/dashboard/pending-approval" element={<ProtectedRoute allowedRoles={['organizer']}><PendingApprovalScreen /></ProtectedRoute>} />
+            <Route path="/dashboard/rejected" element={<ProtectedRoute allowedRoles={['organizer']}><RejectedScreen /></ProtectedRoute>} />
             <Route path="/dashboard/exhibitor" element={<ProtectedRoute allowedRoles={['exhibitor']}><ExhibitorDashboard /></ProtectedRoute>} />
             <Route path="/dashboard/attendee" element={<ProtectedRoute allowedRoles={['attendee']}><AttendeeDashboard /></ProtectedRoute>} />
             <Route path="*" element={<Navigate to="/" replace />} />

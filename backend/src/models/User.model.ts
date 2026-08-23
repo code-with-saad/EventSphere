@@ -1,4 +1,4 @@
-import { Collection, Db, ObjectId, IndexSpecification } from 'mongodb';
+import { Collection, Db, ObjectId } from 'mongodb';
 import { getDatabase } from '../config/database';
 
 /**
@@ -18,7 +18,7 @@ export type UserRole = 'superadmin' | 'organizer' | 'exhibitor' | 'attendee';
 /**
  * User account status
  */
-export type UserStatus = 'pending' | 'active' | 'suspended';
+export type UserStatus = 'pending' | 'active' | 'suspended' | 'rejected';
 
 /**
  * User interface - represents a user document in MongoDB
@@ -127,7 +127,7 @@ export class UserModel {
    * Requirement 5.7: Status enum validation
    */
   private validateStatus(status: string): status is UserStatus {
-    const validStatuses: UserStatus[] = ['pending', 'active', 'suspended'];
+    const validStatuses: UserStatus[] = ['pending', 'active', 'suspended', 'rejected'];
     return validStatuses.includes(status as UserStatus);
   }
 
@@ -248,6 +248,17 @@ export class UserModel {
    */
   async findByRoleAndStatus(role: UserRole, status: UserStatus): Promise<IUser[]> {
     return this.collection.find({ role, status }).toArray();
+  }
+
+  /**
+   * Find all users by role (any status)
+   * Useful for admin overview queries
+   *
+   * @param role User role
+   * @returns Array of matching user documents, sorted by createdAt descending
+   */
+  async findByRole(role: UserRole): Promise<IUser[]> {
+    return this.collection.find({ role }).sort({ createdAt: -1 }).toArray();
   }
 
   /**

@@ -383,20 +383,12 @@ router.post('/resend-otp', asyncHandler(async (req: Request, res: Response) => {
 
 /**
  * POST /api/auth/login
- * 
- * Authenticate user and issue tokens
- * 
- * Requirements:
- * - 8.1: Accept email and password in request body
- * - 8.2: Verify password with bcrypt compare
- * - 8.3: Return 401 for invalid credentials
- * - 8.4: Return 403 for pending status (Organizer awaiting approval)
- * - 8.4: Return 403 for unverified email (Exhibitor/Attendee)
- * - 8.5: Generate access token (15-minute expiry)
- * - 8.6: Generate refresh token (7-day expiry)
- * - 8.7: Return both tokens in response body
- * - 8.8: Access token includes userId, email, and role in payload
- * - 8.9: Store refresh token hash in database with userId and creation timestamp
+ *
+ * Authenticate user and issue tokens.
+ * Always returns 200 + tokens when credentials (email + password) are correct,
+ * regardless of user status. Status is included in the response so the frontend
+ * can route accordingly (active → dashboard, pending → pending screen, etc.).
+ * Only blocks login for unverified Exhibitor/Attendee email (403 EMAIL_NOT_VERIFIED).
  */
 router.post('/login', asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -429,25 +421,6 @@ router.post('/login', asyncHandler(async (req: Request, res: Response) => {
     return res.status(401).json({
       success: false,
       message: 'Invalid email or password'
-    });
-  }
-
-  // Check user status: return 403 if pending (Requirement 8.4)
-  // Organizer awaiting SuperAdmin approval
-  if (user.status === 'pending') {
-    return res.status(403).json({
-      success: false,
-      message: 'Account pending approval',
-      code: 'PENDING_APPROVAL'
-    });
-  }
-
-  // Check user status: return 403 if suspended
-  if (user.status === 'suspended') {
-    return res.status(403).json({
-      success: false,
-      message: 'Account has been suspended',
-      code: 'ACCOUNT_SUSPENDED'
     });
   }
 
@@ -595,12 +568,12 @@ router.post('/refresh', asyncHandler(async (req: Request, res: Response) => {
       });
     }
 
-    // Check if user account is still active
-    if (user.status !== 'active') {
+    // Only block suspended accounts — pending/rejected organizers keep valid sessions
+    if (user.status === 'suspended') {
       return res.status(403).json({
         success: false,
-        message: 'User account is not active',
-        code: 'ACCOUNT_INACTIVE'
+        message: 'Account has been suspended',
+        code: 'ACCOUNT_SUSPENDED'
       });
     }
 
