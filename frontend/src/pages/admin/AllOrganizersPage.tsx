@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { BentoCard } from '../../components/common/BentoCard';
+import { Sidebar } from '../../components/layout/Sidebar';
+import { Header } from '../../components/layout/Header';
+import { BottomNav } from '../../components/layout/BottomNav';
 import { showError } from '../../utils/toast';
 import api from '../../services/api';
 
@@ -163,13 +166,11 @@ export function AllOrganizersPage() {
 
   // ── Render ─────────────────────────────────────────────────────────────
   return (
-    <div
-      className={`min-h-screen p-lg-token ${
-        isDarkMode
-          ? 'bg-bg-base-dark text-text-primary-dark'
-          : 'bg-bg-base-light text-text-primary-light'
-      }`}
-    >
+    <div className={`min-h-screen ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
+      <Sidebar />
+      <div className="md:ml-64 flex flex-col min-h-screen">
+        <Header title="All Organizers" />
+        <main className="flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token">
       {/* Page header */}
       <div className="mb-lg-token">
         <h1
@@ -387,6 +388,9 @@ export function AllOrganizersPage() {
           </>
         )}
       </BentoCard>
+        </main>
+      </div>
+      <BottomNav />
     </div>
   );
 }

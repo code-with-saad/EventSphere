@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { BentoCard } from '../../components/common';
 import { showSuccess, showError } from '../../utils/toast';
 
@@ -18,12 +19,15 @@ import { showSuccess, showError } from '../../utils/toast';
  * - API error handling with toast notifications
  * - Styled with Tailwind and BentoCard component
  * - Show/hide password toggle with SVG icons
+ * - Supports dark/light mode via design tokens
  * 
  * Validates Requirements: 5.1, 5.2, 5.3
  */
 export function RegisterPage() {
   const navigate = useNavigate();
   const { register } = useAuth();
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
 
   // Form state
   const [formData, setFormData] = useState({
@@ -158,14 +162,39 @@ export function RegisterPage() {
     }
   };
 
+  // Shared input class builder
+  const inputClass = (hasError: boolean) =>
+    `w-full px-4 py-3 rounded-lg-token border transition-colors
+     focus:outline-none focus:ring-2 focus:border-transparent
+     ${isDarkMode
+       ? `bg-bg-surface-dark text-text-primary-dark placeholder-text-secondary-dark
+          focus:ring-brand-primary-dark focus:ring-offset-bg-base-dark
+          ${hasError ? 'border-text-danger-dark' : 'border-border-base-dark'}`
+       : `bg-bg-surface-light text-text-primary-light placeholder-text-secondary-light
+          focus:ring-brand-primary-light focus:ring-offset-bg-base-light
+          ${hasError ? 'border-text-danger-light' : 'border-border-base-light'}`
+     }`;
+
   return (
-    <div className="min-h-screen bg-bg-base-dark flex items-center justify-center px-4 py-8">
+    <div
+      className={`min-h-screen flex items-center justify-center px-4 py-8 md:py-12 ${
+        isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'
+      }`}
+    >
       <div className="w-full max-w-md">
         <BentoCard>
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-text-primary-dark mb-2">Create Account</h1>
-            <p className="text-text-secondary-dark">
+            <h1
+              className={`text-3xl font-bold mb-2 ${
+                isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+              }`}
+            >
+              Create Account
+            </h1>
+            <p
+              className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}
+            >
               Register for EventSphere to get started
             </p>
           </div>
@@ -174,7 +203,12 @@ export function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm-token font-medium text-text-secondary-dark mb-2">
+              <label
+                htmlFor="email"
+                className={`block text-sm-token font-medium mb-2 ${
+                  isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                }`}
+              >
                 Email Address
               </label>
               <input
@@ -182,23 +216,29 @@ export function RegisterPage() {
                 id="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                className={`w-full px-4 py-2.5 bg-bg-surface-dark text-text-primary-dark 
-                  border ${errors.email ? 'border-text-danger-dark' : 'border-border-base-dark'} 
-                  rounded-lg-token 
-                  placeholder-text-secondary-dark
-                  focus:outline-none focus:ring-2 focus:ring-brand-primary-dark focus:border-transparent
-                  transition-colors`}
+                className={inputClass(!!errors.email)}
                 placeholder="you@example.com"
                 disabled={isLoading}
               />
               {errors.email && (
-                <p className="mt-1.5 text-sm-token text-text-danger-dark">{errors.email}</p>
+                <p
+                  className={`mt-1.5 text-sm-token ${
+                    isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'
+                  }`}
+                >
+                  {errors.email}
+                </p>
               )}
             </div>
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm-token font-medium text-text-secondary-dark mb-2">
+              <label
+                htmlFor="password"
+                className={`block text-sm-token font-medium mb-2 ${
+                  isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                }`}
+              >
                 Password
               </label>
               <div className="relative">
@@ -207,19 +247,18 @@ export function RegisterPage() {
                   id="password"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  className={`w-full px-4 py-2.5 bg-bg-surface-dark text-text-primary-dark 
-                  border ${errors.password ? 'border-text-danger-dark' : 'border-border-base-dark'} 
-                  rounded-lg-token 
-                  placeholder-text-secondary-dark
-                  focus:outline-none focus:ring-2 focus:ring-brand-primary-dark focus:border-transparent
-                  transition-colors`}
+                  className={inputClass(!!errors.password)}
                   placeholder="Minimum 8 characters"
                   disabled={isLoading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary-dark hover:text-text-primary-dark transition-colors disabled:opacity-50"
+                  className={`absolute right-3 top-1/2 transform -translate-y-1/2 transition-colors disabled:opacity-50 ${
+                    isDarkMode
+                      ? 'text-text-secondary-dark hover:text-text-primary-dark'
+                      : 'text-text-secondary-light hover:text-text-primary-light'
+                  }`}
                   disabled={isLoading}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
@@ -236,13 +275,24 @@ export function RegisterPage() {
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1.5 text-sm-token text-text-danger-dark">{errors.password}</p>
+                <p
+                  className={`mt-1.5 text-sm-token ${
+                    isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'
+                  }`}
+                >
+                  {errors.password}
+                </p>
               )}
             </div>
 
             {/* Full Name Field */}
             <div>
-              <label htmlFor="fullName" className="block text-sm-token font-medium text-text-secondary-dark mb-2">
+              <label
+                htmlFor="fullName"
+                className={`block text-sm-token font-medium mb-2 ${
+                  isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                }`}
+              >
                 Full Name
               </label>
               <input
@@ -250,44 +300,71 @@ export function RegisterPage() {
                 id="fullName"
                 value={formData.fullName}
                 onChange={(e) => handleInputChange('fullName', e.target.value)}
-                className={`w-full px-4 py-2.5 bg-bg-surface-dark text-text-primary-dark 
-                  border ${errors.fullName ? 'border-text-danger-dark' : 'border-border-base-dark'} 
-                  rounded-lg-token 
-                  placeholder-text-secondary-dark
-                  focus:outline-none focus:ring-2 focus:ring-brand-primary-dark focus:border-transparent
-                  transition-colors`}
+                className={inputClass(!!errors.fullName)}
                 placeholder="John Doe"
                 disabled={isLoading}
               />
               {errors.fullName && (
-                <p className="mt-1.5 text-sm-token text-text-danger-dark">{errors.fullName}</p>
+                <p
+                  className={`mt-1.5 text-sm-token ${
+                    isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'
+                  }`}
+                >
+                  {errors.fullName}
+                </p>
               )}
             </div>
 
             {/* Role Selection Field */}
             <div>
-              <label htmlFor="role" className="block text-sm-token font-medium text-text-secondary-dark mb-2">
+              <label
+                htmlFor="role"
+                className={`block text-sm-token font-medium mb-2 ${
+                  isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                }`}
+              >
                 I am registering as
               </label>
               <select
                 id="role"
                 value={formData.role}
                 onChange={(e) => handleInputChange('role', e.target.value)}
-                className={`w-full px-4 py-2.5 bg-bg-surface-dark text-text-primary-dark 
-                  border ${errors.role ? 'border-text-danger-dark' : 'border-border-base-dark'} 
-                  rounded-lg-token 
-                  focus:outline-none focus:ring-2 focus:ring-brand-primary-dark focus:border-transparent
-                  transition-colors
-                  cursor-pointer`}
+                className={`${inputClass(!!errors.role)} cursor-pointer`}
                 disabled={isLoading}
               >
-                <option value="default" className="bg-bg-surface-dark">Select your role</option>
-                <option value="organizer" className="bg-bg-surface-dark">Event Organizer</option>
-                <option value="exhibitor" className="bg-bg-surface-dark">Exhibitor</option>
-                <option value="attendee" className="bg-bg-surface-dark">Attendee</option>
+                <option
+                  value="default"
+                  className={isDarkMode ? 'bg-bg-surface-dark' : 'bg-bg-surface-light'}
+                >
+                  Select your role
+                </option>
+                <option
+                  value="organizer"
+                  className={isDarkMode ? 'bg-bg-surface-dark' : 'bg-bg-surface-light'}
+                >
+                  Event Organizer
+                </option>
+                <option
+                  value="exhibitor"
+                  className={isDarkMode ? 'bg-bg-surface-dark' : 'bg-bg-surface-light'}
+                >
+                  Exhibitor
+                </option>
+                <option
+                  value="attendee"
+                  className={isDarkMode ? 'bg-bg-surface-dark' : 'bg-bg-surface-light'}
+                >
+                  Attendee
+                </option>
               </select>
               {errors.role && (
-                <p className="mt-1.5 text-sm-token text-text-danger-dark">{errors.role}</p>
+                <p
+                  className={`mt-1.5 text-sm-token ${
+                    isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'
+                  }`}
+                >
+                  {errors.role}
+                </p>
               )}
             </div>
 
@@ -295,16 +372,19 @@ export function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="
-                w-full px-4 py-3 
-                bg-brand-primary-dark hover:bg-brand-secondary-dark 
-                text-text-on-primary-dark font-medium 
-                rounded-lg-token 
-                focus:outline-none focus:ring-2 focus:ring-brand-primary-dark focus:ring-offset-2 focus:ring-offset-bg-base-dark
+              className={`
+                w-full px-4 py-3
+                font-medium rounded-lg-token
+                focus:outline-none focus:ring-2 focus:ring-offset-2
                 transition-colors
                 disabled:opacity-50 disabled:cursor-not-allowed
                 flex items-center justify-center
-              "
+                text-text-on-primary-dark
+                ${isDarkMode
+                  ? 'bg-brand-primary-dark hover:bg-brand-secondary-dark focus:ring-brand-primary-dark focus:ring-offset-bg-base-dark'
+                  : 'bg-brand-primary-light hover:bg-brand-secondary-light focus:ring-brand-primary-light focus:ring-offset-bg-base-light'
+                }
+              `}
             >
               {isLoading ? (
                 <>
@@ -338,11 +418,17 @@ export function RegisterPage() {
 
           {/* Footer */}
           <div className="mt-6 text-center">
-            <p className="text-text-secondary-dark">
+            <p
+              className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}
+            >
               Already have an account?{' '}
               <button
                 onClick={() => navigate('/login')}
-                className="text-brand-primary-dark hover:text-brand-secondary-dark font-medium transition-colors"
+                className={`font-medium transition-colors ${
+                  isDarkMode
+                    ? 'text-brand-primary-dark hover:text-brand-secondary-dark'
+                    : 'text-brand-primary-light hover:text-brand-secondary-light'
+                }`}
                 disabled={isLoading}
               >
                 Sign in
