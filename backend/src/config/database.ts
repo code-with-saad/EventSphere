@@ -105,6 +105,21 @@ export async function closeDatabase(): Promise<void> {
 }
 
 /**
+ * Inject an existing Db + MongoClient into the module-level variables.
+ *
+ * FOR TESTING ONLY — allows integration tests to swap in a test database
+ * connection so that application code calling getDatabase() uses the test Db
+ * without going through the full connectDatabase() flow (which calls
+ * process.exit on failure and listens on a port).
+ *
+ * @internal
+ */
+export function __setDb(testDb: Db, testClient: MongoClient): void {
+  db = testDb;
+  client = testClient;
+}
+
+/**
  * Check if database is connected
  * 
  * @returns true if connected, false otherwise
