@@ -77,6 +77,28 @@ export function verifyToken(token: string): DecodedToken {
 }
 
 /**
+ * Reset token payload interface
+ */
+export interface ResetTokenPayload {
+  userId: string;
+  purpose: 'password_reset';
+}
+
+/**
+ * Generate a short-lived reset token with 10-minute expiry
+ * Used exclusively in the forgot-password flow after OTP verification.
+ * @param payload - Token payload containing userId and purpose
+ * @returns Signed JWT token string
+ */
+export function generateResetToken(payload: ResetTokenPayload): string {
+  return jwt.sign(
+    payload,
+    env.JWT_SECRET,
+    { expiresIn: '10m' } // 10 minutes
+  );
+}
+
+/**
  * Decode a JWT token without verifying its signature
  * Useful for extracting information without validation
  * @param token - JWT token string to decode

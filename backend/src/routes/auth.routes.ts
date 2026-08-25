@@ -7,8 +7,8 @@ import { hashPassword, validatePassword, comparePassword } from '../utils/passwo
 import { createOTPService } from '../services/otp.service';
 import { createEmailService } from '../services/email.service';
 import { getDatabase } from '../config/database';
-import { generateAccessToken, generateRefreshToken, verifyToken } from '../services/token.service';
-import { createRefreshToken, findRefreshTokenByHash, invalidateRefreshToken } from '../models/RefreshToken.model';
+import { generateAccessToken, generateRefreshToken, generateResetToken, verifyToken } from '../services/token.service';
+import { createRefreshToken, findRefreshTokenByHash, invalidateRefreshToken, invalidateAllUserRefreshTokens } from '../models/RefreshToken.model';
 import { authenticate, AuthRequest } from '../middleware/auth.middleware';
 
 const router = Router();
@@ -763,12 +763,18 @@ router.get('/me', authenticate, asyncHandler(async (req: AuthRequest, res: Respo
 
 /**
  * POST /api/auth/forgot-password/request
- * Request password reset via email
- * Requirements: 12.1-12.7
+ *
+ * Step 1 of the forgot-password flow: request a password-reset OTP.
+ *
+ * Security: always returns the same success response regardless of whether the
+ * email exists in the database, to prevent email enumeration attacks.
+ *
+ * Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6, 12.7
  */
 router.post('/forgot-password/request', asyncHandler(async (req: Request, res: Response) => {
   const { email } = req.body;
 
+  // Requirement 12.2: validate email is present
   if (!email) {
     return res.status(400).json({
       success: false,
@@ -776,18 +782,34 @@ router.post('/forgot-password/request', asyncHandler(async (req: Request, res: R
     });
   }
 
+  // Requirement 12.3: validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid email format'
+    });
+  }
+
+  // The response is always the same to prevent email enumeration (Requirement 12.6)
+  const successResponse = {
+    success: true,
+    message: 'If an account exists with this email, a password reset OTP has been sent.',
+    data: {
+      otpExpiresIn: 300 // 5 minutes in seconds
+    }
+  };
+
   try {
+    // Requirement 12.4: silently look up user — never reveal whether the email exists
     const user = await UserModel.findByEmail(email);
-    
-    const successResponse = {
-      success: true,
-      message: 'If an account exists, a password reset OTP has been sent to your email'
-    };
 
     if (!user) {
+      // Return success without sending any email (Requirement 12.6)
       return res.status(200).json(successResponse);
     }
 
+    // Requirement 12.5: user exists — generate OTP, store hash, send email
     const db = getDatabase();
     const otpService = createOTPService(db);
     const emailService = createEmailService();
@@ -798,11 +820,10 @@ router.post('/forgot-password/request', asyncHandler(async (req: Request, res: R
     return res.status(200).json(successResponse);
 
   } catch (error: any) {
+    // Log the real error internally, but still return the generic success response
+    // so callers cannot infer whether the email exists or whether the send failed.
     console.error('Password reset request error:', error);
-    return res.status(200).json({
-      success: true,
-      message: 'If an account exists, a password reset OTP has been sent to your email'
-    });
+    return res.status(200).json(successResponse);
   }
 }));
 
@@ -843,14 +864,14 @@ router.post('/forgot-password/verify-otp', asyncHandler(async (req: Request, res
       });
     }
 
-    const resetToken = generateAccessToken({
+    const resetToken = generateResetToken({
       userId: user._id.toString(),
       purpose: 'password_reset'
     });
 
     return res.status(200).json({
       success: true,
-      message: 'OTP verified successfully',
+      message: 'OTP verified. You can now reset your password.',
       data: {
         resetToken,
         expiresIn: 600
@@ -909,23 +930,21 @@ router.post('/forgot-password/reset', asyncHandler(async (req: Request, res: Res
     const user = await UserModel.findById(decoded.userId);
     
     if (!user) {
-      return res.status(404).json({
+      return res.status(401).json({
         success: false,
-        message: 'User not found'
+        message: 'Invalid or expired reset token'
       });
     }
 
     const newPasswordHash = await hashPassword(newPassword);
 
+    // Update password hash in database (Requirement 14.5)
     await UserModel.updateById(user._id, {
       passwordHash: newPasswordHash
     });
 
-    const db = getDatabase();
-    await db.collection('refresh_tokens').updateMany(
-      { userId: new ObjectId(user._id) },
-      { $set: { isValid: false } }
-    );
+    // Invalidate ALL refresh tokens for this user to force re-login on all devices (Requirement 14.6)
+    await invalidateAllUserRefreshTokens(new ObjectId(user._id));
 
     return res.status(200).json({
       success: true,
