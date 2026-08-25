@@ -11,7 +11,7 @@
  * - 9.7: Invalidate old Refresh_Token when new tokens issued
  */
 
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
 import { MongoClient } from 'mongodb';
 import app from '../server';

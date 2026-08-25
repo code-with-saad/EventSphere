@@ -144,6 +144,31 @@ describe('OTPService', () => {
       );
     });
 
+    it('should set expiresAt to 5 minutes from creation', async () => {
+      const email = 'test@example.com';
+      const purpose = 'registration';
+
+      mockOTPModel.findByEmailAndPurpose.mockResolvedValue(null);
+
+      let capturedExpiresAt: Date | undefined;
+      mockOTPModel.create.mockImplementation(async (record: { expiresAt: Date }) => {
+        capturedExpiresAt = record.expiresAt;
+        return {};
+      });
+
+      const before = Date.now();
+      await otpService.createOTPRecord(email, purpose);
+      const after = Date.now();
+
+      expect(capturedExpiresAt).toBeDefined();
+      const expiresAtMs = capturedExpiresAt!.getTime();
+      const fiveMinutes = 5 * 60 * 1000;
+
+      // expiresAt should be ~5 minutes ahead of the call time
+      expect(expiresAtMs).toBeGreaterThanOrEqual(before + fiveMinutes - 100);
+      expect(expiresAtMs).toBeLessThanOrEqual(after + fiveMinutes + 100);
+    });
+
     it('should update existing OTP record when one exists', async () => {
       const email = 'test@example.com';
       const purpose = 'registration';

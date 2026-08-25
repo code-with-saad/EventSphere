@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
+import jwt from 'jsonwebtoken';
+import env from '../config/env';
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -157,6 +159,27 @@ describe('Token Service', () => {
       expect(decoded.exp).toBeDefined(); // expiry
       expect(typeof decoded.iat).toBe('number');
       expect(typeof decoded.exp).toBe('number');
+    });
+
+    it('should throw error for an expired token', () => {
+      // Sign a token that expired 1 second ago using the same secret
+      const expiredToken = jwt.sign(
+        { userId: mockAccessPayload.userId, email: mockAccessPayload.email, role: mockAccessPayload.role },
+        env.JWT_SECRET,
+        { expiresIn: -1 } // already expired
+      );
+
+      expect(() => verifyToken(expiredToken)).toThrow('Token expired');
+    });
+
+    it('should throw error for a token signed with a different secret', () => {
+      const wrongSecretToken = jwt.sign(
+        { userId: mockAccessPayload.userId },
+        'completely-different-secret-that-is-long-enough-32chars',
+        { expiresIn: '15m' }
+      );
+
+      expect(() => verifyToken(wrongSecretToken)).toThrow('Invalid token');
     });
   });
 
