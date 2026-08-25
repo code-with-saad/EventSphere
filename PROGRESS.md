@@ -1175,3 +1175,39 @@ Rationale: pure memory storage breaks sessions on every page reload, which is a
 critical UX regression. Storing only the refresh token (not the access token) in
 `localStorage` preserves the security intent while making sessions behave as users expect.
 
+
+
+---
+
+## Dev Tools
+
+### DEV OTP BYPASS
+
+**Added:** 2026-08-25  
+**Status:** Active in development — MUST be removed or set to alse before production deployment.
+
+#### What it does
+When DEV_OTP_BYPASS=true is set in ackend/.env and NODE_ENV is **not** production, the backend will print the plaintext OTP to the console immediately after generating it:
+
+`
+[DEV OTP BYPASS] OTP for user@email.com: 123456
+`
+
+The real Resend email is **still sent** as normal — the bypass is purely additive. This lets you test the OTP flow using non-primary email addresses where Resend may not deliver, by reading the code straight from the backend terminal.
+
+#### Hard safeguards
+- NODE_ENV === 'production' **always** disables the bypass, regardless of DEV_OTP_BYPASS value.
+- If DEV_OTP_BYPASS=true is detected in production, a console warning is logged and the value is ignored:
+  `
+  [DEV OTP BYPASS] WARNING: DEV_OTP_BYPASS=true is set in a production environment. This flag has been ignored.
+  `
+
+#### Files changed
+- ackend/src/services/otp.service.ts — logDevOTPBypass() helper added; called in both createOTPRecord branches (new OTP and resend OTP) after generation, before hashing and email send.
+- ackend/.env — DEV_OTP_BYPASS=true added under "Development OTP Bypass" comment block.
+- ackend/.env.example — DEV_OTP_BYPASS=false added with full documentation comment.
+
+#### Pre-production checklist
+- [ ] Set DEV_OTP_BYPASS=false or remove the variable from production .env
+- [ ] Confirm NODE_ENV=production is set in the production environment
+- [ ] Optionally remove the logDevOTPBypass function from otp.service.ts entirely for a clean production build

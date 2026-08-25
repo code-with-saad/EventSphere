@@ -1,28 +1,23 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { LayoutDashboard, CheckCircle, Users, BarChart3, Store, Ticket } from 'lucide-react';
 
 interface NavLink {
   label: string;
   path: string;
-  icon: string;
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 const NAV_LINKS: Record<string, NavLink[]> = {
   superadmin: [
-    { label: 'Dashboard', path: '/dashboard/superadmin', icon: '⚡' },
-    { label: 'Approvals', path: '/admin/approvals', icon: '✅' },
-    { label: 'Organizers', path: '/admin/organizers', icon: '👥' },
+    { label: 'Dashboard',  path: '/dashboard/superadmin', icon: LayoutDashboard },
+    { label: 'Approvals',  path: '/admin/approvals',      icon: CheckCircle },
+    { label: 'Organizers', path: '/admin/organizers',     icon: Users },
   ],
-  organizer: [
-    { label: 'Dashboard', path: '/dashboard/organizer', icon: '📊' },
-  ],
-  exhibitor: [
-    { label: 'Dashboard', path: '/dashboard/exhibitor', icon: '🏪' },
-  ],
-  attendee: [
-    { label: 'Dashboard', path: '/dashboard/attendee', icon: '🎫' },
-  ],
+  organizer: [{ label: 'Dashboard', path: '/dashboard/organizer', icon: BarChart3 }],
+  exhibitor:  [{ label: 'Dashboard', path: '/dashboard/exhibitor', icon: Store }],
+  attendee:   [{ label: 'Dashboard', path: '/dashboard/attendee',  icon: Ticket }],
 };
 
 export function BottomNav() {
@@ -74,19 +69,7 @@ export function BottomNav() {
             aria-current={active ? 'page' : undefined}
             aria-label={link.label}
           >
-            <span
-              className={[
-                'text-base-token leading-none',
-                active
-                  ? isDarkMode
-                    ? 'text-brand-primary-dark'
-                    : 'text-brand-primary-light'
-                  : '',
-              ].join(' ')}
-              aria-hidden="true"
-            >
-              {link.icon}
-            </span>
+            <link.icon className="w-5 h-5 shrink-0" aria-hidden="true" />
             <span className="truncate max-w-full">{link.label}</span>
           </button>
         );

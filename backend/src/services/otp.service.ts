@@ -22,6 +22,34 @@ const MAX_RESEND_ATTEMPTS = 3;
  * OTP Service Class
  * Handles OTP generation, verification, and management
  */
+
+/**
+ * DEV OTP BYPASS — development-only console logger.
+ *
+ * Rules:
+ *  - Only activates when DEV_OTP_BYPASS=true AND NODE_ENV !== 'production'
+ *  - If NODE_ENV === 'production', logs a warning and does nothing, regardless
+ *    of DEV_OTP_BYPASS value.
+ *  - Does NOT modify OTP generation, storage, or email sending logic.
+ *  - MUST be removed or disabled before real production deployment.
+ */
+function logDevOTPBypass(email: string, otp: string): void {
+  if (process.env.NODE_ENV === 'production') {
+    // Hard safeguard: never expose OTPs in production, even if the flag is set.
+    if (process.env.DEV_OTP_BYPASS === 'true') {
+      console.warn(
+        '[DEV OTP BYPASS] WARNING: DEV_OTP_BYPASS=true is set in a production ' +
+        'environment. This flag has been ignored. Remove it before deploying.'
+      );
+    }
+    return;
+  }
+
+  if (process.env.DEV_OTP_BYPASS === 'true') {
+    console.log(`[DEV OTP BYPASS] OTP for ${email}: ${otp}`);
+  }
+}
+
 export class OTPService {
   private otpModel: OTPModel;
 
@@ -90,6 +118,7 @@ export class OTPService {
 
       // Generate new OTP
       const newOTP = this.generateOTP();
+      logDevOTPBypass(email, newOTP); // DEV BYPASS
       const otpHash = await this.hashOTP(newOTP);
       const expiresAt = new Date(Date.now() + OTP_EXPIRY_MS);
       const newResendCount = existingOTP.resendCount + 1;
@@ -111,6 +140,7 @@ export class OTPService {
     } else {
       // Create new OTP record
       const otp = this.generateOTP();
+      logDevOTPBypass(email, otp); // DEV BYPASS
       const otpHash = await this.hashOTP(otp);
       const expiresAt = new Date(Date.now() + OTP_EXPIRY_MS);
 

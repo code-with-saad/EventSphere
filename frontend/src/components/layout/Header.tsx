@@ -1,3 +1,4 @@
+import { Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -15,17 +16,15 @@ export function Header({ title }: HeaderProps) {
   return (
     <header
       className={[
-        // position & layout
         'sticky top-0 z-40 flex items-center justify-between',
         'px-md-token md:px-lg-token py-sm-token md:py-md-token',
-        // glass effect
+        'glass-surface',
         isDarkMode
           ? 'bg-glass-dark border-glass-border-dark text-text-primary-dark'
           : 'bg-glass-light border-glass-border-light text-text-primary-light',
         'border-b backdrop-blur-md',
       ].join(' ')}
     >
-      {/* Page title */}
       <h1
         className={[
           'text-lg-token font-semibold leading-tight-token truncate',
@@ -35,25 +34,27 @@ export function Header({ title }: HeaderProps) {
         {title}
       </h1>
 
-      {/* Right-side controls */}
       <div className="flex items-center gap-sm-token md:gap-md-token shrink-0 ml-md-token">
-        {/* Theme toggle — visible on desktop */}
+        {/* Theme toggle — desktop only */}
         <button
           onClick={toggleTheme}
           className={[
             'hidden md:flex items-center justify-center',
             'w-9 h-9 rounded-md-token',
-            'text-base-token transition-colors duration-150',
+            'transition-colors duration-150',
             isDarkMode
               ? 'text-text-secondary-dark hover:bg-bg-hover-dark hover:text-text-primary-dark'
               : 'text-text-secondary-light hover:bg-bg-hover-light hover:text-text-primary-light',
           ].join(' ')}
           aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
         >
-          {isDarkMode ? '☀️' : '🌙'}
+          {isDarkMode
+            ? <Sun  className="w-4 h-4" aria-hidden="true" />
+            : <Moon className="w-4 h-4" aria-hidden="true" />
+          }
         </button>
 
-        {/* User name / email badge */}
+        {/* User badge */}
         {displayName && (
           <div
             className={[

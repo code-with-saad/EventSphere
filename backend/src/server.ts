@@ -65,6 +65,9 @@ app.use(errorHandler);
  */
 async function startServer() {
   try {
+    // Confirm env variables are loaded (useful for diagnosing .env issues)
+    console.log('DEV_OTP_BYPASS env value:', process.env.DEV_OTP_BYPASS);
+
     // Connect to database first (will exit process if it fails)
     await connectDatabase();
 
