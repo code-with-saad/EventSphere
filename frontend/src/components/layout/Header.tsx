@@ -20,8 +20,8 @@ export function Header({ title }: HeaderProps) {
         'px-md-token md:px-lg-token py-sm-token md:py-md-token',
         // glass effect
         isDarkMode
-          ? 'bg-bg-surface-dark/80 border-border-base-dark text-text-primary-dark'
-          : 'bg-bg-surface-light/90 border-border-base-light text-text-primary-light',
+          ? 'bg-glass-dark border-glass-border-dark text-text-primary-dark'
+          : 'bg-glass-light border-glass-border-light text-text-primary-light',
         'border-b backdrop-blur-md',
       ].join(' ')}
     >

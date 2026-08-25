@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { BentoCard } from '../../../components/common';
 import { showSuccess } from '../../../utils/toast';
 import api from '../../../services/api';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 /**
  * RequestResetPage component - Request password reset via email
@@ -21,6 +22,8 @@ import api from '../../../services/api';
  */
 export function RequestResetPage() {
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
 
   // Form state
   const [email, setEmail] = useState('');
@@ -102,15 +105,15 @@ export function RequestResetPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-base-dark flex items-center justify-center px-4 py-8">
+    <div className={`min-h-screen flex items-center justify-center px-4 py-8 ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
       <div className="w-full max-w-md">
         <BentoCard>
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-text-primary-dark mb-2">
+            <h1 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
               Reset Your Password
             </h1>
-            <p className="text-text-secondary-dark">
+            <p className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>
               Enter your email address and we'll send you an OTP to reset your password
             </p>
           </div>
@@ -121,7 +124,7 @@ export function RequestResetPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm-token font-medium text-text-secondary-dark mb-2"
+                className={`block text-sm-token font-medium mb-2 ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}
               >
                 Email Address
               </label>
@@ -131,20 +134,24 @@ export function RequestResetPage() {
                 value={email}
                 onChange={(e) => handleInputChange(e.target.value)}
                 className={`
-                  w-full px-4 py-2.5 
-                  bg-bg-surface-dark 
-                  border ${error ? 'border-text-danger-dark' : 'border-border-base-dark'} 
-                  rounded-lg-token 
-                  text-text-primary-dark 
-                  placeholder-text-secondary-dark
-                  focus:outline-none focus:ring-2 focus:ring-brand-primary-dark focus:border-transparent
-                  transition-colors
+                  w-full px-4 py-3 rounded-lg-token border
+                  focus:outline-none focus:ring-2 focus:border-transparent transition-colors
+                  ${isDarkMode
+                    ? `bg-bg-surface-dark text-text-primary-dark placeholder-text-secondary-dark
+                       focus:ring-brand-primary-dark
+                       ${error ? 'border-text-danger-dark' : 'border-border-base-dark'}`
+                    : `bg-bg-surface-light text-text-primary-light placeholder-text-secondary-light
+                       focus:ring-brand-primary-light
+                       ${error ? 'border-text-danger-light' : 'border-border-base-light'}`
+                  }
                 `}
                 placeholder="you@example.com"
                 disabled={isLoading}
               />
               {error && (
-                <p className="mt-1.5 text-sm-token text-text-danger-dark">{error}</p>
+                <p className={`mt-1.5 text-sm-token ${isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'}`}>
+                  {error}
+                </p>
               )}
             </div>
 
@@ -153,14 +160,17 @@ export function RequestResetPage() {
               type="submit"
               disabled={isLoading}
               className={`
-                w-full px-4 py-3 
-                bg-brand-primary-dark hover:bg-brand-secondary-dark 
-                text-text-on-primary-dark font-medium 
-                rounded-lg-token 
-                focus:outline-none focus:ring-2 focus:ring-brand-primary-dark focus:ring-offset-2 focus:ring-offset-bg-base-dark
+                w-full px-4 py-3
+                font-medium rounded-lg-token
+                focus:outline-none focus:ring-2 focus:ring-offset-2
+                text-text-on-primary-dark
                 transition-colors
                 disabled:opacity-50 disabled:cursor-not-allowed
                 flex items-center justify-center
+                ${isDarkMode
+                  ? 'bg-brand-primary-dark hover:bg-brand-secondary-dark focus:ring-brand-primary-dark focus:ring-offset-bg-base-dark'
+                  : 'bg-brand-primary-light hover:bg-brand-secondary-light focus:ring-brand-primary-light focus:ring-offset-bg-base-light'
+                }
               `}
             >
               {isLoading ? (
@@ -195,21 +205,21 @@ export function RequestResetPage() {
 
           {/* Footer */}
           <div className="mt-6 text-center space-y-3">
-            <p className="text-text-secondary-dark text-sm-token">
+            <p className={`text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
               Remember your password?{' '}
               <button
                 onClick={() => navigate('/login')}
-                className="text-brand-primary-dark hover:text-brand-secondary-dark font-medium transition-colors"
+                className={`font-medium transition-colors ${isDarkMode ? 'text-brand-primary-dark hover:text-brand-secondary-dark' : 'text-brand-primary-light hover:text-brand-secondary-light'}`}
                 disabled={isLoading}
               >
                 Back to Login
               </button>
             </p>
-            <p className="text-text-secondary-dark text-sm-token">
+            <p className={`text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
               Don't have an account?{' '}
               <button
                 onClick={() => navigate('/register')}
-                className="text-brand-primary-dark hover:text-brand-secondary-dark font-medium transition-colors"
+                className={`font-medium transition-colors ${isDarkMode ? 'text-brand-primary-dark hover:text-brand-secondary-dark' : 'text-brand-primary-light hover:text-brand-secondary-light'}`}
                 disabled={isLoading}
               >
                 Create one

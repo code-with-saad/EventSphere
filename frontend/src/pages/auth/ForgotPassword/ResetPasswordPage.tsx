@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { BentoCard } from '../../../components/common';
 import { showSuccess, showError } from '../../../utils/toast';
 import api from '../../../services/api';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 /**
  * ResetPasswordPage component - Reset password with reset token
@@ -24,6 +25,8 @@ import api from '../../../services/api';
 export function ResetPasswordPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
 
   // Extract reset token from navigation state or localStorage
   const navigationToken = location.state?.resetToken as string | undefined;
@@ -162,15 +165,15 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-base-dark flex items-center justify-center px-4 py-8">
+    <div className={`min-h-screen flex items-center justify-center px-4 py-8 ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
       <div className="w-full max-w-md">
         <BentoCard>
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-text-primary-dark mb-2">
+            <h1 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
               Create New Password
             </h1>
-            <p className="text-text-secondary-dark">
+            <p className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>
               Enter your new password to reset your account
             </p>
           </div>
@@ -181,7 +184,7 @@ export function ResetPasswordPage() {
             <div>
               <label
                 htmlFor="newPassword"
-                className="block text-sm-token font-medium text-text-secondary-dark mb-2"
+                className={`block text-sm-token font-medium mb-2 ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}
               >
                 New Password
               </label>
@@ -192,15 +195,17 @@ export function ResetPasswordPage() {
                   value={formData.newPassword}
                   onChange={(e) => handleInputChange('newPassword', e.target.value)}
                   className={`
-                    w-full px-4 py-2.5 
-                    bg-bg-surface-dark 
-                    border ${errors.newPassword ? 'border-text-danger-dark' : 'border-border-base-dark'} 
-                    rounded-lg-token 
-                    text-text-primary-dark 
-                    placeholder-text-secondary-dark
-                    focus:outline-none focus:ring-2 focus:ring-brand-primary-dark focus:border-transparent
-                    transition-colors
+                    w-full px-4 py-3 rounded-lg-token border
+                    focus:outline-none focus:ring-2 focus:border-transparent transition-colors
                     pr-12
+                    ${isDarkMode
+                      ? `bg-bg-surface-dark text-text-primary-dark placeholder-text-secondary-dark
+                         focus:ring-brand-primary-dark
+                         ${errors.newPassword ? 'border-text-danger-dark' : 'border-border-base-dark'}`
+                      : `bg-bg-surface-light text-text-primary-light placeholder-text-secondary-light
+                         focus:ring-brand-primary-light
+                         ${errors.newPassword ? 'border-text-danger-light' : 'border-border-base-light'}`
+                    }
                   `}
                   placeholder="Enter new password"
                   disabled={isLoading}
@@ -213,7 +218,7 @@ export function ResetPasswordPage() {
                       newPassword: !prev.newPassword,
                     }))
                   }
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary-dark hover:text-text-primary-dark transition-colors"
+                  className={`absolute right-3 top-1/2 transform -translate-y-1/2 transition-colors ${isDarkMode ? 'text-text-secondary-dark hover:text-text-primary-dark' : 'text-text-secondary-light hover:text-text-primary-light'}`}
                   disabled={isLoading}
                   aria-label={showPasswords.newPassword ? 'Hide password' : 'Show password'}
                 >
@@ -230,11 +235,11 @@ export function ResetPasswordPage() {
                 </button>
               </div>
               {errors.newPassword && (
-                <p className="mt-1.5 text-sm-token text-text-danger-dark">
+                <p className={`mt-1.5 text-sm-token ${isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'}`}>
                   {errors.newPassword}
                 </p>
               )}
-              <p className="mt-1.5 text-xs-token text-text-secondary-dark">
+              <p className={`mt-1.5 text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
                 Minimum 8 characters required
               </p>
             </div>
@@ -243,7 +248,7 @@ export function ResetPasswordPage() {
             <div>
               <label
                 htmlFor="confirmPassword"
-                className="block text-sm-token font-medium text-text-secondary-dark mb-2"
+                className={`block text-sm-token font-medium mb-2 ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}
               >
                 Confirm Password
               </label>
@@ -254,15 +259,17 @@ export function ResetPasswordPage() {
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                   className={`
-                    w-full px-4 py-2.5 
-                    bg-bg-surface-dark 
-                    border ${errors.confirmPassword ? 'border-text-danger-dark' : 'border-border-base-dark'} 
-                    rounded-lg-token 
-                    text-text-primary-dark 
-                    placeholder-text-secondary-dark
-                    focus:outline-none focus:ring-2 focus:ring-brand-primary-dark focus:border-transparent
-                    transition-colors
+                    w-full px-4 py-3 rounded-lg-token border
+                    focus:outline-none focus:ring-2 focus:border-transparent transition-colors
                     pr-12
+                    ${isDarkMode
+                      ? `bg-bg-surface-dark text-text-primary-dark placeholder-text-secondary-dark
+                         focus:ring-brand-primary-dark
+                         ${errors.confirmPassword ? 'border-text-danger-dark' : 'border-border-base-dark'}`
+                      : `bg-bg-surface-light text-text-primary-light placeholder-text-secondary-light
+                         focus:ring-brand-primary-light
+                         ${errors.confirmPassword ? 'border-text-danger-light' : 'border-border-base-light'}`
+                    }
                   `}
                   placeholder="Confirm your password"
                   disabled={isLoading}
@@ -275,7 +282,7 @@ export function ResetPasswordPage() {
                       confirmPassword: !prev.confirmPassword,
                     }))
                   }
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary-dark hover:text-text-primary-dark transition-colors"
+                  className={`absolute right-3 top-1/2 transform -translate-y-1/2 transition-colors ${isDarkMode ? 'text-text-secondary-dark hover:text-text-primary-dark' : 'text-text-secondary-light hover:text-text-primary-light'}`}
                   disabled={isLoading}
                   aria-label={showPasswords.confirmPassword ? 'Hide password' : 'Show password'}
                 >
@@ -292,7 +299,7 @@ export function ResetPasswordPage() {
                 </button>
               </div>
               {errors.confirmPassword && (
-                <p className="mt-1.5 text-sm-token text-text-danger-dark">
+                <p className={`mt-1.5 text-sm-token ${isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'}`}>
                   {errors.confirmPassword}
                 </p>
               )}
@@ -303,14 +310,17 @@ export function ResetPasswordPage() {
               type="submit"
               disabled={isLoading}
               className={`
-                w-full px-4 py-3 
-                bg-brand-primary-dark hover:bg-brand-secondary-dark 
-                text-text-on-primary-dark font-medium 
-                rounded-lg-token 
-                focus:outline-none focus:ring-2 focus:ring-brand-primary-dark focus:ring-offset-2 focus:ring-offset-bg-base-dark
+                w-full px-4 py-3
+                font-medium rounded-lg-token
+                focus:outline-none focus:ring-2 focus:ring-offset-2
+                text-text-on-primary-dark
                 transition-colors
                 disabled:opacity-50 disabled:cursor-not-allowed
                 flex items-center justify-center
+                ${isDarkMode
+                  ? 'bg-brand-primary-dark hover:bg-brand-secondary-dark focus:ring-brand-primary-dark focus:ring-offset-bg-base-dark'
+                  : 'bg-brand-primary-light hover:bg-brand-secondary-light focus:ring-brand-primary-light focus:ring-offset-bg-base-light'
+                }
               `}
             >
               {isLoading ? (
@@ -347,7 +357,7 @@ export function ResetPasswordPage() {
           <div className="mt-6 text-center">
             <button
               onClick={() => navigate('/login')}
-              className="text-text-secondary-dark hover:text-text-primary-dark text-sm-token transition-colors"
+              className={`text-sm-token transition-colors ${isDarkMode ? 'text-text-secondary-dark hover:text-text-primary-dark' : 'text-text-secondary-light hover:text-text-primary-light'}`}
               disabled={isLoading}
             >
               Back to Login

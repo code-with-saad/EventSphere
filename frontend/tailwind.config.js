@@ -55,6 +55,12 @@ export default {
         'brand-primary-light': '#4F46E5',
         'brand-primary-glow-light': 'rgba(79, 70, 229, 0.2)',
         'brand-secondary-light': '#0891B2',
+
+        // Glass effect tokens — semi-transparent rgba so backdrop-blur is visible
+        'glass-dark': 'rgba(15, 23, 42, 0.65)',
+        'glass-light': 'rgba(248, 250, 252, 0.72)',
+        'glass-border-dark': 'rgba(51, 65, 85, 0.6)',
+        'glass-border-light': 'rgba(226, 232, 240, 0.5)',
       },
       fontFamily: {
         'sans': ['Inter', 'sans-serif'],

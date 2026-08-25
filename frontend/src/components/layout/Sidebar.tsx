@@ -53,8 +53,8 @@ export function Sidebar({ pageTitle: _pageTitle }: SidebarProps) {
         'hidden md:flex flex-col fixed inset-y-0 left-0 w-64 z-30',
         // glass effect
         isDarkMode
-          ? 'bg-bg-surface-dark/80 border-border-base-dark'
-          : 'bg-bg-surface-light/90 border-border-base-light',
+          ? 'bg-glass-dark border-glass-border-dark'
+          : 'bg-glass-light border-glass-border-light',
         'border-r backdrop-blur-md',
       ].join(' ')}
     >

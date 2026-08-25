@@ -46,8 +46,8 @@ export function BottomNav() {
         'flex items-stretch',
         // glass effect
         isDarkMode
-          ? 'bg-bg-surface-dark/80 border-border-base-dark'
-          : 'bg-bg-surface-light/90 border-border-base-light',
+          ? 'bg-glass-dark border-glass-border-dark'
+          : 'bg-glass-light border-glass-border-light',
         'border-t backdrop-blur-md',
       ].join(' ')}
       aria-label="Mobile navigation"

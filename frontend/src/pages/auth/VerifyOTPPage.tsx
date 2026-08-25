@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { BentoCard } from '../../components/common';
 import { showSuccess, showError } from '../../utils/toast';
 import api from '../../services/api';
+import { useTheme } from '../../contexts/ThemeContext';
 
 /**
  * VerifyOTPPage component - OTP verification for Exhibitor/Attendee registration
@@ -23,7 +24,9 @@ import api from '../../services/api';
 export function VerifyOTPPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
+
   // Extract email from navigation state (passed from RegisterPage)
   const email = location.state?.email as string | undefined;
 
@@ -196,29 +199,38 @@ export function VerifyOTPPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-base-dark flex items-center justify-center px-4 py-8">
+    <div className={`min-h-screen flex items-center justify-center px-4 py-8 ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
       <div className="w-full max-w-md">
         <BentoCard>
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-text-primary-dark mb-2">Verify Your Email</h1>
-            <p className="text-text-secondary-dark">
-              We've sent a 6-digit OTP to <span className="text-brand-primary-dark font-medium">{email}</span>
+            <h1 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+              Verify Your Email
+            </h1>
+            <p className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>
+              We've sent a 6-digit OTP to{' '}
+              <span className={`font-medium ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`}>
+                {email}
+              </span>
             </p>
           </div>
 
           {/* Countdown Timer */}
-          <div className="mb-6 p-4 bg-bg-surface-dark border border-border-base-dark rounded-lg-token">
+          <div className={`mb-6 p-4 rounded-lg-token border ${isDarkMode ? 'bg-bg-surface-dark border-border-base-dark' : 'bg-bg-surface-light border-border-base-light'}`}>
             <div className="flex items-center justify-between">
-              <span className="text-text-secondary-dark text-sm-token">Time remaining:</span>
+              <span className={`text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                Time remaining:
+              </span>
               <span className={`text-lg-token font-mono font-bold ${
-                timeRemaining <= 60 ? 'text-text-danger-dark' : 'text-brand-primary-dark'
+                timeRemaining <= 60
+                  ? (isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light')
+                  : (isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light')
               }`}>
                 {formatTime(timeRemaining)}
               </span>
             </div>
             {timeRemaining <= 0 && (
-              <p className="text-text-danger-dark text-sm-token mt-2">
+              <p className={`text-sm-token mt-2 ${isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'}`}>
                 OTP expired. Please request a new one.
               </p>
             )}
@@ -228,7 +240,10 @@ export function VerifyOTPPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* OTP Input Field */}
             <div>
-              <label htmlFor="otp" className="block text-sm-token font-medium text-text-secondary-dark mb-2">
+              <label
+                htmlFor="otp"
+                className={`block text-sm-token font-medium mb-2 ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}
+              >
                 Enter 6-Digit OTP
               </label>
               <input
@@ -237,14 +252,16 @@ export function VerifyOTPPage() {
                 value={otp}
                 onChange={(e) => handleOtpChange(e.target.value)}
                 className={`
-                  w-full px-4 py-2.5 
-                  bg-bg-surface-dark 
-                  border ${error ? 'border-text-danger-dark' : 'border-border-base-dark'} 
-                  rounded-lg-token 
-                  text-text-primary-dark text-center text-2xl font-mono tracking-widest
-                  placeholder-text-secondary-dark
-                  focus:outline-none focus:ring-2 focus:ring-brand-primary-dark focus:border-transparent
-                  transition-colors
+                  w-full px-4 py-3 rounded-lg-token border text-center text-2xl font-mono tracking-widest
+                  focus:outline-none focus:ring-2 focus:border-transparent transition-colors
+                  ${isDarkMode
+                    ? `bg-bg-surface-dark text-text-primary-dark placeholder-text-secondary-dark
+                       focus:ring-brand-primary-dark
+                       ${error ? 'border-text-danger-dark' : 'border-border-base-dark'}`
+                    : `bg-bg-surface-light text-text-primary-light placeholder-text-secondary-light
+                       focus:ring-brand-primary-light
+                       ${error ? 'border-text-danger-light' : 'border-border-base-light'}`
+                  }
                 `}
                 placeholder="000000"
                 maxLength={6}
@@ -252,7 +269,9 @@ export function VerifyOTPPage() {
                 autoFocus
               />
               {error && (
-                <p className="mt-1.5 text-sm-token text-text-danger-dark">{error}</p>
+                <p className={`mt-1.5 text-sm-token ${isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'}`}>
+                  {error}
+                </p>
               )}
             </div>
 
@@ -261,14 +280,17 @@ export function VerifyOTPPage() {
               type="submit"
               disabled={isLoading || otp.length !== 6 || timeRemaining <= 0}
               className={`
-                w-full px-4 py-3 
-                bg-brand-primary-dark hover:bg-brand-secondary-dark 
-                text-text-on-primary-dark font-medium 
-                rounded-lg-token 
-                focus:outline-none focus:ring-2 focus:ring-brand-primary-dark focus:ring-offset-2 focus:ring-offset-bg-base-dark
+                w-full px-4 py-3
+                font-medium rounded-lg-token
+                focus:outline-none focus:ring-2 focus:ring-offset-2
+                text-text-on-primary-dark
                 transition-colors
                 disabled:opacity-50 disabled:cursor-not-allowed
                 flex items-center justify-center
+                ${isDarkMode
+                  ? 'bg-brand-primary-dark hover:bg-brand-secondary-dark focus:ring-brand-primary-dark focus:ring-offset-bg-base-dark'
+                  : 'bg-brand-primary-light hover:bg-brand-secondary-light focus:ring-brand-primary-light focus:ring-offset-bg-base-light'
+                }
               `}
             >
               {isLoading ? (
@@ -302,9 +324,9 @@ export function VerifyOTPPage() {
           </form>
 
           {/* Resend OTP Section */}
-          <div className="mt-6 pt-6 border-t border-border-base-dark">
+          <div className={`mt-6 pt-6 border-t ${isDarkMode ? 'border-border-base-dark' : 'border-border-base-light'}`}>
             <div className="text-center">
-              <p className="text-text-secondary-dark text-sm-token mb-3">
+              <p className={`text-sm-token mb-3 ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
                 Didn't receive the code?
               </p>
               <button
@@ -312,18 +334,20 @@ export function VerifyOTPPage() {
                 onClick={handleResendOtp}
                 disabled={isResending || resendCount >= 3}
                 className={`
-                  text-brand-primary-dark hover:text-brand-secondary-dark 
                   font-medium text-sm-token
                   transition-colors
                   disabled:opacity-50 disabled:cursor-not-allowed
+                  ${isDarkMode ? 'text-brand-primary-dark hover:text-brand-secondary-dark' : 'text-brand-primary-light hover:text-brand-secondary-light'}
                 `}
               >
                 {isResending ? 'Resending...' : 'Resend OTP'}
               </button>
               {resendCount > 0 && (
-                <p className="text-text-secondary-dark text-xs-token mt-2">
+                <p className={`text-xs-token mt-2 ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
                   {resendCount === 3 ? (
-                    <span className="text-text-danger-dark">Maximum attempts reached</span>
+                    <span className={isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'}>
+                      Maximum attempts reached
+                    </span>
                   ) : (
                     `${resendCount}/3 resend attempts used`
                   )}
@@ -336,7 +360,7 @@ export function VerifyOTPPage() {
           <div className="mt-6 text-center">
             <button
               onClick={() => navigate('/login')}
-              className="text-text-secondary-dark hover:text-text-primary-dark text-sm-token transition-colors"
+              className={`text-sm-token transition-colors ${isDarkMode ? 'text-text-secondary-dark hover:text-text-primary-dark' : 'text-text-secondary-light hover:text-text-primary-light'}`}
               disabled={isLoading}
             >
               Back to Login
