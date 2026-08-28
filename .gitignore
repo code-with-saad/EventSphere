@@ -42,8 +42,8 @@ pnpm-debug.log*
 .nuxt/
 .vercel/
 
-# design & architecture
+# design & architecture (managed by Kiro)
 .kiro/
-PROJECT_SPEC.md
-TASK_6_COMPLETION.md
-TASK_7_COMPLETION.md
+
+# Archive folder - not for committing
+/_archive/
