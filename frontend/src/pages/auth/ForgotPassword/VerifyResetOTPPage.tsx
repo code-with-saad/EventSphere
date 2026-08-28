@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { BentoCard } from '../../../components/common';
 import { showSuccess, showError } from '../../../utils/toast';
@@ -39,8 +39,14 @@ export function VerifyResetOTPPage() {
   // Loading state
   const [isLoading, setIsLoading] = useState(false);
 
-  // Resend state
-  const [resendCount, setResendCount] = useState(0);
+  // Resend state — persisted in localStorage so the rate-limit is visible across all tabs
+
+
+  const [resendCount, setResendCount] = useState<number>(() => {
+    if (!email) return 0;
+    const stored = localStorage.getItem(`otp_resend_count_${email}`);
+    return stored ? parseInt(stored, 10) : 0;
+  });
   const [isResending, setIsResending] = useState(false);
 
   // Countdown timer state (5 minutes = 300 seconds)
@@ -135,6 +141,11 @@ export function VerifyResetOTPPage() {
         return;
       }
 
+      // Clear the persisted resend count now that verification succeeded
+      if (email) {
+        localStorage.removeItem(`otp_resend_count_${email}`);
+      }
+
       // Store reset token in localStorage for use in next step
       localStorage.setItem('resetToken', resetToken);
 
@@ -174,8 +185,12 @@ export function VerifyResetOTPPage() {
       });
 
       // Update resend count
-      const newResendCount = response.data.data?.resendCount || resendCount + 1;
+      const newResendCount = response.data.data?.resendCount ?? resendCount + 1;
       setResendCount(newResendCount);
+      // Persist so the rate-limit is visible across all tabs
+      if (email) {
+        localStorage.setItem(`otp_resend_count_${email}`, String(newResendCount));
+      }
 
       // Reset countdown timer to 5 minutes
       setTimeRemaining(300);

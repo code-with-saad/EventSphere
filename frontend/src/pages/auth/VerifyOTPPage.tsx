@@ -39,8 +39,13 @@ export function VerifyOTPPage() {
   // Loading state
   const [isLoading, setIsLoading] = useState(false);
   
-  // Resend state
-  const [resendCount, setResendCount] = useState(0);
+  // Resend state — persisted in localStorage so the rate-limit is visible across all tabs
+
+  const [resendCount, setResendCount] = useState<number>(() => {
+    if (!email) return 0;
+    const stored = localStorage.getItem(`otp_resend_count_${email}`);
+    return stored ? parseInt(stored, 10) : 0;
+  });
   const [isResending, setIsResending] = useState(false);
   
   // Countdown timer state (5 minutes = 300 seconds)
@@ -132,6 +137,11 @@ export function VerifyOTPPage() {
         purpose: 'registration',
       });
 
+      // Clear the persisted resend count now that verification succeeded
+      if (email) {
+        localStorage.removeItem(`otp_resend_count_${email}`);
+      }
+
       // Success: show toast and redirect to login
       showSuccess('Email verified successfully. You can now log in.');
       
@@ -171,8 +181,12 @@ export function VerifyOTPPage() {
       });
 
       // Update resend count
-      const newResendCount = response.data.data?.resendCount || resendCount + 1;
+      const newResendCount = response.data.data?.resendCount ?? resendCount + 1;
       setResendCount(newResendCount);
+      // Persist so the rate-limit is visible across all tabs
+      if (email) {
+        localStorage.setItem(`otp_resend_count_${email}`, String(newResendCount));
+      }
 
       // Reset countdown timer to 5 minutes
       setTimeRemaining(300);

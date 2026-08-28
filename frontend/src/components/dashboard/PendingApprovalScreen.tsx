@@ -33,7 +33,7 @@ interface MeResponse {
 export default function PendingApprovalScreen() {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
-  const { logout, user } = useAuth();
+  const { logout, user, checkAuthStatus } = useAuth();
   const navigate = useNavigate();
 
   const [isChecking, setIsChecking] = useState(false);
@@ -46,6 +46,8 @@ export default function PendingApprovalScreen() {
       const response = await api.get<MeResponse>('/api/auth/me');
       const status = response.data.data.user.status;
       if (status === 'active') {
+        // Sync AuthContext so OrganizerDashboard reads status='active' immediately
+        await checkAuthStatus();
         navigate('/dashboard/organizer', { replace: true });
       }
     } catch {

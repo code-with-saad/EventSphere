@@ -35,7 +35,7 @@ export default function SuperAdminDashboard() {
           </h2>
 
           {/* Stats row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-md-token mb-lg-token">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-md-token mb-lg-token items-stretch">
             {STAT_CARDS.map((stat) => (
               <BentoCard key={stat.label}>
                 <p className={`text-sm-token font-medium mb-xs-token ${
@@ -49,7 +49,7 @@ export default function SuperAdminDashboard() {
           </div>
 
           {/* Action tiles */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-md-token">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-md-token items-stretch">
             <div
               onClick={() => navigate('/admin/approvals')}
               className="cursor-pointer"

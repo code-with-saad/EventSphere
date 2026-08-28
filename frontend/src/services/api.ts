@@ -127,18 +127,7 @@ api.interceptors.response.use(
       }
     }
 
-    // Handle other errors - show toast notification
-    const errorMessage = 
-      error.response?.data?.message || 
-      error.message || 
-      'An error occurred. Please try again.';
-
-    // Don't show toast for certain endpoints (e.g., silent checks)
-    // Only show toast for actual user-facing errors
-    if (error.response?.status && error.response.status >= 400) {
-      toast.error(errorMessage);
-    }
-
+    // Re-throw so individual components can handle errors and show toasts
     return Promise.reject(error);
   }
 );

@@ -1,4 +1,5 @@
-import { Sun, Moon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Sun, Moon, LogOut } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -7,11 +8,17 @@ interface HeaderProps {
 }
 
 export function Header({ title }: HeaderProps) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const isDarkMode = theme === 'dark';
 
   const displayName = user?.fullName ?? user?.email ?? '';
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <header
@@ -35,11 +42,11 @@ export function Header({ title }: HeaderProps) {
       </h1>
 
       <div className="flex items-center gap-sm-token md:gap-md-token shrink-0 ml-md-token">
-        {/* Theme toggle — desktop only */}
+        {/* Theme toggle — always visible (sidebar duplicate hidden on mobile) */}
         <button
           onClick={toggleTheme}
           className={[
-            'hidden md:flex items-center justify-center',
+            'flex items-center justify-center',
             'w-9 h-9 rounded-md-token',
             'transition-colors duration-150',
             isDarkMode
@@ -52,6 +59,22 @@ export function Header({ title }: HeaderProps) {
             ? <Sun  className="w-4 h-4" aria-hidden="true" />
             : <Moon className="w-4 h-4" aria-hidden="true" />
           }
+        </button>
+
+        {/* Logout button — mobile only (sidebar handles this on desktop) */}
+        <button
+          onClick={handleLogout}
+          className={[
+            'md:hidden flex items-center justify-center',
+            'w-9 h-9 rounded-md-token',
+            'transition-colors duration-150',
+            isDarkMode
+              ? 'text-text-danger-dark hover:bg-bg-danger-dark'
+              : 'text-text-danger-light hover:bg-bg-danger-light',
+          ].join(' ')}
+          aria-label="Log out"
+        >
+          <LogOut className="w-4 h-4" aria-hidden="true" />
         </button>
 
         {/* User badge */}
