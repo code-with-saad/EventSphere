@@ -1,10 +1,10 @@
-import { Router, Response } from 'express';
+﻿import { Router, Response } from 'express';
 import asyncHandler from '../utils/asyncHandler';
 import UserModel from '../models/User.model';
 import { authenticate, AuthRequest } from '../middleware/auth.middleware';
 import { authorize } from '../middleware/authorize.middleware';
 import { ObjectId } from 'mongodb';
-import { deleteAllUserRefreshTokensByUserId } from '../models/RefreshToken.model';
+import { invalidateAllUserRefreshTokens } from '../models/RefreshToken.model';
 
 const router = Router();
 
@@ -69,10 +69,8 @@ router.get(
 
     let organizers;
     if (status) {
-      // Use existing findByRoleAndStatus for filtered queries
       organizers = await UserModel.findByRoleAndStatus('organizer', status as any);
     } else {
-      // Use new findByRole for unfiltered queries
       organizers = await UserModel.findByRole('organizer');
     }
 
@@ -98,8 +96,11 @@ router.get(
 /**
  * DELETE /api/admin/organizers/:id/reject
  *
- * Rejects a pending Organizer by permanently deleting their account and all
- * associated refresh tokens from the database (hard-delete).
+ * Rejects a pending Organizer: sets status to 'rejected' (soft-delete) and
+ * invalidates all their refresh tokens so any active session is forced to
+ * re-authenticate. The user record is kept so it remains queryable by the
+ * SuperAdmin "all organizers" view and the rejected organizer can still log
+ * in and land on the RejectedScreen.
  *
  * Access: SuperAdmin only
  *
@@ -130,10 +131,12 @@ router.delete(
       });
     }
 
-    // Hard-delete: remove all refresh tokens first, then delete the account
-    // Requirements 11.5, 11.7: permanently remove the organizer from the database
-    await deleteAllUserRefreshTokensByUserId(new ObjectId(user._id));
-    await UserModel.deleteById(id);
+    // Soft-reject: update status to 'rejected', preserve the document
+    await UserModel.updateById(id, { status: 'rejected' });
+
+    // Invalidate all active refresh tokens so any open session is kicked out
+    // and the next /me poll will reflect the new status immediately.
+    await invalidateAllUserRefreshTokens(new ObjectId(user._id));
 
     return res.status(200).json({
       success: true,

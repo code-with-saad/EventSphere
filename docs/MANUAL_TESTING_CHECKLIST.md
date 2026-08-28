@@ -1,4 +1,4 @@
-# EventSphere — Manual Testing Checklist
+﻿# EventSphere â€” Manual Testing Checklist
 
 **Phase:** 0 (Project Foundation) & Phase 1 (Auth Foundation)  
 **Purpose:** Step-by-step manual verification of all features implemented in Phase 0 and Phase 1.  
@@ -10,13 +10,13 @@
 
 1. [Test Environment Setup](#test-environment-setup)
 2. [Test Accounts](#test-accounts)
-3. [42.1 — Responsive Layout Testing](#421--responsive-layout-testing)
-4. [42.2 — Theme Testing](#422--theme-testing)
-5. [42.3 — Toast Notification Testing](#423--toast-notification-testing)
-6. [42.4 — Loading and Error States](#424--loading-and-error-states)
-7. [42.5 — Authentication Flows](#425--authentication-flows)
-8. [42.6 — Route Guards and Authorization](#426--route-guards-and-authorization)
-9. [42.7 — Mobile Device Testing](#427--mobile-device-testing)
+3. [42.1 â€” Responsive Layout Testing](#421--responsive-layout-testing)
+4. [42.2 â€” Theme Testing](#422--theme-testing)
+5. [42.3 â€” Toast Notification Testing](#423--toast-notification-testing)
+6. [42.4 â€” Loading and Error States](#424--loading-and-error-states)
+7. [42.5 â€” Authentication Flows](#425--authentication-flows)
+8. [42.6 â€” Route Guards and Authorization](#426--route-guards-and-authorization)
+9. [42.7 â€” Mobile Device Testing](#427--mobile-device-testing)
 10. [Results Summary](#results-summary)
 
 ---
@@ -74,8 +74,8 @@ The SuperAdmin credentials come from `backend/.env`:
 |------|---------|
 | `backend/.env` | Backend secrets (MongoDB URI, JWT secret, Resend key, SuperAdmin credentials) |
 | `frontend/.env` | `VITE_API_BASE_URL=http://localhost:5000` |
-| `backend/.env.example` | Template — never contains real secrets |
-| `frontend/.env.example` | Template — never contains real secrets |
+| `backend/.env.example` | Template â€” never contains real secrets |
+| `frontend/.env.example` | Template â€” never contains real secrets |
 
 ---
 
@@ -90,11 +90,11 @@ Create the following accounts during testing. Use unique, real email addresses y
 | Exhibitor | `test-exhibitor@yourdomain.com` | `TestPass123` | Requires email OTP verification |
 | Attendee | `test-attendee@yourdomain.com` | `TestPass123` | Requires email OTP verification |
 
-> **Note:** All test passwords must be at least 8 characters. Use your own email addresses — OTPs are delivered via Resend to real inboxes.
+> **Note:** All test passwords must be at least 8 characters. Use your own email addresses â€” OTPs are delivered via Resend to real inboxes.
 
 ---
 
-## 42.1 — Responsive Layout Testing
+## 42.1 â€” Responsive Layout Testing
 
 **Requirements:** 22.1, 22.2, 22.3  
 **Goal:** Verify the application renders correctly and navigation adapts across mobile, tablet, and desktop viewport sizes.
@@ -105,8 +105,8 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.1-001 — Mobile: Sidebar hidden, BottomNav visible**  
-  **Viewport:** 375px × 812px (or use browser DevTools → iPhone 12)  
+- [ ] **TC-42.1-001 â€” Mobile: Sidebar hidden, BottomNav visible**  
+  **Viewport:** 375px Ã— 812px (or use browser DevTools â†’ iPhone 12)  
   **Steps:**  
   1. Open `http://localhost:5173` and log in as any active user.  
   2. Navigate to your role-specific dashboard.  
@@ -115,16 +115,16 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.1-002 — Mobile: Bottom navigation shows role-specific icons**  
-  **Viewport:** 375px × 812px  
+- [ ] **TC-42.1-002 â€” Mobile: Bottom navigation shows role-specific icons**  
+  **Viewport:** 375px Ã— 812px  
   **Steps:**  
   1. While on the mobile dashboard view from TC-42.1-001, inspect the bottom navigation bar.  
   **Expected Result:** The  to the current user's role. Icons are tappable and navigate to the correct page.
 
 ---
 
-- [ ] **TC-42.1-003 — Mobile: Full-width layout on 320px**  bottom nav contains 3–5 icon buttons relevant
-  **Viewport:** 320px × 568px  
+- [ ] **TC-42.1-003 â€” Mobile: Full-width layout on 320px**  bottom nav contains 3â€“5 icon buttons relevant
+  **Viewport:** 320px Ã— 568px  
   **Steps:**  
   1. Use DevTools to set viewport width to 320px (minimum supported width).  
   2. Navigate through the login page, register page, and dashboard.  
@@ -132,8 +132,8 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.1-004 — Tablet: Sidebar visible, BottomNav hidden**  
-  **Viewport:** 768px × 1024px  
+- [ ] **TC-42.1-004 â€” Tablet: Sidebar visible, BottomNav hidden**  
+  **Viewport:** 768px Ã— 1024px  
   **Steps:**  
   1. Use DevTools to set viewport to 768px width.  
   2. Log in and navigate to the dashboard.  
@@ -141,8 +141,8 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.1-005 — Tablet: Content area adapts at 768px–1024px**  
-  **Viewport:** 900px × 768px  
+- [ ] **TC-42.1-005 â€” Tablet: Content area adapts at 768pxâ€“1024px**  
+  **Viewport:** 900px Ã— 768px  
   **Steps:**  
   1. Set DevTools viewport to 900px.  
   2. Visit the dashboard and any other page with a BentoCard layout.  
@@ -150,8 +150,8 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.1-006 — Desktop: Full layout at 1280px**  
-  **Viewport:** 1280px × 800px  
+- [ ] **TC-42.1-006 â€” Desktop: Full layout at 1280px**  
+  **Viewport:** 1280px Ã— 800px  
   **Steps:**  
   1. Use a standard desktop browser window at 1280px wide.  
   2. Log in and visit the dashboard.  
@@ -159,8 +159,8 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.1-007 — Desktop: Full layout at 1920px**  
-  **Viewport:** 1920px × 1080px  
+- [ ] **TC-42.1-007 â€” Desktop: Full layout at 1920px**  
+  **Viewport:** 1920px Ã— 1080px  
   **Steps:**  
   1. Maximize the browser window on a 1080p monitor (or set DevTools to 1920px).  
   2. Navigate through login, dashboard, and admin pages.  
@@ -168,7 +168,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.1-008 — Responsive: Authentication pages adapt on mobile**  
+- [ ] **TC-42.1-008 â€” Responsive: Authentication pages adapt on mobile**  
   **Viewport:** 375px  
   **Steps:**  
   1. Navigate to `/login`, `/register`, `/forgot-password`, `/verify-otp`.  
@@ -177,14 +177,14 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-## 42.2 — Theme Testing
+## 42.2 â€” Theme Testing
 
 **Requirements:** 3.6, 3.7  
 **Goal:** Verify dark and light modes apply correct styles to all pages and that the preference persists after a browser refresh.
 
 ---
 
-- [ ] **TC-42.2-001 — Dark mode: Applied to all dashboard pages**  
+- [ ] **TC-42.2-001 â€” Dark mode: Applied to all dashboard pages**  
   **Steps:**  
   1. Log in as any active user.  
   2. If the theme toggle is visible in the sidebar or header, ensure **dark mode** is active.  
@@ -193,7 +193,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.2-002 — Light mode: Applied to all dashboard pages**  
+- [ ] **TC-42.2-002 â€” Light mode: Applied to all dashboard pages**  
   **Steps:**  
   1. While logged in, click the theme toggle button (in the sidebar or header).  
   2. The theme should switch to **light mode**.  
@@ -202,7 +202,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.2-003 — Theme persists after browser refresh**  
+- [ ] **TC-42.2-003 â€” Theme persists after browser refresh**  
   **Steps:**  
   1. Set the theme to **light mode** using the toggle.  
   2. Refresh the browser (`F5` or `Ctrl+R`).  
@@ -210,7 +210,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.2-004 — Theme persists after closing and reopening the tab**  
+- [ ] **TC-42.2-004 â€” Theme persists after closing and reopening the tab**  
   **Steps:**  
   1. Set the theme to **dark mode**.  
   2. Close the browser tab entirely.  
@@ -219,7 +219,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.2-005 — Theme applies to public pages (login, register)**  
+- [ ] **TC-42.2-005 â€” Theme applies to public pages (login, register)**  
   **Steps:**  
   1. Log out to reach the login page.  
   2. Check the applied theme on `/login` and `/register`.  
@@ -227,21 +227,21 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.2-006 — Theme toggle visible in the UI**  
+- [ ] **TC-42.2-006 â€” Theme toggle visible in the UI**  
   **Steps:**  
   1. Log in and view the dashboard.  
   **Expected Result:** A clearly identifiable theme toggle button (sun/moon icon or similar) is present in the sidebar (desktop) or equivalent location. Clicking it switches the theme.
 
 ---
 
-## 42.3 — Toast Notification Testing
+## 42.3 â€” Toast Notification Testing
 
 **Requirements:** 18.3, 18.4, 18.5  
 **Goal:** Verify toast notifications appear in the correct position, auto-dismiss after 5 seconds, support all four types, and can be manually closed.
 
 ---
 
-- [ ] **TC-42.3-001 — Success toast appears in top-right on desktop**  
+- [ ] **TC-42.3-001 â€” Success toast appears in top-right on desktop**  
   **Viewport:** 1280px (desktop)  
   **Steps:**  
   1. Log in with valid credentials.  
@@ -250,7 +250,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.3-002 — Error toast appears in top-right on desktop**  
+- [ ] **TC-42.3-002 â€” Error toast appears in top-right on desktop**  
   **Viewport:** 1280px (desktop)  
   **Steps:**  
   1. Navigate to `/login`.  
@@ -259,7 +259,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.3-003 — Toast auto-dismisses after 5 seconds**  
+- [ ] **TC-42.3-003 â€” Toast auto-dismisses after 5 seconds**  
   **Steps:**  
   1. Trigger any toast (e.g., submit invalid login credentials).  
   2. Do not click anything. Wait and observe.  
@@ -267,22 +267,22 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.3-004 — Toast can be manually dismissed**  
+- [ ] **TC-42.3-004 â€” Toast can be manually dismissed**  
   **Steps:**  
   1. Trigger any toast notification.  
-  2. While the toast is visible, click the **close (×) button** on the toast.  
+  2. While the toast is visible, click the **close (Ã—) button** on the toast.  
   **Expected Result:** The toast disappears immediately upon clicking close, before the 5-second auto-dismiss.
 
 ---
 
-- [ ] **TC-42.3-005 — Multiple toasts stack vertically**  
+- [ ] **TC-42.3-005 â€” Multiple toasts stack vertically**  
   **Steps:**  
   1. Trigger two or more toast notifications in quick succession (e.g., submit an invalid form twice rapidly).  
   **Expected Result:** Each toast appears stacked vertically with approximately **8px spacing** between them. Earlier toasts are not pushed off screen.
 
 ---
 
-- [ ] **TC-42.3-006 — Toast appears in bottom-center on mobile**  
+- [ ] **TC-42.3-006 â€” Toast appears in bottom-center on mobile**  
   **Viewport:** 375px (mobile)  
   **Steps:**  
   1. Using DevTools at 375px width, navigate to `/login`.  
@@ -291,29 +291,29 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.3-007 — Warning toast type renders correctly**  
+- [ ] **TC-42.3-007 â€” Warning toast type renders correctly**  
   **Steps:**  
   1. Trigger a warning-type toast. This may occur when the OTP resend limit is approaching (e.g., resending OTP twice on `/verify-otp`).  
   **Expected Result:** A **yellow/amber warning toast** appears in the correct position for the current viewport.
 
 ---
 
-- [ ] **TC-42.3-008 — No window.alert usage anywhere**  
+- [ ] **TC-42.3-008 â€” No window.alert usage anywhere**  
   **Steps:**  
   1. Run through all major user flows (register, login, OTP verify, approve, reject, forgot password).  
-  2. Watch the browser's native dialogs — none should appear.  
+  2. Watch the browser's native dialogs â€” none should appear.  
   **Expected Result:** Zero native `alert()` dialogs appear at any point. All feedback uses the toast system.
 
 ---
 
-## 42.4 — Loading and Error States
+## 42.4 â€” Loading and Error States
 
 **Requirements:** 19.1, 19.2, 19.3, 19.4, 19.5, 19.6  
 **Goal:** Verify loading spinners appear during async requests, form buttons are disabled while submitting, and error/success feedback uses the toast system.
 
 ---
 
-- [ ] **TC-42.4-001 — Loading spinner on form submission**  
+- [ ] **TC-42.4-001 â€” Loading spinner on form submission**  
   **Steps:**  
   1. Navigate to `/login`.  
   2. Enter valid credentials and click **Login**.  
@@ -322,7 +322,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.4-002 — Form submit button disabled during loading**  
+- [ ] **TC-42.4-002 â€” Form submit button disabled during loading**  
   **Steps:**  
   1. On the `/login` page, enter valid credentials and click **Login**.  
   2. While the request is in-flight, attempt to click the submit button again.  
@@ -330,7 +330,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.4-003 — Loading spinner on registration form**  
+- [ ] **TC-42.4-003 â€” Loading spinner on registration form**  
   **Steps:**  
   1. Navigate to `/register`.  
   2. Fill in valid registration data for an Organizer and submit.  
@@ -338,7 +338,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.4-004 — Error state: Invalid login shows toast, not alert**  
+- [ ] **TC-42.4-004 â€” Error state: Invalid login shows toast, not alert**  
   **Steps:**  
   1. Navigate to `/login`.  
   2. Enter `wrong@email.com` / `wrongpassword` and submit.  
@@ -346,7 +346,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.4-005 — Success state: OTP verification shows success toast**  
+- [ ] **TC-42.4-005 â€” Success state: OTP verification shows success toast**  
   **Steps:**  
   1. Register as an Exhibitor and navigate to `/verify-otp`.  
   2. Enter the correct 6-digit OTP from your email.  
@@ -355,7 +355,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.4-006 — Loading skeleton on dashboard initial load**  
+- [ ] **TC-42.4-006 â€” Loading skeleton on dashboard initial load**  
   **Steps:**  
   1. Log out completely.  
   2. Log back in and observe the dashboard immediately after redirect.  
@@ -363,7 +363,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.4-007 — Network error triggers error toast**  
+- [ ] **TC-42.4-007 â€” Network error triggers error toast**  
   **Steps:**  
   1. Stop the backend server (`Ctrl+C` in the backend terminal).  
   2. On the frontend, attempt to log in.  
@@ -371,7 +371,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-## 42.5 — Authentication Flows
+## 42.5 â€” Authentication Flows
 
 **Requirements:** Exit criteria (all four roles, Organizer approval, OTP verification, forgot password)  
 **Goal:** Verify the complete end-to-end authentication flows for each role.
@@ -380,7 +380,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ### SuperAdmin Login
 
-- [ ] **TC-42.5-001 — SuperAdmin can log in**  
+- [ ] **TC-42.5-001 â€” SuperAdmin can log in**  
   **Steps:**  
   1. Navigate to `http://localhost:5173/login`.  
   2. Enter the SuperAdmin email and password from `backend/.env`.  
@@ -391,7 +391,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ### Organizer Registration and Approval Flow
 
-- [ ] **TC-42.5-002 — Organizer registers and sees pending message**  
+- [ ] **TC-42.5-002 â€” Organizer registers and sees pending message**  
   **Steps:**  
   1. Navigate to `/register`.  
   2. Fill in email, password (`TestPass123`), full name, and select role **Organizer**.  
@@ -400,7 +400,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.5-003 — Organizer login before approval shows pending screen**  
+- [ ] **TC-42.5-003 â€” Organizer login before approval shows pending screen**  
   **Steps:**  
   1. Navigate to `/login`.  
   2. Log in with the Organizer credentials just registered.  
@@ -408,7 +408,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.5-004 — SuperAdmin approves Organizer**  
+- [ ] **TC-42.5-004 â€” SuperAdmin approves Organizer**  
   **Steps:**  
   1. Log in as SuperAdmin.  
   2. Navigate to `/admin/approvals`.  
@@ -418,7 +418,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.5-005 — Organizer can log in after approval**  
+- [ ] **TC-42.5-005 â€” Organizer can log in after approval**  
   **Steps:**  
   1. Log out as SuperAdmin.  
   2. Log in as the newly approved Organizer.  
@@ -426,37 +426,37 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.5-006 — SuperAdmin rejects an Organizer**  
+- [ ] **TC-42.5-006 â€” SuperAdmin rejects an Organizer**  
   **Steps:**  
   1. Register a second Organizer account (use a different email).  
   2. Log in as SuperAdmin, navigate to `/admin/approvals`.  
   3. Click **Reject** for the new Organizer.  
   4. Confirm the rejection when prompted (if a confirmation dialog appears).  
-  **Expected Result:** A success toast appears. The Organizer is removed from the list. If you attempt to log in as the rejected Organizer, the login fails (account no longer exists).
+  **Expected Result:** A success toast appears. The Organizer is removed from the pending list. The account is not deleted - it is soft-rejected (status: rejected). If the rejected Organizer is on /dashboard/pending-approval, they are automatically redirected to /dashboard/rejected within 30 s (next poll). Logging in fresh as the rejected Organizer succeeds and lands on the RejectedScreen. SuperAdmin can still query this account via GET /api/admin/organizers?status=rejected.
 
 ---
 
-- [ ] **TC-42.5-007 — Pending approval screen polls for status change**  
+- [ ] **TC-42.5-007 â€” Pending approval screen polls and reacts to both status transitions (approved and rejected)**  
   **Steps:**  
   1. Log in as a pending Organizer (who has not yet been approved).  
-  2. Open the browser Network tab (DevTools → Network).  
-  3. Wait on the `/dashboard/pending-approval` page for 30–60 seconds.  
-  **Expected Result:** Every ~30 seconds, a network request is made to check the user's status (e.g., `GET /api/users/me` or equivalent). The page does not require a manual refresh to detect approval.
+  2. Open the browser Network tab (DevTools â†’ Network).  
+  3. Wait on the `/dashboard/pending-approval` page for 30â€“60 seconds.  
+  **Expected Result:** Every ~30 seconds, a network request is made to check the user's status (e.g., `GET /api/users/me` or equivalent). Every ~30 seconds a GET /api/auth/me request fires. When status becomes active the user is redirected to /dashboard/organizer. When status becomes rejected the user is redirected to /dashboard/rejected. Neither transition requires a manual page reload - it happens automatically within the next poll cycle (<=30 s after the SuperAdmin action).
 
 ---
 
 ### Exhibitor Registration and OTP Verification
 
-- [ ] **TC-42.5-008 — Exhibitor registers and receives OTP email**  
+- [ ] **TC-42.5-008 â€” Exhibitor registers and receives OTP email**  
   **Steps:**  
   1. Navigate to `/register`.  
   2. Fill in details with role **Exhibitor**. Use a real email address you can access.  
   3. Click **Register**.  
-  **Expected Result:** A toast appears indicating an OTP was sent. The user is redirected to `/verify-otp`. Check your inbox — a 6-digit OTP email arrives within a minute.
+  **Expected Result:** A toast appears indicating an OTP was sent. The user is redirected to `/verify-otp`. Check your inbox â€” a 6-digit OTP email arrives within a minute.
 
 ---
 
-- [ ] **TC-42.5-009 — Exhibitor verifies OTP and can log in**  
+- [ ] **TC-42.5-009 â€” Exhibitor verifies OTP and can log in**  
   **Steps:**  
   1. On `/verify-otp`, enter the 6-digit OTP from the email.  
   2. Click **Verify**.  
@@ -465,7 +465,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.5-010 — Exhibitor OTP invalid code returns error**  
+- [ ] **TC-42.5-010 â€” Exhibitor OTP invalid code returns error**  
   **Steps:**  
   1. Register a new Exhibitor account (different email).  
   2. On `/verify-otp`, enter `000000` (a wrong OTP).  
@@ -474,7 +474,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.5-011 — Exhibitor cannot log in before OTP verification**  
+- [ ] **TC-42.5-011 â€” Exhibitor cannot log in before OTP verification**  
   **Steps:**  
   1. Register an Exhibitor account but do NOT verify the OTP.  
   2. Navigate to `/login` and log in with those credentials.  
@@ -482,7 +482,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.5-012 — OTP resend works up to 3 times**  
+- [ ] **TC-42.5-012 â€” OTP resend works up to 3 times**  
   **Steps:**  
   1. Register an Exhibitor. On `/verify-otp`, click **Resend OTP** three times.  
   2. Attempt to click **Resend OTP** a fourth time.  
@@ -490,7 +490,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.5-013 — OTP expires after 5 minutes**  
+- [ ] **TC-42.5-013 â€” OTP expires after 5 minutes**  
   **Steps:**  
   1. Register an Exhibitor. Note the time of registration.  
   2. Wait more than 5 minutes without verifying.  
@@ -501,7 +501,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ### Attendee Registration and OTP Verification
 
-- [ ] **TC-42.5-014 — Attendee registers, verifies OTP, and can log in**  
+- [ ] **TC-42.5-014 â€” Attendee registers, verifies OTP, and can log in**  
   **Steps:**  
   1. Repeat TC-42.5-008 through TC-42.5-009 with role **Attendee** and a different email.  
   **Expected Result:** The flow is identical to the Exhibitor flow. After OTP verification, the Attendee logs in and lands on `/dashboard/attendee`.
@@ -510,7 +510,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ### Forgot Password Flow (3 Steps)
 
-- [ ] **TC-42.5-015 — Step 1: Request password reset OTP**  
+- [ ] **TC-42.5-015 â€” Step 1: Request password reset OTP**  
   **Steps:**  
   1. Navigate to `/login`, click **Forgot Password?**.  
   2. On `/forgot-password`, enter the email of an existing account (e.g., the Exhibitor).  
@@ -519,7 +519,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.5-016 — Step 1: Non-existent email returns success (no enumeration)**  
+- [ ] **TC-42.5-016 â€” Step 1: Non-existent email returns success (no enumeration)**  
   **Steps:**  
   1. On `/forgot-password`, enter an email that does NOT exist in the system.  
   2. Click **Send OTP**.  
@@ -527,7 +527,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.5-017 — Step 2: Verify reset OTP**  
+- [ ] **TC-42.5-017 â€” Step 2: Verify reset OTP**  
   **Steps:**  
   1. On `/forgot-password/verify-otp`, enter the 6-digit OTP received in the reset email.  
   2. Click **Verify**.  
@@ -535,7 +535,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.5-018 — Step 3: Reset password and log in with new password**  
+- [ ] **TC-42.5-018 â€” Step 3: Reset password and log in with new password**  
   **Steps:**  
   1. On `/forgot-password/reset`, enter a new password (e.g., `NewPass456`) and confirm it.  
   2. Click **Reset Password**.  
@@ -544,7 +544,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.5-019 — Reset token expires after 10 minutes**  
+- [ ] **TC-42.5-019 â€” Reset token expires after 10 minutes**  
   **Steps:**  
   1. Complete Step 1 and Step 2 of the forgot password flow.  
   2. Wait more than 10 minutes before entering a new password on Step 3.  
@@ -553,7 +553,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.5-020 — All refresh tokens invalidated after password reset**  
+- [ ] **TC-42.5-020 â€” All refresh tokens invalidated after password reset**  
   **Steps:**  
   1. Log in as the Exhibitor on two different browser tabs (simulate two sessions).  
   2. Complete the forgot password reset flow for that Exhibitor account in one tab.  
@@ -564,17 +564,17 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ### Token Refresh (Session Continuity)
 
-- [ ] **TC-42.5-021 — Access token refreshes automatically before expiry**  
+- [ ] **TC-42.5-021 â€” Access token refreshes automatically before expiry**  
   **Steps:**  
   1. Log in as any active user.  
-  2. Open DevTools → Network tab, filter by `XHR/Fetch`.  
+  2. Open DevTools â†’ Network tab, filter by `XHR/Fetch`.  
   3. Wait approximately 14 minutes without logging out.  
   4. Observe the network requests.  
   **Expected Result:** A `POST /api/auth/refresh` request is made automatically around the 14-minute mark. The user remains logged in without any interruption or redirect to `/login`.
 
 ---
 
-- [ ] **TC-42.5-022 — Expired/invalid refresh token redirects to login**  
+- [ ] **TC-42.5-022 â€” Expired/invalid refresh token redirects to login**  
   **Steps:**  
   1. Log in as any user.  
   2. In the backend database (or via MongoDB Atlas), manually invalidate or delete the refresh token for this user.  
@@ -585,7 +585,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ### Email Already Registered
 
-- [ ] **TC-42.5-023 — Duplicate email returns 409 error**  
+- [ ] **TC-42.5-023 â€” Duplicate email returns 409 error**  
   **Steps:**  
   1. Navigate to `/register`.  
   2. Attempt to register with an email address that is already in the system.  
@@ -595,7 +595,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ### SuperAdmin Role Cannot Be Registered
 
-- [ ] **TC-42.5-024 — Registration as SuperAdmin is blocked**  
+- [ ] **TC-42.5-024 â€” Registration as SuperAdmin is blocked**  
   **Steps:**  
   1. Attempt a direct API call (via curl or Postman) to `POST http://localhost:5000/api/auth/register` with `"role": "superadmin"`.  
   ```json
@@ -610,7 +610,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-## 42.6 — Route Guards and Authorization
+## 42.6 â€” Route Guards and Authorization
 
 **Requirements:** 15.5, 15.6, 16.1, 16.2, 16.3  
 **Goal:** Verify that unauthenticated users and wrong-role users cannot access protected routes, both on the frontend and backend.
@@ -619,7 +619,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ### Frontend Route Guards
 
-- [ ] **TC-42.6-001 — Unauthenticated user redirected to login**  
+- [ ] **TC-42.6-001 â€” Unauthenticated user redirected to login**  
   **Steps:**  
   1. Ensure you are NOT logged in (clear session or open an incognito window).  
   2. Navigate directly to `http://localhost:5173/dashboard/superadmin`.  
@@ -627,7 +627,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.6-002 — Unauthenticated user cannot access any protected route**  
+- [ ] **TC-42.6-002 â€” Unauthenticated user cannot access any protected route**  
   **Steps:**  
   1. While unauthenticated, attempt to navigate to each of the following:
      - `/dashboard/organizer`
@@ -638,7 +638,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.6-003 — Exhibitor cannot access SuperAdmin routes**  
+- [ ] **TC-42.6-003 â€” Exhibitor cannot access SuperAdmin routes**  
   **Steps:**  
   1. Log in as a verified Exhibitor.  
   2. Manually navigate to `http://localhost:5173/dashboard/superadmin`.  
@@ -646,14 +646,14 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.6-004 — Exhibitor cannot access Organizer dashboard**  
+- [ ] **TC-42.6-004 â€” Exhibitor cannot access Organizer dashboard**  
   **Steps:**  
   1. While logged in as an Exhibitor, navigate to `http://localhost:5173/dashboard/organizer`.  
   **Expected Result:** Redirect to `/dashboard/exhibitor`.
 
 ---
 
-- [ ] **TC-42.6-005 — Attendee cannot access admin approvals**  
+- [ ] **TC-42.6-005 â€” Attendee cannot access admin approvals**  
   **Steps:**  
   1. Log in as a verified Attendee.  
   2. Navigate to `http://localhost:5173/admin/approvals`.  
@@ -661,7 +661,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.6-006 — SuperAdmin can access admin routes**  
+- [ ] **TC-42.6-006 â€” SuperAdmin can access admin routes**  
   **Steps:**  
   1. Log in as SuperAdmin.  
   2. Navigate to `http://localhost:5173/admin/approvals`.  
@@ -669,7 +669,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.6-007 — Pending Organizer sees pending approval screen**  
+- [ ] **TC-42.6-007 â€” Pending Organizer sees pending approval screen**  
   **Steps:**  
   1. Register a new Organizer account (do not approve it).  
   2. Log in as this Organizer.  
@@ -678,7 +678,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.6-008 — Active Organizer sees full dashboard**  
+- [ ] **TC-42.6-008 â€” Active Organizer sees full dashboard**  
   **Steps:**  
   1. Approve the Organizer from TC-42.6-007 as SuperAdmin.  
   2. Log back in as the now-approved Organizer.  
@@ -688,7 +688,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ### Backend Route Guards
 
-- [ ] **TC-42.6-009 — API returns 401 for missing token**  
+- [ ] **TC-42.6-009 â€” API returns 401 for missing token**  
   **Steps:**  
   1. Make a direct API call to a protected endpoint **without** an Authorization header:
   ```bash
@@ -698,7 +698,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.6-010 — API returns 401 for invalid/expired token**  
+- [ ] **TC-42.6-010 â€” API returns 401 for invalid/expired token**  
   **Steps:**  
   1. Make an API call with a tampered or obviously expired JWT:
   ```bash
@@ -708,7 +708,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.6-011 — API returns 403 for wrong role**  
+- [ ] **TC-42.6-011 â€” API returns 403 for wrong role**  
   **Steps:**  
   1. Log in as an Exhibitor and obtain the access token from the login response.  
   2. Use that token to call the SuperAdmin-only endpoint:
@@ -719,7 +719,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.6-012 — SuperAdmin can access admin API**  
+- [ ] **TC-42.6-012 â€” SuperAdmin can access admin API**  
   **Steps:**  
   1. Log in as SuperAdmin, copy the `accessToken` from the login response.  
   2. Call the admin endpoint:
@@ -730,7 +730,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-## 42.7 — Mobile Device Testing
+## 42.7 â€” Mobile Device Testing
 
 **Requirements:** 22.4, 22.5  
 **Goal:** Verify the application is usable on a real physical mobile device (not just browser DevTools simulation).
@@ -755,23 +755,23 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.7-001 — Application loads on real mobile device**  
+- [ ] **TC-42.7-001 â€” Application loads on real mobile device**  
   **Steps:**  
   1. On a real iOS or Android device, open the browser and navigate to the frontend URL.  
   **Expected Result:** The login page loads correctly. No errors. No visible unstyled content.
 
 ---
 
-- [ ] **TC-42.7-002 — Form input touch targets are at least 44px**  
+- [ ] **TC-42.7-002 â€” Form input touch targets are at least 44px**  
   **Steps:**  
   1. On the mobile device, navigate to `/login` and `/register`.  
   2. Tap each input field.  
   3. Tap each button.  
-  **Expected Result:** All input fields and buttons respond to taps reliably. No input requires precise tapping on very small elements. Touch targets are visually large enough (minimum ~44×44px).
+  **Expected Result:** All input fields and buttons respond to taps reliably. No input requires precise tapping on very small elements. Touch targets are visually large enough (minimum ~44Ã—44px).
 
 ---
 
-- [ ] **TC-42.7-003 — Mobile keyboard does not obscure form fields**  
+- [ ] **TC-42.7-003 â€” Mobile keyboard does not obscure form fields**  
   **Steps:**  
   1. On the mobile device, go to `/login`.  
   2. Tap the email field. The mobile keyboard appears.  
@@ -780,7 +780,7 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.7-004 — Bottom navigation is functional on real device**  
+- [ ] **TC-42.7-004 â€” Bottom navigation is functional on real device**  
   **Steps:**  
   1. Log in as any active user on the mobile device.  
   2. View the dashboard. The bottom navigation bar should be visible.  
@@ -789,14 +789,14 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.7-005 — Bottom navigation does not overlap content**  
+- [ ] **TC-42.7-005 â€” Bottom navigation does not overlap content**  
   **Steps:**  
   1. On the mobile dashboard, scroll to the bottom of the page content.  
   **Expected Result:** The page content is not hidden behind the fixed bottom navigation. The content has enough bottom padding to be visible above the nav bar.
 
 ---
 
-- [ ] **TC-42.7-006 — OTP input is usable on mobile**  
+- [ ] **TC-42.7-006 â€” OTP input is usable on mobile**  
   **Steps:**  
   1. Register as an Exhibitor using the mobile device.  
   2. Check email on the same device.  
@@ -805,14 +805,14 @@ Log in as any role with an active account before running layout tests. Dashboard
 
 ---
 
-- [ ] **TC-42.7-007 — Toast notifications appear at bottom-center on mobile**  
+- [ ] **TC-42.7-007 â€” Toast notifications appear at bottom-center on mobile**  
   **Steps:**  
   1. On the mobile device at `/login`, submit with incorrect credentials.  
   **Expected Result:** The error toast appears at the **bottom-center** of the screen, not at the top-right. It does not overlap or obscure the bottom navigation bar.
 
 ---
 
-- [ ] **TC-42.7-008 — Registration form is fully usable on mobile**  
+- [ ] **TC-42.7-008 â€” Registration form is fully usable on mobile**  
   **Steps:**  
   1. Navigate to `/register` on the mobile device.  
   2. Fill in all fields: email, password, full name, and select a role from the dropdown.  
@@ -853,7 +853,7 @@ The build is considered ready for Phase 2 when:
 
 ---
 
-## Appendix — Quick API Reference
+## Appendix â€” Quick API Reference
 
 Use these with `curl` or Postman for backend-level testing in sections 42.5 and 42.6.
 
@@ -883,15 +883,15 @@ POST http://localhost:5000/api/auth/logout
 Header: Authorization: Bearer <accessToken>
 Body: { "refreshToken" }
 
-# Forgot Password — Step 1
+# Forgot Password â€” Step 1
 POST http://localhost:5000/api/auth/forgot-password/request
 Body: { "email" }
 
-# Forgot Password — Step 2
+# Forgot Password â€” Step 2
 POST http://localhost:5000/api/auth/forgot-password/verify-otp
 Body: { "email", "otp" }
 
-# Forgot Password — Step 3
+# Forgot Password â€” Step 3
 POST http://localhost:5000/api/auth/forgot-password/reset
 Body: { "resetToken", "newPassword" }
 
@@ -911,3 +911,4 @@ Header: Authorization: Bearer <superadminAccessToken>
 ---
 
 *Document created for EventSphere Phase 0 & Phase 1 (Auth Foundation). Update the Results Summary table after each testing session.*
+

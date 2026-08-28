@@ -6,10 +6,8 @@
 |----------|-------------|
 | [PROJECT_SPEC.md](./PROJECT_SPEC.md) | Full project specification — phases, roles, features |
 | [PROGRESS.md](./PROGRESS.md) | Development progress log |
-| [DESIGN_TOKENS.md](./DESIGN_TOKENS.md) | Tailwind design token reference |
 | [CORS_CONFIGURATION.md](./CORS_CONFIGURATION.md) | CORS setup and troubleshooting |
 | [EMAIL_SERVICE_USAGE.md](./EMAIL_SERVICE_USAGE.md) | Resend integration guide |
-| [TEST_DATABASE_CONNECTION.md](./TEST_DATABASE_CONNECTION.md) | Test DB setup guide |
 | [CONTEXTS_README.md](./CONTEXTS_README.md) | AuthContext and ThemeContext reference |
 | [FRONTEND_README.md](./FRONTEND_README.md) | Frontend setup and architecture |
 

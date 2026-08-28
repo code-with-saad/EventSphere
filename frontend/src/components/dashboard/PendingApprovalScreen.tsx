@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -15,7 +15,7 @@ interface MeResponse {
       email: string;
       fullName: string;
       role: string;
-      status: 'pending' | 'active' | 'suspended';
+      status: 'pending' | 'active' | 'rejected' | 'suspended';
       isEmailVerified: boolean;
     };
   };
@@ -25,8 +25,9 @@ interface MeResponse {
  * PendingApprovalScreen
  *
  * Shown to Organizers whose account status is 'pending'.
- * Polls GET /api/auth/me every 30 seconds; once status becomes 'active',
- * navigates to the full Organizer dashboard.
+ * Polls GET /api/auth/me every 30 seconds and reacts to status transitions:
+ *   - 'active'   → navigate to /dashboard/organizer
+ *   - 'rejected' → navigate to /dashboard/rejected
  *
  * Requirements: 10.1, 10.2, 10.3, 10.5
  */
@@ -45,10 +46,15 @@ export default function PendingApprovalScreen() {
     try {
       const response = await api.get<MeResponse>('/api/auth/me');
       const status = response.data.data.user.status;
+
       if (status === 'active') {
         // Sync AuthContext so OrganizerDashboard reads status='active' immediately
         await checkAuthStatus();
         navigate('/dashboard/organizer', { replace: true });
+      } else if (status === 'rejected') {
+        // Sync AuthContext so RejectedScreen has up-to-date user object
+        await checkAuthStatus();
+        navigate('/dashboard/rejected', { replace: true });
       }
     } catch {
       // Silent — network errors are non-fatal; the user stays on this screen.

@@ -329,10 +329,10 @@ Ready to proceed to Phase 1a: Backend Authentication Core
 **Tasks:**
 - Create GET /api/admin/pending-organizers endpoint
 - Create PATCH /api/admin/organizers/:id/approve endpoint
-- Create DELETE /api/admin/organizers/:id/reject endpoint
+- Create DELETE /api/admin/organizers/:id/reject endpoint (soft-reject: status → `rejected`, refresh tokens invalidated, account kept)
 - Create PendingApprovalScreen component (Organizer view)
 - Create AdminApprovalsPage component (SuperAdmin view)
-- Implement 30-second polling for status changes
+- Implement 30-second polling for status changes (handles both `active` → organizer dashboard and `rejected` → RejectedScreen transitions)
 - Test complete approval workflow end-to-end
 
 ---
@@ -1223,3 +1223,63 @@ The real Resend email is **still sent** as normal — the bypass is purely addit
 - [ ] Set DEV_OTP_BYPASS=false or remove the variable from production .env
 - [ ] Confirm NODE_ENV=production is set in the production environment
 - [ ] Optionally remove the logDevOTPBypass function from otp.service.ts entirely for a clean production build
+
+
+---
+
+## Post-Phase-1 Change Log
+
+### Organizer Reject — Soft-Delete + Auto-Redirect (2026-08-28)
+
+**Changed files:**
+
+| File | Change |
+|---|---|
+| `backend/src/routes/admin.routes.ts` | Reject handler: replaced `deleteById` + `deleteAllUserRefreshTokensByUserId` with `updateById({ status: 'rejected' })` + `invalidateAllUserRefreshTokens` |
+| `backend/src/routes/admin.routes.reject.test.ts` | New file — 9 integration tests covering soft-reject behavior, token invalidation, post-reject login, and queryability |
+| `frontend/src/components/dashboard/PendingApprovalScreen.tsx` | Poll now handles `status === 'rejected'` → `navigate('/dashboard/rejected', { replace: true })` in addition to `status === 'active'` |
+
+**Behavioral summary:**
+
+| Scenario | Before | After |
+|---|---|---|
+| Reject endpoint | Hard-deletes user document | Sets `status: 'rejected'`, keeps document |
+| Refresh tokens on reject | Hard-deleted | Invalidated (`isValid: false`) |
+| Rejected Organizer login | Fails — account gone | Succeeds — lands on RejectedScreen |
+| Queryable by SuperAdmin | No | Yes (`?status=rejected`) |
+| PendingApprovalScreen poll | Reacted to `active` only | Reacts to `active` (→ organizer dashboard) AND `rejected` (→ rejected screen) |
+| Time to auto-redirect after reject | N/A | ≤30 s (next poll cycle) |
+
+**No routing changes required.** `getHomeRoute`, `ProtectedRoute`, `App.tsx`, and `RejectedScreen` were already correct for the soft-delete pattern — they were built with this in mind from the start.
+
+**Deviation from original spec:** Original spec task 26.3 said "Delete Organizer account from database". This was deliberately changed to a soft-delete. Rationale: rejected Organizer gets contextual feedback (RejectedScreen), account is auditable, and the change is reversible if needed. See Deviation #10 in `PROGRESS.md` (root).
+
+
+---
+
+## Post-Phase-1 Change Log
+
+### Organizer Reject — Soft-Delete + Auto-Redirect (2026-08-28)
+
+**Changed files:**
+
+| File | Change |
+|---|---|
+| `backend/src/routes/admin.routes.ts` | Reject handler: replaced hard-delete with `updateById({ status: 'rejected' })` + `invalidateAllUserRefreshTokens` |
+| `backend/src/routes/admin.routes.reject.test.ts` | New file — 9 integration tests covering soft-reject behavior |
+| `frontend/src/components/dashboard/PendingApprovalScreen.tsx` | Poll now handles `status === 'rejected'` → navigate to `/dashboard/rejected` |
+
+**Behavioral summary:**
+
+| Scenario | Before | After |
+|---|---|---|
+| Reject endpoint | Hard-deletes user document | Sets `status: 'rejected'`, keeps document |
+| Refresh tokens on reject | Hard-deleted | Invalidated (`isValid: false`) |
+| Rejected Organizer login | Fails — account gone | Succeeds — lands on RejectedScreen |
+| Queryable by SuperAdmin | No | Yes (`?status=rejected`) |
+| PendingApprovalScreen poll | Reacted to `active` only | Reacts to `active` AND `rejected` |
+| Time to auto-redirect after reject | N/A | ≤30 s (next poll cycle) |
+
+**No routing changes required.** `getHomeRoute`, `ProtectedRoute`, `App.tsx`, and `RejectedScreen` were already correct for the soft-delete pattern.
+
+**Deviation from original spec:** Task 26.3 originally said delete the account. Changed to soft-delete — rejected Organizer gets contextual feedback, account is auditable, change is reversible. See Deviation #10 in root `PROGRESS.md`.
