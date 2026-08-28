@@ -4,6 +4,7 @@ import UserModel from '../models/User.model';
 import { authenticate, AuthRequest } from '../middleware/auth.middleware';
 import { authorize } from '../middleware/authorize.middleware';
 import { ObjectId } from 'mongodb';
+import { deleteAllUserRefreshTokensByUserId } from '../models/RefreshToken.model';
 
 const router = Router();
 
@@ -97,7 +98,8 @@ router.get(
 /**
  * DELETE /api/admin/organizers/:id/reject
  *
- * Rejects a pending Organizer by setting their status to 'rejected' (soft delete).
+ * Rejects a pending Organizer by permanently deleting their account and all
+ * associated refresh tokens from the database (hard-delete).
  *
  * Access: SuperAdmin only
  *
@@ -128,8 +130,10 @@ router.delete(
       });
     }
 
-    // Soft-delete: set status to 'rejected' (preserve the record)
-    await UserModel.updateById(id, { status: 'rejected' });
+    // Hard-delete: remove all refresh tokens first, then delete the account
+    // Requirements 11.5, 11.7: permanently remove the organizer from the database
+    await deleteAllUserRefreshTokensByUserId(new ObjectId(user._id));
+    await UserModel.deleteById(id);
 
     return res.status(200).json({
       success: true,

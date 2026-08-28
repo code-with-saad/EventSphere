@@ -196,3 +196,19 @@ export async function cleanupUserRefreshTokens(
 
   return result.deletedCount;
 }
+
+/**
+ * Hard-delete ALL refresh tokens for a user (valid or not)
+ * Used when permanently deleting a user account (e.g., rejecting an organizer)
+ * Requirements: 11.5, 11.7
+ *
+ * @param userId - The user's ObjectId
+ * @returns The number of tokens deleted
+ */
+export async function deleteAllUserRefreshTokensByUserId(
+  userId: ObjectId
+): Promise<number> {
+  const collection = getRefreshTokenCollection();
+  const result = await collection.deleteMany({ userId });
+  return result.deletedCount;
+}
