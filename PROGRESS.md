@@ -1,4 +1,4 @@
-﻿# EventSphere â€” Implementation Progress
+﻿﻿# EventSphere â€” Implementation Progress
 
 > **Purpose:** Handoff and continuity document. If you are resuming work after a session reset, environment loss, or context switch, read this file first. It tells you exactly where things stand, every decision that was made, and how to get the project running again from zero.
 
@@ -365,6 +365,9 @@ Copy `backend/.env.example` and fill in the values.
 | `SUPERADMIN_PASSWORD` | Yes | SuperAdmin account password | Minimum 8 characters |
 | `FRONTEND_URL` | Yes | Frontend origin for CORS | Valid URL (e.g., `http://localhost:5173`) |
 | `DEV_OTP_BYPASS` | No | Print OTP to console in dev | `true` or `false`; hard-blocked in production |
+| `CLOUDINARY_CLOUD_NAME` | Yes (Phase 2) | Cloudinary cloud name for image uploads | Non-empty string |
+| `CLOUDINARY_API_KEY` | Yes (Phase 2) | Cloudinary API key for image uploads | Non-empty string |
+| `CLOUDINARY_API_SECRET` | Yes (Phase 2) | Cloudinary API secret for image uploads | Non-empty string |
 
 **Example `backend/.env`:**
 ```env
