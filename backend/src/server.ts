@@ -3,6 +3,11 @@ import cors from 'cors';
 import env from './config/env';
 import { connectDatabase, isDatabaseConnected } from './config/database';
 import UserModel from './models/User.model';
+import ExpoModel from './models/Expo.model';
+import ApplicationModel from './models/Application.model';
+import TicketModel from './models/Ticket.model';
+import SessionModel from './models/Session.model';
+import BookmarkModel from './models/Bookmark.model';
 import authRoutes from './routes/auth.routes';
 import adminRoutes from './routes/admin.routes';
 import errorHandler, { notFoundHandler } from './middleware/error.middleware';
@@ -74,6 +79,11 @@ async function startServer() {
     // Initialize database indexes
     console.log('Initializing database indexes...');
     await UserModel.createIndexes();
+    await ExpoModel.createIndexes();
+    await ApplicationModel.createIndexes();
+    await TicketModel.createIndexes();
+    await SessionModel.createIndexes();
+    await BookmarkModel.createIndexes();
 
     // Only start accepting requests after successful database connection
     app.listen(PORT, () => {
