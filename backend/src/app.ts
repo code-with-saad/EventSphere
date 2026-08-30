@@ -13,6 +13,7 @@ import { isDatabaseConnected } from './config/database';
 import authRoutes from './routes/auth.routes';
 import adminRoutes from './routes/admin.routes';
 import expoRoutes from './routes/expo.routes';
+import applicationRoutes from './routes/application.routes';
 import uploadRoutes from './routes/upload.routes';
 import errorHandler, { notFoundHandler } from './middleware/error.middleware';
 
@@ -37,6 +38,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/expos', expoRoutes);
 app.use('/api/organizer', expoRoutes);
+app.use('/api/expos', applicationRoutes);
+app.use('/api/exhibitor', applicationRoutes);
 app.use('/api/upload', uploadRoutes);
 
 // ── Utility endpoints ─────────────────────────────────────────────────────────
