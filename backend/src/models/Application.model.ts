@@ -1,4 +1,4 @@
-import { Collection, Db, ObjectId } from 'mongodb';
+﻿import { Collection, Db, ObjectId } from 'mongodb';
 import { getDatabase } from '../config/database';
 
 /**
@@ -99,19 +99,25 @@ export class ApplicationModel {
         { name: 'exhibitor_submittedAt_idx' }
       );
 
-      // REQ-12.21: Booth uniqueness within an expo — partial unique index
-      // Only enforces uniqueness when boothLabel exists and is not null,
-      // allowing multiple applications without a booth label (pending/rejected).
+      // REQ-12.21: Booth uniqueness within an expo — partial unique index.
+      // Drop any stale version of this index first (old definition used $ne: null
+      // in partialFilterExpression which is not supported by MongoDB; corrected
+      // version uses $exists: true only). Silently ignored if index doesn't exist.
+      try {
+        await this.collection.dropIndex('expo_boothLabel_unique_idx');
+      } catch (_) {
+        // Index doesn't exist yet or already dropped — safe to ignore
+      }
       await this.collection.createIndex(
         { expoId: 1, boothLabel: 1 },
         {
           unique: true,
-          partialFilterExpression: { boothLabel: { $exists: true, $ne: null } },
+          partialFilterExpression: { boothLabel: { $exists: true } },
           name: 'expo_boothLabel_unique_idx',
         }
       );
 
-      console.log('✓ Application indexes created successfully');
+      console.log('✔ Application indexes created successfully');
     } catch (error) {
       console.error('✗ Failed to create application indexes:', error);
       throw error;

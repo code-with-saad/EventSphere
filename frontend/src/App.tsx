@@ -18,6 +18,10 @@ import PendingApprovalScreen from './components/dashboard/PendingApprovalScreen'
 import RejectedScreen from './components/dashboard/RejectedScreen';
 import { ProtectedRoute } from './guards/ProtectedRoute';
 import ExpoListingPage from './pages/expos/ExpoListingPage';
+import ExpoDetailPage from './pages/expos/ExpoDetailPage';
+import MyExposPage from './pages/organizer/MyExposPage';
+import CreateExpoPage from './pages/organizer/CreateExpoPage';
+import EditExpoPage from './pages/organizer/EditExpoPage';
 
 /**
  * Single source of truth for where an authenticated user should land.
@@ -76,11 +80,7 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
 }
 
 // ── Phase 2 page placeholders (replaced by real imports as pages are built) ──
-const ExpoDetailPage = () => <div>ExpoDetailPage</div>;
 const ScheduleBrowsePage = () => <div>ScheduleBrowsePage</div>;
-const MyExposPage = () => <div>MyExposPage</div>;
-const CreateExpoPage = () => <div>CreateExpoPage</div>;
-const EditExpoPage = () => <div>EditExpoPage</div>;
 const ApplicationsPage = () => <div>ApplicationsPage</div>;
 const ScheduleBuilderPage = () => <div>ScheduleBuilderPage</div>;
 const BoothLayoutPage = () => <div>BoothLayoutPage</div>;
@@ -144,3 +144,4 @@ function App() {
 }
 
 export default App;
+
