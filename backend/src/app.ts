@@ -17,6 +17,7 @@ import applicationRoutes from './routes/application.routes';
 import ticketRoutes from './routes/ticket.routes';
 import sessionRoutes from './routes/session.routes';
 import bookmarkRoutes from './routes/bookmark.routes';
+import dashboardRoutes from './routes/dashboard.routes';
 import uploadRoutes from './routes/upload.routes';
 import errorHandler, { notFoundHandler } from './middleware/error.middleware';
 
@@ -47,6 +48,7 @@ app.use('/api/tickets', ticketRoutes);
 app.use('/api/expos', ticketRoutes);
 app.use('/api/expos', sessionRoutes);
 app.use('/api/expos', bookmarkRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/upload', uploadRoutes);
 
 // ── Utility endpoints ─────────────────────────────────────────────────────────

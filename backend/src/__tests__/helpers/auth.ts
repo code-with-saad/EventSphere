@@ -44,6 +44,10 @@ export interface LoginTokens {
 // ── Counters (keep emails unique across a test run) ───────────────────────────
 
 let counter = 0;
+// Random hex suffix generated once per process — guarantees uniqueness
+// across workers and sequential test file runs even when counter resets.
+const RUN_ID = Math.random().toString(36).slice(2, 8);
+
 function nextCounter(): number {
   return ++counter;
 }
@@ -60,7 +64,7 @@ export async function createTestUser(opts: TestUserOptions = {}): Promise<Create
 
   const role: UserRole = opts.role ?? 'exhibitor';
   const password = opts.password ?? 'TestPassword123';
-  const email = (opts.email ?? `testuser${n}@example.com`).toLowerCase();
+  const email = (opts.email ?? `testuser${n}-${RUN_ID}@example.com`).toLowerCase();
 
   // Determine sensible defaults based on role
   let defaultStatus: UserStatus = 'active';
