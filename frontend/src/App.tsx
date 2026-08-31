@@ -17,6 +17,7 @@ import AttendeeDashboard from './pages/dashboard/AttendeeDashboard';
 import PendingApprovalScreen from './components/dashboard/PendingApprovalScreen';
 import RejectedScreen from './components/dashboard/RejectedScreen';
 import { ProtectedRoute } from './guards/ProtectedRoute';
+import ExpoListingPage from './pages/expos/ExpoListingPage';
 
 /**
  * Single source of truth for where an authenticated user should land.
@@ -75,7 +76,6 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
 }
 
 // ── Phase 2 page placeholders (replaced by real imports as pages are built) ──
-const ExpoListingPage = () => <div>ExpoListingPage</div>;
 const ExpoDetailPage = () => <div>ExpoDetailPage</div>;
 const ScheduleBrowsePage = () => <div>ScheduleBrowsePage</div>;
 const MyExposPage = () => <div>MyExposPage</div>;
