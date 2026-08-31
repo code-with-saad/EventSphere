@@ -74,6 +74,22 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// ── Phase 2 page placeholders (replaced by real imports as pages are built) ──
+const ExpoListingPage = () => <div>ExpoListingPage</div>;
+const ExpoDetailPage = () => <div>ExpoDetailPage</div>;
+const ScheduleBrowsePage = () => <div>ScheduleBrowsePage</div>;
+const MyExposPage = () => <div>MyExposPage</div>;
+const CreateExpoPage = () => <div>CreateExpoPage</div>;
+const EditExpoPage = () => <div>EditExpoPage</div>;
+const ApplicationsPage = () => <div>ApplicationsPage</div>;
+const ScheduleBuilderPage = () => <div>ScheduleBuilderPage</div>;
+const BoothLayoutPage = () => <div>BoothLayoutPage</div>;
+const ScannerPage = () => <div>ScannerPage</div>;
+const MyApplicationsPage = () => <div>MyApplicationsPage</div>;
+const ApplicationFormPage = () => <div>ApplicationFormPage</div>;
+const MyTicketsPage = () => <div>MyTicketsPage</div>;
+const TicketDetailPage = () => <div>TicketDetailPage</div>;
+
 function App() {
   return (
     <ThemeProvider>
@@ -97,6 +113,28 @@ function App() {
             <Route path="/dashboard/rejected" element={<ProtectedRoute allowedRoles={['organizer']}><RejectedScreen /></ProtectedRoute>} />
             <Route path="/dashboard/exhibitor" element={<ProtectedRoute allowedRoles={['exhibitor']}><ExhibitorDashboard /></ProtectedRoute>} />
             <Route path="/dashboard/attendee" element={<ProtectedRoute allowedRoles={['attendee']}><AttendeeDashboard /></ProtectedRoute>} />
+            {/* ── Phase 2: Public Expo Routes ── */}
+            <Route path="/expos" element={<ExpoListingPage />} />
+            <Route path="/expos/:id" element={<ExpoDetailPage />} />
+            <Route path="/expos/:id/schedule" element={<ScheduleBrowsePage />} />
+
+            {/* ── Phase 2: Organizer Routes ── */}
+            <Route path="/organizer/expos" element={<ProtectedRoute allowedRoles={['organizer']}><MyExposPage /></ProtectedRoute>} />
+            <Route path="/organizer/expos/new" element={<ProtectedRoute allowedRoles={['organizer']}><CreateExpoPage /></ProtectedRoute>} />
+            <Route path="/organizer/expos/:id/edit" element={<ProtectedRoute allowedRoles={['organizer']}><EditExpoPage /></ProtectedRoute>} />
+            <Route path="/organizer/expos/:id/applications" element={<ProtectedRoute allowedRoles={['organizer']}><ApplicationsPage /></ProtectedRoute>} />
+            <Route path="/organizer/expos/:id/schedule" element={<ProtectedRoute allowedRoles={['organizer']}><ScheduleBuilderPage /></ProtectedRoute>} />
+            <Route path="/organizer/expos/:id/booths" element={<ProtectedRoute allowedRoles={['organizer']}><BoothLayoutPage /></ProtectedRoute>} />
+            <Route path="/organizer/scanner" element={<ProtectedRoute allowedRoles={['organizer']}><ScannerPage /></ProtectedRoute>} />
+
+            {/* ── Phase 2: Exhibitor Routes ── */}
+            <Route path="/exhibitor/applications" element={<ProtectedRoute allowedRoles={['exhibitor']}><MyApplicationsPage /></ProtectedRoute>} />
+            <Route path="/expos/:id/apply" element={<ProtectedRoute allowedRoles={['exhibitor']}><ApplicationFormPage /></ProtectedRoute>} />
+
+            {/* ── Phase 2: Attendee Routes ── */}
+            <Route path="/attendee/tickets" element={<ProtectedRoute allowedRoles={['attendee']}><MyTicketsPage /></ProtectedRoute>} />
+            <Route path="/attendee/tickets/:ticketId" element={<ProtectedRoute allowedRoles={['attendee']}><TicketDetailPage /></ProtectedRoute>} />
+
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>
