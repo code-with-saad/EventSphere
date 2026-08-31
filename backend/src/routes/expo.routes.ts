@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+﻿import { Router, Response } from 'express';
 import asyncHandler from '../utils/asyncHandler';
 import ExpoService from '../services/expo.service';
 import { authenticate, AuthRequest } from '../middleware/auth.middleware';
@@ -7,7 +7,7 @@ import type { ExpoListStatusFilter } from '../services/expo.service';
 
 const router = Router();
 
-// ── Public routes ─────────────────────────────────────────────────────────────
+// â”€â”€ Public routes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * GET /api/expos
@@ -41,7 +41,7 @@ router.get(
   })
 );
 
-// ── Organizer-scoped routes ────────────────────────────────────────────────────
+// â”€â”€ Organizer-scoped routes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * GET /api/organizer/expos
@@ -67,6 +67,32 @@ router.get(
       success: true,
       message: 'Organizer expos retrieved successfully',
       data: { expos },
+    });
+  })
+);
+
+/**
+ * GET /api/organizer/expos/:id
+ *
+ * Returns full expo detail for the owning organizer regardless of status.
+ * Used by EditExpoPage to fetch draft expos (getPublicDetail rejects drafts).
+ *
+ * Access: Organizer only (must own the expo)
+ */
+router.get(
+  '/expos/:id',
+  authenticate,
+  authorize('organizer'),
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const expo = await ExpoService.getById(
+      req.params.id as string,
+      req.user!.userId
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Expo retrieved successfully',
+      data: { expo },
     });
   })
 );
@@ -259,3 +285,4 @@ router.get(
 );
 
 export default router;
+

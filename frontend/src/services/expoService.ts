@@ -1,4 +1,4 @@
-import api from './api';
+﻿import api from './api';
 
 export const expoService = {
   // Public listing with optional query params: { status?, search?, page?, limit? }
@@ -7,6 +7,10 @@ export const expoService = {
 
   getById: (id: string) =>
     api.get(`/api/expos/${id}`).then(r => r.data.data),
+
+  // Organizer-scoped fetch — returns draft expos too (getById only returns published/ongoing/completed)
+  getByIdForOrganizer: (id: string) =>
+    api.get(`/api/organizer/expos/${id}`).then(r => r.data.data),
 
   create: (data: Record<string, any>) =>
     api.post('/api/expos', data).then(r => r.data.data),
@@ -30,3 +34,4 @@ export const expoService = {
   listMine: () =>
     api.get('/api/organizer/expos').then(r => r.data.data),
 };
+

@@ -10,6 +10,13 @@ import SessionModel from './models/Session.model';
 import BookmarkModel from './models/Bookmark.model';
 import authRoutes from './routes/auth.routes';
 import adminRoutes from './routes/admin.routes';
+import expoRoutes from './routes/expo.routes';
+import applicationRoutes from './routes/application.routes';
+import ticketRoutes from './routes/ticket.routes';
+import sessionRoutes from './routes/session.routes';
+import bookmarkRoutes from './routes/bookmark.routes';
+import dashboardRoutes from './routes/dashboard.routes';
+import uploadRoutes from './routes/upload.routes';
 import errorHandler, { notFoundHandler } from './middleware/error.middleware';
 
 const app = express();
@@ -35,6 +42,16 @@ app.use(express.urlencoded({ extended: true }));
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/expos', expoRoutes);
+app.use('/api/organizer', expoRoutes);
+app.use('/api/expos', applicationRoutes);
+app.use('/api/exhibitor', applicationRoutes);
+app.use('/api/tickets', ticketRoutes);
+app.use('/api/expos', ticketRoutes);
+app.use('/api/expos', sessionRoutes);
+app.use('/api/expos', bookmarkRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Health check endpoint
 app.get('/health', (_req: Request, res: Response) => {

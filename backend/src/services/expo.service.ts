@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+﻿import { ObjectId } from 'mongodb';
 import ExpoModel from '../models/Expo.model';
 import ApplicationModel from '../models/Application.model';
 import TicketModel from '../models/Ticket.model';
@@ -124,7 +124,7 @@ function truncate(str: string, max: number): string {
 
 class ExpoService {
   // -------------------------------------------------------------------------
-  // 11a — create()
+  // 11a â€” create()
   // -------------------------------------------------------------------------
 
   /**
@@ -132,8 +132,8 @@ class ExpoService {
    *
    * Validates required field lengths and date logic before inserting.
    *
-   * @param organizerId — string from req.user.userId
-   * @param data        — raw body from the route handler
+   * @param organizerId â€” string from req.user.userId
+   * @param data        â€” raw body from the route handler
    */
   async create(
     organizerId: string,
@@ -191,7 +191,7 @@ class ExpoService {
       throw createError('venueAddress is required', 'MISSING_REQUIRED_FIELDS', 400);
     }
     if (!Number.isInteger(data.totalBooths) || data.totalBooths < 1) {
-      throw createError('totalBooths must be an integer ≥ 1', 'INVALID_FIELD_LENGTH', 400);
+      throw createError('totalBooths must be an integer â‰¥ 1', 'INVALID_FIELD_LENGTH', 400);
     }
     if (data.tags && data.tags.length > 10) {
       throw createError('tags must have at most 10 items', 'INVALID_FIELD_LENGTH', 400);
@@ -245,16 +245,16 @@ class ExpoService {
   }
 
   // -------------------------------------------------------------------------
-  // 11b — update()
+  // 11b â€” update()
   // -------------------------------------------------------------------------
 
   /**
    * Partially update an expo. Validates ownership and re-validates date logic
    * if any date field is included in the update.
    *
-   * @param expoId      — MongoDB _id string
-   * @param organizerId — string from req.user.userId
-   * @param data        — partial update fields
+   * @param expoId      â€” MongoDB _id string
+   * @param organizerId â€” string from req.user.userId
+   * @param data        â€” partial update fields
    */
   async update(
     expoId: string,
@@ -293,7 +293,7 @@ class ExpoService {
     }
     if (data.totalBooths !== undefined) {
       if (!Number.isInteger(data.totalBooths) || data.totalBooths < 1) {
-        throw createError('totalBooths must be an integer ≥ 1', 'INVALID_FIELD_LENGTH', 400);
+        throw createError('totalBooths must be an integer â‰¥ 1', 'INVALID_FIELD_LENGTH', 400);
       }
     }
     if (data.tags !== undefined) {
@@ -344,20 +344,20 @@ class ExpoService {
   }
 
   // -------------------------------------------------------------------------
-  // 11c — transition()
+  // 11c â€” transition()
   // -------------------------------------------------------------------------
 
   /**
    * Validate and execute a status transition on an expo.
    *
    * - Enforces VALID_TRANSITIONS map.
-   * - `draft → published` additionally runs validateForPublish().
-   * - `* → archived` runs the cascade gate.
+   * - `draft â†’ published` additionally runs validateForPublish().
+   * - `* â†’ archived` runs the cascade gate.
    *
-   * @param expoId      — MongoDB _id string
-   * @param organizerId — string from req.user.userId
-   * @param newStatus   — target status
-   * @param confirmed   — must be true to proceed through cascade gate
+   * @param expoId      â€” MongoDB _id string
+   * @param organizerId â€” string from req.user.userId
+   * @param newStatus   â€” target status
+   * @param confirmed   â€” must be true to proceed through cascade gate
    */
   async transition(
     expoId: string,
@@ -409,7 +409,7 @@ class ExpoService {
   }
 
   // -------------------------------------------------------------------------
-  // 11d — getCascadePreview()
+  // 11d â€” getCascadePreview()
   // -------------------------------------------------------------------------
 
   /**
@@ -445,16 +445,16 @@ class ExpoService {
   }
 
   // -------------------------------------------------------------------------
-  // 11e — delete()
+  // 11e â€” delete()
   // -------------------------------------------------------------------------
 
   /**
    * Permanently delete an expo. Validates ownership, runs cascade gate,
    * executes cascade if confirmed, then removes the document.
    *
-   * @param expoId      — MongoDB _id string
-   * @param organizerId — string from req.user.userId
-   * @param confirmed   — must be true to proceed when cascade counts > 0
+   * @param expoId      â€” MongoDB _id string
+   * @param organizerId â€” string from req.user.userId
+   * @param confirmed   â€” must be true to proceed when cascade counts > 0
    */
   async delete(expoId: string, organizerId: string, confirmed?: boolean): Promise<void> {
     const expo = await this._requireExpo(expoId);
@@ -475,17 +475,17 @@ class ExpoService {
   }
 
   // -------------------------------------------------------------------------
-  // 11f — listPublic()
+  // 11f â€” listPublic()
   // -------------------------------------------------------------------------
 
   /**
    * Paginated public listing of expos (max 12/page).
    *
    * Status filter mapping:
-   *   'upcoming'  → published
-   *   'ongoing'   → ongoing
-   *   'completed' → completed
-   *   (none)      → published + ongoing + completed
+   *   'upcoming'  â†’ published
+   *   'ongoing'   â†’ ongoing
+   *   'completed' â†’ completed
+   *   (none)      â†’ published + ongoing + completed
    *
    * Appends approvedExhibitorCount to each DTO via a separate aggregation.
    */
@@ -557,8 +557,15 @@ class ExpoService {
     };
   }
 
+  // getById - organizer-scoped (all statuses including draft)
+  async getById(expoId: string, organizerId: string): Promise<IExpo> {
+    const expo = await this._requireExpo(expoId);
+    this._requireOwnership(expo, organizerId);
+    return expo;
+  }
+
   // -------------------------------------------------------------------------
-  // 11g — getPublicDetail()
+  // 11g â€” getPublicDetail()
   // -------------------------------------------------------------------------
 
   /**
@@ -609,7 +616,7 @@ class ExpoService {
   }
 
   // -------------------------------------------------------------------------
-  // 11h — listByOrganizer() and getExpoStats()
+  // 11h â€” listByOrganizer() and getExpoStats()
   // -------------------------------------------------------------------------
 
   /**
@@ -663,7 +670,7 @@ class ExpoService {
   }
 
   // -------------------------------------------------------------------------
-  // 11i — private validateForPublish() and executeCascade()
+  // 11i â€” private validateForPublish() and executeCascade()
   // -------------------------------------------------------------------------
 
   /**
@@ -782,3 +789,5 @@ class ExpoService {
 }
 
 export default new ExpoService();
+
+

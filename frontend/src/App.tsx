@@ -22,6 +22,9 @@ import ExpoDetailPage from './pages/expos/ExpoDetailPage';
 import MyExposPage from './pages/organizer/MyExposPage';
 import CreateExpoPage from './pages/organizer/CreateExpoPage';
 import EditExpoPage from './pages/organizer/EditExpoPage';
+import ApplicationsPage from './pages/organizer/ApplicationsPage';
+import ApplicationFormPage from './pages/exhibitor/ApplicationFormPage';
+import MyApplicationsPage from './pages/exhibitor/MyApplicationsPage';
 
 /**
  * Single source of truth for where an authenticated user should land.
@@ -81,12 +84,9 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
 
 // ── Phase 2 page placeholders (replaced by real imports as pages are built) ──
 const ScheduleBrowsePage = () => <div>ScheduleBrowsePage</div>;
-const ApplicationsPage = () => <div>ApplicationsPage</div>;
 const ScheduleBuilderPage = () => <div>ScheduleBuilderPage</div>;
 const BoothLayoutPage = () => <div>BoothLayoutPage</div>;
 const ScannerPage = () => <div>ScannerPage</div>;
-const MyApplicationsPage = () => <div>MyApplicationsPage</div>;
-const ApplicationFormPage = () => <div>ApplicationFormPage</div>;
 const MyTicketsPage = () => <div>MyTicketsPage</div>;
 const TicketDetailPage = () => <div>TicketDetailPage</div>;
 
@@ -144,4 +144,6 @@ function App() {
 }
 
 export default App;
+
+
 

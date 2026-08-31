@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { expoService } from '../../services/expoService';
@@ -25,7 +25,7 @@ export default function EditExpoPage() {
     if (!id) return;
     setLoading(true);
     expoService
-      .getById(id)
+      .getByIdForOrganizer(id)
       .then((data: any) => setExpo(data?.expo ?? data))
       .catch((err: any) =>
         setError(err?.response?.data?.message || err?.message || 'Failed to load expo')
@@ -40,7 +40,7 @@ export default function EditExpoPage() {
       await expoService.update(id, data as Record<string, any>);
       toast.success('Expo updated successfully!');
       // Re-fetch to get latest data
-      const updated: any = await expoService.getById(id);
+      const updated: any = await expoService.getByIdForOrganizer(id);
       setExpo(updated?.expo ?? updated);
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Failed to update expo';
@@ -102,7 +102,7 @@ export default function EditExpoPage() {
             isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
           }`}
         >
-          Loading expo…
+          Loading expoâ€¦
         </p>
       </Shell>
     );
@@ -169,7 +169,7 @@ export default function EditExpoPage() {
                   onSuccess={() => {
                     toast.success('Expo published!');
                     expoService
-                      .getById(id!)
+                      .getByIdForOrganizer(id!)
                       .then((d: any) => setExpo(d?.expo ?? d));
                   }}
                   onError={(msg) => toast.error(msg)}
@@ -212,3 +212,4 @@ export default function EditExpoPage() {
     </div>
   );
 }
+
