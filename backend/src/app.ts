@@ -15,6 +15,8 @@ import adminRoutes from './routes/admin.routes';
 import expoRoutes from './routes/expo.routes';
 import applicationRoutes from './routes/application.routes';
 import ticketRoutes from './routes/ticket.routes';
+import sessionRoutes from './routes/session.routes';
+import bookmarkRoutes from './routes/bookmark.routes';
 import uploadRoutes from './routes/upload.routes';
 import errorHandler, { notFoundHandler } from './middleware/error.middleware';
 
@@ -43,6 +45,8 @@ app.use('/api/expos', applicationRoutes);
 app.use('/api/exhibitor', applicationRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/expos', ticketRoutes);
+app.use('/api/expos', sessionRoutes);
+app.use('/api/expos', bookmarkRoutes);
 app.use('/api/upload', uploadRoutes);
 
 // ── Utility endpoints ─────────────────────────────────────────────────────────
