@@ -1,4 +1,4 @@
-﻿import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, ThemeProvider } from './contexts';
 import { useAuth } from './contexts/AuthContext';
 import { ToastContainer } from './components/common/ToastContainer';
@@ -26,14 +26,16 @@ import ApplicationsPage from './pages/organizer/ApplicationsPage';
 import ApplicationFormPage from './pages/exhibitor/ApplicationFormPage';
 import MyApplicationsPage from './pages/exhibitor/MyApplicationsPage';
 import MyTicketsPage from './pages/attendee/MyTicketsPage';
+import ScheduleBuilderPage from './pages/organizer/ScheduleBuilderPage';
 import TicketDetailPage from './pages/attendee/TicketDetailPage';
+import ScheduleBrowsePage from './pages/attendee/ScheduleBrowsePage';
 
 /**
  * Single source of truth for where an authenticated user should land.
  *
  * Rules:
- *  - Organizer with status 'pending'  → /dashboard/pending-approval
- *  - All other roles / active users   → role-specific dashboard
+ *  - Organizer with status 'pending'  ? /dashboard/pending-approval
+ *  - All other roles / active users   ? role-specific dashboard
  */
 export function getHomeRoute(user: { role: string; status: string }): string {
   if (user.role === 'organizer' && user.status === 'pending') {
@@ -70,7 +72,7 @@ function RootRedirect() {
 /**
  * Wraps public-only pages (login, register).
  * If the user is already authenticated, redirect them to their correct home
- * using getHomeRoute — which handles the pending-organizer case too.
+ * using getHomeRoute � which handles the pending-organizer case too.
  * This is what makes the post-login redirect work without any navigate() call
  * inside LoginPage: as soon as login() sets auth state, this re-renders and
  * sends the user to the right place.
@@ -84,9 +86,7 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// ── Phase 2 page placeholders (replaced by real imports as pages are built) ──
-const ScheduleBrowsePage = () => <div>ScheduleBrowsePage</div>;
-const ScheduleBuilderPage = () => <div>ScheduleBuilderPage</div>;
+// -- Phase 2 page placeholders (replaced by real imports as pages are built) --
 const BoothLayoutPage = () => <div>BoothLayoutPage</div>;
 const ScannerPage = () => <div>ScannerPage</div>;
 
@@ -114,12 +114,12 @@ function App() {
             <Route path="/dashboard/rejected" element={<ProtectedRoute allowedRoles={['organizer']}><RejectedScreen /></ProtectedRoute>} />
             <Route path="/dashboard/exhibitor" element={<ProtectedRoute allowedRoles={['exhibitor']}><ExhibitorDashboard /></ProtectedRoute>} />
             <Route path="/dashboard/attendee" element={<ProtectedRoute allowedRoles={['attendee']}><AttendeeDashboard /></ProtectedRoute>} />
-            {/* ── Phase 2: Public Expo Routes ── */}
+            {/* -- Phase 2: Public Expo Routes -- */}
             <Route path="/expos" element={<ExpoListingPage />} />
             <Route path="/expos/:id" element={<ExpoDetailPage />} />
             <Route path="/expos/:id/schedule" element={<ScheduleBrowsePage />} />
 
-            {/* ── Phase 2: Organizer Routes ── */}
+            {/* -- Phase 2: Organizer Routes -- */}
             <Route path="/organizer/expos" element={<ProtectedRoute allowedRoles={['organizer']}><MyExposPage /></ProtectedRoute>} />
             <Route path="/organizer/expos/new" element={<ProtectedRoute allowedRoles={['organizer']}><CreateExpoPage /></ProtectedRoute>} />
             <Route path="/organizer/expos/:id/edit" element={<ProtectedRoute allowedRoles={['organizer']}><EditExpoPage /></ProtectedRoute>} />
@@ -128,11 +128,11 @@ function App() {
             <Route path="/organizer/expos/:id/booths" element={<ProtectedRoute allowedRoles={['organizer']}><BoothLayoutPage /></ProtectedRoute>} />
             <Route path="/organizer/scanner" element={<ProtectedRoute allowedRoles={['organizer']}><ScannerPage /></ProtectedRoute>} />
 
-            {/* ── Phase 2: Exhibitor Routes ── */}
+            {/* -- Phase 2: Exhibitor Routes -- */}
             <Route path="/exhibitor/applications" element={<ProtectedRoute allowedRoles={['exhibitor']}><MyApplicationsPage /></ProtectedRoute>} />
             <Route path="/expos/:id/apply" element={<ProtectedRoute allowedRoles={['exhibitor']}><ApplicationFormPage /></ProtectedRoute>} />
 
-            {/* ── Phase 2: Attendee Routes ── */}
+            {/* -- Phase 2: Attendee Routes -- */}
             <Route path="/attendee/tickets" element={<ProtectedRoute allowedRoles={['attendee']}><MyTicketsPage /></ProtectedRoute>} />
             <Route path="/attendee/tickets/:ticketId" element={<ProtectedRoute allowedRoles={['attendee']}><TicketDetailPage /></ProtectedRoute>} />
 
