@@ -123,6 +123,11 @@ export default function ApplicationForm({
     }
     if (!form.phoneNumber.trim()) {
       errors.phoneNumber = 'Phone number is required';
+    } else {
+      const phonePattern = /^[+\d\s\-().]{7,20}$/;
+      if (!phonePattern.test(form.phoneNumber.trim())) {
+        errors.phoneNumber = 'Enter a valid phone number (digits, spaces, +, - only)';
+      }
     }
     setStep1Errors(errors);
     return Object.keys(errors).length === 0;

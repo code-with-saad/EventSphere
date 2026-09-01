@@ -1,12 +1,13 @@
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { applicationService } from '../../services/applicationService';
 import { Sidebar } from '../../components/layout/Sidebar';
 import { Header } from '../../components/layout/Header';
 import { BottomNav } from '../../components/layout/BottomNav';
+import PageHeader from '../../components/layout/PageHeader';
 import ApplicationForm from '../../components/application/ApplicationForm';
 import toast from 'react-hot-toast';
-import { useState } from 'react';
 
 export default function ApplicationFormPage() {
   const { id: expoId } = useParams<{ id: string }>();
@@ -14,6 +15,24 @@ export default function ApplicationFormPage() {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
   const [isLoading, setIsLoading] = useState(false);
+  const [alreadyApplied, setAlreadyApplied] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  // Check for existing application on mount — redirect if already applied
+  useEffect(() => {
+    if (!expoId) return;
+    applicationService.getMine(expoId)
+      .then((data: any) => {
+        const app = data?.application ?? data;
+        if (app && (app.status === 'pending' || app.status === 'approved')) {
+          setAlreadyApplied(true);
+          toast.error('You already have an active application for this expo.');
+          navigate(`/expos/${expoId}`, { replace: true });
+        }
+      })
+      .catch(() => { /* no application found — proceed */ })
+      .finally(() => setChecking(false));
+  }, [expoId, navigate]);
 
   const handleSubmit = async (data: Record<string, unknown>) => {
     if (!expoId) return;
@@ -26,18 +45,21 @@ export default function ApplicationFormPage() {
       const code = (err as any)?.response?.data?.code;
       if (code === 'DUPLICATE_APPLICATION') {
         toast.error('You already have an active application for this expo.');
+        navigate(`/expos/${expoId}`, { replace: true });
       } else {
         toast.error(
           (err as any)?.response?.data?.message ||
           (err as any)?.message ||
-          'Submission failed. Please try again.'
+          'Submission failed.'
         );
       }
-      throw err; // re-throw so ApplicationForm shows inline error too
+      throw err;
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (checking || alreadyApplied) return null;
 
   return (
     <div className="dashboard-root">
@@ -47,23 +69,14 @@ export default function ApplicationFormPage() {
         <main className={`flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token ${
           isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'
         }`}>
-          <div className="max-w-2xl mx-auto">
-            <h2 className={`text-xl-token font-semibold mb-lg-token leading-tight-token ${
-              isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
-            }`}>
-              Apply to Exhibit
-            </h2>
-            <div className={`rounded-lg-token border p-lg-token ${
-              isDarkMode
-                ? 'bg-bg-surface-dark border-border-base-dark'
-                : 'bg-bg-surface-light border-border-base-light'
-            }`}>
-              <ApplicationForm
-                onSubmit={handleSubmit}
-                isLoading={isLoading}
-                submitLabel="Submit Application"
-              />
-            </div>
+          <div className="max-w-3xl mx-auto">
+            <PageHeader
+              title="Apply to Exhibit"
+              subtitle="Complete both steps to submit your application. The organizer will review it before approval."
+              backFallback={expoId ? `/expos/${expoId}` : '/expos'}
+              backLabel="Back to Expo"
+            />
+            <ApplicationForm onSubmit={handleSubmit} isLoading={isLoading} submitLabel="Submit Application" />
           </div>
         </main>
       </div>

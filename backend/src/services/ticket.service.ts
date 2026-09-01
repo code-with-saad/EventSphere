@@ -239,6 +239,15 @@ class TicketService {
       );
     }
 
+    // 2b. Validate ticket is not cancelled
+    if (ticket.status === 'cancelled') {
+      throw createError(
+        'This ticket has been cancelled. PDF download is not available.',
+        'TICKET_CANCELLED',
+        400
+      );
+    }
+
     // 3. Look up expo
     const expo = await ExpoModel.findById(ticket.expoId);
     if (!expo) {

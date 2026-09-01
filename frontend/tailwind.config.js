@@ -98,6 +98,10 @@ export default {
         'lg-token': '12px',
         'xl-token': '16px',
       },
+      boxShadow: {
+        'glow-brand-dark':  '0 0 0 3px rgba(129, 140, 248, 0.4)',
+        'glow-brand-light': '0 0 0 3px rgba(79, 70, 229, 0.2)',
+      },
     },
   },
   plugins: [],

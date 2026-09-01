@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Calendar, MapPin, Building2, Globe } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { expoService } from '../../services/expoService';
@@ -9,11 +10,10 @@ import ExpoStatusBadge from '../../components/expo/ExpoStatusBadge';
 import ExhibitorCard from '../../components/exhibitor/ExhibitorCard';
 import ExhibitorFilterBar from '../../components/exhibitor/ExhibitorFilterBar';
 import ExhibitorDetailModal from '../../components/exhibitor/ExhibitorDetailModal';
+import PublicNavBar from '../../components/layout/PublicNavBar';
 
 function formatDate(iso: string | Date): string {
-  return new Date(iso).toLocaleDateString('en-US', {
-    weekday: 'short', month: 'long', day: 'numeric', year: 'numeric',
-  });
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function formatTime(iso: string | Date): string {
@@ -35,7 +35,6 @@ export default function ExpoDetailPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedExhibitor, setSelectedExhibitor] = useState<any | null>(null);
-
   const [registering, setRegistering] = useState(false);
   const [registerMessage, setRegisterMessage] = useState<{ text: string; type: 'success' | 'warn' } | null>(null);
 
@@ -51,26 +50,17 @@ export default function ExpoDetailPage() {
         setExpo(expoData?.expo ?? expoData);
         setSessions(sessionData?.sessions ?? (Array.isArray(sessionData) ? sessionData : []));
       })
-      .catch((err: any) => {
-        setError(err?.response?.data?.message || err?.message || 'Failed to load expo');
-      })
+      .catch((err: any) => setError(err?.response?.data?.message || err?.message || 'Failed to load expo'))
       .finally(() => setLoading(false));
   }, [id]);
 
   const exhibitors: any[] = expo?.approvedApplications ?? [];
-
-  const categories = useMemo(
-    () => [...new Set<string>(exhibitors.map((e: any) => e.category).filter(Boolean))],
-    [exhibitors]
-  );
-
-  const filteredExhibitors = useMemo(() => {
-    return exhibitors.filter((e: any) => {
-      const matchSearch = !searchQuery || e.companyName?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchCat = !selectedCategory || e.category === selectedCategory;
-      return matchSearch && matchCat;
-    });
-  }, [exhibitors, searchQuery, selectedCategory]);
+  const categories = useMemo(() => [...new Set<string>(exhibitors.map((e: any) => e.category).filter(Boolean))], [exhibitors]);
+  const filteredExhibitors = useMemo(() => exhibitors.filter((e: any) => {
+    const matchSearch = !searchQuery || e.companyName?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchCat = !selectedCategory || e.category === selectedCategory;
+    return matchSearch && matchCat;
+  }), [exhibitors, searchQuery, selectedCategory]);
 
   const handleRegister = async () => {
     if (!isAuthenticated) { navigate(`/login?redirect=/expos/${id}`); return; }
@@ -83,9 +73,7 @@ export default function ExpoDetailPage() {
     } catch (err: any) {
       const code = err?.response?.data?.code;
       setRegisterMessage({
-        text: code === 'DUPLICATE_REGISTRATION'
-          ? 'You are already registered for this expo.'
-          : err?.response?.data?.message || 'Registration failed. Please try again.',
+        text: code === 'DUPLICATE_REGISTRATION' ? 'You are already registered for this expo.' : err?.response?.data?.message || 'Registration failed.',
         type: 'warn',
       });
     } finally {
@@ -98,58 +86,119 @@ export default function ExpoDetailPage() {
     navigate(`/expos/${id}/apply`);
   };
 
-  const primaryBtn = `px-md-token py-xs-token rounded-md-token text-sm-token font-semibold transition-colors disabled:opacity-60 ${
+  const primaryBtn = `px-md-token py-sm-token rounded-md-token text-sm-token font-semibold transition-all disabled:opacity-60 ${
     isDarkMode
-      ? 'bg-brand-primary-dark text-text-on-primary-dark hover:opacity-90'
-      : 'bg-brand-primary-light text-text-on-primary-light hover:opacity-90'
+      ? 'bg-brand-primary-dark text-text-on-primary-dark hover:opacity-90 focus:outline-none focus:shadow-glow-brand-dark'
+      : 'bg-brand-primary-light text-text-on-primary-light hover:opacity-90 focus:outline-none focus:shadow-glow-brand-light'
+  }`;
+
+  const secondaryBtn = `px-md-token py-sm-token rounded-md-token text-sm-token font-semibold border transition-colors ${
+    isDarkMode ? 'border-border-base-dark text-text-primary-dark hover:bg-bg-hover-dark' : 'border-border-base-light text-text-primary-light hover:bg-bg-hover-light'
   }`;
 
   if (loading) return (
-    <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
-      <p className={`text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>Loading expo…</p>
+    <div className={`min-h-screen ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
+      <PublicNavBar />
+      <div className="flex items-center justify-center py-xxl-token">
+        <p className={`text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>Loading…</p>
+      </div>
     </div>
   );
 
   if (error || !expo) return (
-    <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
-      <p className={`text-sm-token ${isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'}`}>{error || 'Expo not found.'}</p>
+    <div className={`min-h-screen ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
+      <PublicNavBar />
+      <div className="flex items-center justify-center py-xxl-token">
+        <p className={`text-sm-token ${isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'}`}>{error || 'Expo not found.'}</p>
+      </div>
     </div>
   );
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
-      <div className="max-w-5xl mx-auto p-md-token md:p-lg-token">
+      <PublicNavBar />
 
-        {expo.bannerUrl && (
-          <img src={expo.bannerUrl} alt={expo.name} className="w-full h-56 object-cover rounded-lg-token mb-lg-token" />
-        )}
-
-        <div className="flex flex-wrap items-start justify-between gap-sm-token mb-md-token">
-          <div>
-            <h1 className={`text-xl-token font-semibold leading-tight-token mb-xs-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+      {/* Hero banner — full width, no side padding */}
+      <div className="w-full h-64 md:h-80 relative overflow-hidden">
+        {expo.bannerUrl ? (
+          <>
+            <img
+              src={expo.bannerUrl}
+              alt={expo.name}
+              className="w-full h-full object-cover"
+            />
+            {/* Gradient overlay — bottom fade so content below has breathing room */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: isDarkMode
+                  ? 'linear-gradient(to bottom, transparent 40%, rgba(11,17,32,0.7) 100%)'
+                  : 'linear-gradient(to bottom, transparent 40%, rgba(248,250,252,0.6) 100%)',
+              }}
+              aria-hidden="true"
+            />
+          </>
+        ) : (
+          /* Brand gradient fallback — no arbitrary hex, uses inline style mapping to existing token values */
+          <div
+            className="w-full h-full flex flex-col items-center justify-center gap-sm-token"
+            style={{
+              background: isDarkMode
+                ? 'linear-gradient(135deg, #0B1120 0%, #1E293B 60%, rgba(129,140,248,0.12) 100%)'
+                : 'linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 60%, rgba(79,70,229,0.06) 100%)',
+            }}
+          >
+            <span
+              className={`text-xl-token font-bold tracking-tight ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`}
+            >
               {expo.name}
-            </h1>
-            <div className="flex flex-wrap items-center gap-sm-token">
+            </span>
+            {expo.category && (
+              <span className={`text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                {expo.category}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="max-w-4xl mx-auto px-md-token md:px-lg-token pt-lg-token md:pt-xl-token pb-xxl-token">
+
+        {/* Title + actions row */}
+        <div className="flex flex-wrap items-start justify-between gap-md-token mb-lg-token">
+          <div>
+            <div className="flex flex-wrap items-center gap-sm-token mb-xs-token">
               <ExpoStatusBadge status={expo.status} />
               {expo.category && (
-                <span className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>{expo.category}</span>
+                <span className={`inline-flex items-center px-sm-token py-xs-token rounded-sm-token text-xs-token font-medium ${
+                  isDarkMode
+                    ? 'bg-bg-surface-dark text-text-secondary-dark border border-border-base-dark'
+                    : 'bg-bg-surface-light text-text-secondary-light border border-border-base-light'
+                }`}>
+                  {expo.category}
+                </span>
               )}
             </div>
+            <h1 className={`text-xl-token font-bold leading-tight-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+              {expo.name}
+            </h1>
           </div>
-          <div className="flex flex-wrap gap-sm-token">
+
+          <div className="flex flex-wrap gap-sm-token items-center">
             {(!isAuthenticated || user?.role === 'attendee') && (
               <button onClick={handleRegister} disabled={registering} className={primaryBtn}>
                 {registering ? 'Registering…' : 'Register for Expo'}
               </button>
             )}
             {expo.status === 'published' && (!isAuthenticated || user?.role === 'exhibitor') && (
-              <button onClick={handleApply} className={primaryBtn}>Apply to Exhibit</button>
+              <button onClick={handleApply} className={secondaryBtn}>Apply to Exhibit</button>
             )}
           </div>
         </div>
 
+        {/* Registration feedback */}
         {registerMessage && (
-          <div className={`mb-md-token px-md-token py-sm-token rounded-md-token text-sm-token ${
+          <div className={`mb-lg-token px-md-token py-sm-token rounded-md-token text-sm-token ${
             registerMessage.type === 'success'
               ? isDarkMode ? 'bg-bg-success-dark text-text-success-dark' : 'bg-bg-success-light text-text-success-light'
               : isDarkMode ? 'bg-bg-warning-dark text-text-warning-dark' : 'bg-bg-warning-light text-text-warning-light'
@@ -158,33 +207,70 @@ export default function ExpoDetailPage() {
           </div>
         )}
 
-        <div className={`flex flex-wrap gap-md-token mb-lg-token text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
-          <span>📅 {formatDate(expo.startDate)} – {formatDate(expo.endDate)}</span>
-          <span>📍 {expo.venueName}, {expo.venueAddress}</span>
-          {expo.totalBooths && <span>🏬 {expo.totalBooths} booths</span>}
+        {/* Metadata row — icon + text, no emojis */}
+        <div className={`flex flex-wrap gap-lg-token mb-xl-token px-md-token py-sm-token rounded-lg-token border backdrop-blur-sm text-sm-token ${
+          isDarkMode
+            ? 'bg-glass-dark border-glass-border-dark text-text-secondary-dark'
+            : 'bg-glass-light border-glass-border-light text-text-secondary-light'
+        }`}>
+          <span className="flex items-center gap-xs-token">
+            <Calendar className="w-4 h-4 shrink-0" aria-hidden="true" />
+            {formatDate(expo.startDate)} – {formatDate(expo.endDate)}
+          </span>
+          <span className="flex items-center gap-xs-token">
+            <MapPin className="w-4 h-4 shrink-0" aria-hidden="true" />
+            {expo.venueName}{expo.venueAddress ? `, ${expo.venueAddress}` : ''}
+          </span>
+          {expo.totalBooths && (
+            <span className="flex items-center gap-xs-token">
+              <Building2 className="w-4 h-4 shrink-0" aria-hidden="true" />
+              {expo.totalBooths} booths
+            </span>
+          )}
           {expo.websiteUrl && (
-            <a href={expo.websiteUrl} target="_blank" rel="noopener noreferrer"
-              className={isDarkMode ? 'text-brand-primary-dark underline' : 'text-brand-primary-light underline'}>
-              🔗 Website
+            <a
+              href={expo.websiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex items-center gap-xs-token underline transition-colors ${isDarkMode ? 'text-brand-primary-dark hover:opacity-80' : 'text-brand-primary-light hover:opacity-80'}`}
+            >
+              <Globe className="w-4 h-4 shrink-0" aria-hidden="true" />
+              Website
             </a>
           )}
         </div>
 
-        <section className="mb-lg-token">
-          <h2 className={`text-base-token font-semibold mb-sm-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>About this Expo</h2>
-          <p className={`text-sm-token leading-normal-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>{expo.description}</p>
+        {/* About section */}
+        <section className="mb-xl-token">
+          <h2 className={`text-base-token font-semibold mb-sm-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+            About this Expo
+          </h2>
+          <p className={`text-sm-token leading-loose-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+            {expo.description}
+          </p>
         </section>
 
+        {/* Exhibitors */}
         {exhibitors.length > 0 && (
-          <section className="mb-lg-token">
-            <h2 className={`text-base-token font-semibold mb-sm-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
-              Exhibitors ({exhibitors.length})
+          <section className="mb-xl-token">
+            <h2 className={`text-base-token font-semibold mb-md-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+              Exhibitors{' '}
+              <span className={`text-sm-token font-regular ml-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                ({exhibitors.length})
+              </span>
             </h2>
-            <div className="mb-sm-token">
-              <ExhibitorFilterBar onSearch={setSearchQuery} onCategoryChange={setSelectedCategory} categories={categories} selectedCategory={selectedCategory} />
+            <div className="mb-md-token">
+              <ExhibitorFilterBar
+                onSearch={setSearchQuery}
+                onCategoryChange={setSelectedCategory}
+                categories={categories}
+                selectedCategory={selectedCategory}
+              />
             </div>
             {filteredExhibitors.length === 0 ? (
-              <p className={`text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>No exhibitors match your search.</p>
+              <p className={`text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                No exhibitors match your search.
+              </p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md-token">
                 {filteredExhibitors.map((ex: any) => (
@@ -195,20 +281,28 @@ export default function ExpoDetailPage() {
           </section>
         )}
 
+        {/* Schedule */}
         {sessions.length > 0 && (
-          <section className="mb-lg-token">
-            <h2 className={`text-base-token font-semibold mb-sm-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>Schedule</h2>
-            <div className={`rounded-lg-token border overflow-hidden ${isDarkMode ? 'border-border-base-dark' : 'border-border-base-light'}`}>
+          <section className="mb-xl-token">
+            <h2 className={`text-base-token font-semibold mb-md-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+              Schedule
+            </h2>
+            <div className={`rounded-lg-token overflow-hidden border ${isDarkMode ? 'border-border-base-dark' : 'border-border-base-light'}`}>
               {sessions.map((s: any, i: number) => (
-                <div key={s._id} className={`flex flex-wrap items-start gap-sm-token p-md-token text-sm-token ${
-                  i < sessions.length - 1 ? isDarkMode ? 'border-b border-border-base-dark' : 'border-b border-border-base-light' : ''
-                } ${isDarkMode ? 'bg-bg-surface-dark' : 'bg-bg-surface-light'}`}>
-                  <div className={`text-xs-token font-medium min-w-[120px] ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                <div
+                  key={s._id}
+                  className={`flex flex-wrap items-start gap-md-token px-md-token py-sm-token ${
+                    i < sessions.length - 1
+                      ? isDarkMode ? 'border-b border-border-base-dark' : 'border-b border-border-base-light'
+                      : ''
+                  } ${isDarkMode ? 'bg-bg-surface-dark' : 'bg-bg-surface-light'}`}
+                >
+                  <div className={`text-xs-token font-medium w-[100px] shrink-0 pt-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
                     {formatTime(s.startTime)} – {formatTime(s.endTime)}
                   </div>
-                  <div className="flex-1">
-                    <div className={`font-medium ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>{s.title}</div>
-                    <div className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>{s.speakerName} · {s.room}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm-token font-medium ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>{s.title}</p>
+                    <p className={`text-xs-token mt-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>{s.speakerName} · {s.room}</p>
                   </div>
                 </div>
               ))}

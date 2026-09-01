@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { expoService } from '../../services/expoService';
 import ExpoCard from '../../components/expo/ExpoCard';
+import PublicNavBar from '../../components/layout/PublicNavBar';
+import { Search } from 'lucide-react';
 
 type StatusFilter = '' | 'upcoming' | 'ongoing' | 'completed';
 
@@ -26,22 +28,13 @@ export default function ExpoListingPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
 
-  // Debounce search 300ms
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchInput);
-      setPage(1); // reset to page 1 on new search
-    }, 300);
+    const timer = setTimeout(() => { setDebouncedSearch(searchInput); setPage(1); }, 300);
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  // Reset page when filter changes
-  const handleStatusChange = (value: StatusFilter) => {
-    setStatusFilter(value);
-    setPage(1);
-  };
+  const handleStatusChange = (value: StatusFilter) => { setStatusFilter(value); setPage(1); };
 
-  // Fetch expos
   const fetchExpos = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -49,7 +42,6 @@ export default function ExpoListingPage() {
       const query: Record<string, any> = { page, limit: 12 };
       if (statusFilter) query.status = statusFilter;
       if (debouncedSearch) query.search = debouncedSearch;
-
       const data = await expoService.list(query);
       setExpos(data?.expos ?? []);
       setPagination({
@@ -64,52 +56,54 @@ export default function ExpoListingPage() {
     }
   }, [page, statusFilter, debouncedSearch]);
 
-  useEffect(() => {
-    fetchExpos();
-  }, [fetchExpos]);
+  useEffect(() => { fetchExpos(); }, [fetchExpos]);
 
-  // ── Styles ──────────────────────────────────────────────────────────────────
-
-  const chipBase =
-    'px-sm-token py-xs-token rounded-sm-token text-sm-token font-medium transition-colors cursor-pointer';
-  const chipActive = isDarkMode
-    ? 'bg-brand-primary-dark text-text-on-primary-dark'
-    : 'bg-brand-primary-light text-text-on-primary-light';
+  const chipBase = 'px-sm-token py-xs-token rounded-sm-token text-xs-token font-medium transition-colors cursor-pointer whitespace-nowrap';
+  const chipActive = isDarkMode ? 'bg-brand-primary-dark text-text-on-primary-dark' : 'bg-brand-primary-light text-text-on-primary-light';
   const chipInactive = isDarkMode
-    ? 'bg-bg-surface-dark text-text-secondary-dark border border-border-base-dark hover:bg-bg-hover-dark'
-    : 'bg-bg-surface-light text-text-secondary-light border border-border-base-light hover:bg-bg-hover-light';
+    ? 'text-text-secondary-dark hover:text-text-primary-dark hover:bg-bg-hover-dark'
+    : 'text-text-secondary-light hover:text-text-primary-light hover:bg-bg-hover-light';
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
-      <div className="max-w-6xl mx-auto p-md-token md:p-lg-token">
+      <PublicNavBar />
+
+      <div className="max-w-6xl mx-auto px-md-token md:px-lg-token py-lg-token md:py-xl-token">
 
         {/* Page heading */}
-        <h1
-          className={`text-xl-token font-semibold mb-lg-token ${
+        <div className="mb-xl-token">
+          <h1 className={`text-xl-token font-semibold leading-tight-token mb-xs-token ${
             isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
-          }`}
-        >
-          Explore Expos
-        </h1>
+          }`}>
+            Explore Expos
+          </h1>
+          <p className={`text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+            Discover tech events, trade shows, and conferences
+          </p>
+        </div>
 
-        {/* Filters row */}
-        <div className="flex flex-col gap-sm-token mb-lg-token sm:flex-row sm:items-center">
-          {/* Search input */}
-          <input
-            type="text"
-            placeholder="Search expos…"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            aria-label="Search expos"
-            className={`flex-1 rounded-md-token border px-sm-token py-xs-token text-sm-token outline-none transition-colors ${
-              isDarkMode
-                ? 'bg-bg-surface-dark border-border-base-dark text-text-primary-dark placeholder:text-text-secondary-dark focus:border-brand-primary-dark'
-                : 'bg-bg-surface-light border-border-base-light text-text-primary-light placeholder:text-text-secondary-light focus:border-brand-primary-light'
-            }`}
-          />
-
-          {/* Status filter chips */}
-          <div className="flex flex-wrap gap-xs-token">
+        {/* Search + filters */}
+        <div className="flex flex-col sm:flex-row gap-sm-token mb-lg-token items-start sm:items-center">
+          <div className="relative flex-1 w-full">
+            <Search className={`absolute left-sm-token top-1/2 -translate-y-1/2 w-4 h-4 ${
+              isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+            }`} aria-hidden="true" />
+            <input
+              type="text"
+              placeholder="Search expos…"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              aria-label="Search expos"
+              className={`w-full pl-[32px] pr-sm-token py-xs-token rounded-md-token border text-sm-token outline-none transition-colors ${
+                isDarkMode
+                  ? 'bg-bg-surface-dark border-border-base-dark text-text-primary-dark placeholder:text-text-secondary-dark focus:border-brand-primary-dark'
+                  : 'bg-bg-surface-light border-border-base-light text-text-primary-light placeholder:text-text-secondary-light focus:border-brand-primary-light'
+              }`}
+            />
+          </div>
+          <div className={`flex gap-xs-token p-xs-token rounded-md-token ${
+            isDarkMode ? 'bg-bg-surface-dark' : 'bg-bg-surface-light'
+          }`}>
             {STATUS_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
@@ -122,88 +116,74 @@ export default function ExpoListingPage() {
           </div>
         </div>
 
-        {/* Loading state */}
+        {/* Loading */}
         {loading && (
-          <div
-            className={`text-center py-xl-token text-sm-token ${
-              isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
-            }`}
-          >
+          <div className={`text-center py-xl-token text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
             Loading expos…
           </div>
         )}
 
-        {/* Error state */}
+        {/* Error */}
         {!loading && error && (
-          <div
-            className={`text-center py-xl-token text-sm-token ${
-              isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'
-            }`}
-          >
+          <div className={`text-center py-xl-token text-sm-token ${isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'}`}>
             {error}
           </div>
         )}
 
-        {/* Empty state (REQ-1.7) */}
+        {/* Empty state */}
         {!loading && !error && expos.length === 0 && (
-          <div
-            className={`text-center py-xl-token ${
-              isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
-            }`}
-          >
-            <p className="text-base-token font-medium mb-xs-token">No expos found</p>
+          <div className={`text-center py-xxl-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+            <p className={`text-base-token font-medium mb-xs-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+              No expos found
+            </p>
             <p className="text-sm-token">
-              {debouncedSearch || statusFilter
-                ? 'Try adjusting your search or filters.'
-                : 'Check back soon for upcoming expos.'}
+              {debouncedSearch || statusFilter ? 'Try adjusting your search or filters.' : 'Check back soon for upcoming expos.'}
             </p>
           </div>
         )}
 
-        {/* Expo grid */}
+        {/* Results count + grid */}
         {!loading && !error && expos.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md-token">
-            {expos.map((expo) => (
-              <ExpoCard key={expo._id} expo={expo} />
-            ))}
-          </div>
+          <>
+            <p className={`text-xs-token mb-md-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+              {pagination.total > 0 ? `${pagination.total} expo${pagination.total !== 1 ? 's' : ''} found` : ''}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md-token">
+              {expos.map((expo) => <ExpoCard key={expo._id} expo={expo} />)}
+            </div>
+          </>
         )}
 
         {/* Pagination */}
         {!loading && !error && pagination.totalPages > 1 && (
-          <div className="flex items-center justify-center gap-sm-token mt-lg-token">
+          <div className="flex items-center justify-center gap-sm-token mt-xl-token">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
               className={`px-sm-token py-xs-token rounded-md-token text-sm-token font-medium transition-colors disabled:opacity-40 ${
                 isDarkMode
-                  ? 'bg-bg-surface-dark text-text-primary-dark border border-border-base-dark hover:bg-bg-hover-dark'
-                  : 'bg-bg-surface-light text-text-primary-light border border-border-base-light hover:bg-bg-hover-light'
+                  ? 'border border-border-base-dark text-text-secondary-dark hover:bg-bg-hover-dark hover:text-text-primary-dark'
+                  : 'border border-border-base-light text-text-secondary-light hover:bg-bg-hover-light hover:text-text-primary-light'
               }`}
             >
               ← Prev
             </button>
-            <span
-              className={`text-sm-token ${
-                isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
-              }`}
-            >
-              Page {page} of {pagination.totalPages}
+            <span className={`text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+              {page} / {pagination.totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
               disabled={page >= pagination.totalPages}
               className={`px-sm-token py-xs-token rounded-md-token text-sm-token font-medium transition-colors disabled:opacity-40 ${
                 isDarkMode
-                  ? 'bg-bg-surface-dark text-text-primary-dark border border-border-base-dark hover:bg-bg-hover-dark'
-                  : 'bg-bg-surface-light text-text-primary-light border border-border-base-light hover:bg-bg-hover-light'
+                  ? 'border border-border-base-dark text-text-secondary-dark hover:bg-bg-hover-dark hover:text-text-primary-dark'
+                  : 'border border-border-base-light text-text-secondary-light hover:bg-bg-hover-light hover:text-text-primary-light'
               }`}
             >
               Next →
             </button>
           </div>
         )}
-
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { applicationService } from '../../services/applicationService';
 import { Sidebar } from '../../components/layout/Sidebar';
 import { Header } from '../../components/layout/Header';
 import { BottomNav } from '../../components/layout/BottomNav';
+import BackButton from '../../components/layout/BackButton';
 import ApplicationCard from '../../components/application/ApplicationCard';
 import ReviewPanel from '../../components/application/ReviewPanel';
 import BoothAssignmentModal from '../../components/application/BoothAssignmentModal';
@@ -128,19 +129,70 @@ export default function ApplicationsPage() {
         <Header title="Manage Applications" />
         <main className={`flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
 
-          <h2 className={`text-xl-token font-semibold mb-lg-token leading-tight-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
-            Applications
-          </h2>
+          {/* Page header with expo context */}
+          <div className="mb-xl-token">
+            <div className="mb-sm-token">
+              <BackButton fallback="/organizer/expos" label="My Expos" />
+            </div>
+            <div className="flex flex-wrap items-end justify-between gap-md-token">
+              <div>
+                <h1 className={`text-xl-token font-semibold leading-tight-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                  Manage Applications
+                </h1>
+                <p className={`mt-xs-token text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                  Review and action exhibitor applications
+                </p>
+              </div>
+              {/* Summary stats inline */}
+              {!loading && (
+                <div className="flex flex-wrap gap-md-token">
+                  {[
+                    { label: 'Total', value: allApps.length },
+                    { label: 'Pending', value: pending.length, accent: pending.length > 0 },
+                    { label: 'Approved', value: approved.length },
+                    { label: 'Rejected', value: rejected.length },
+                  ].map(({ label, value, accent }) => (
+                    <div key={label} className="text-center">
+                      <div className={`text-lg-token font-semibold leading-tight-token ${
+                        accent
+                          ? isDarkMode ? 'text-text-warning-dark' : 'text-text-warning-light'
+                          : isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+                      }`}>
+                        {value}
+                      </div>
+                      <div className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                        {label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          {/* Booth fill rate bar */}
-          <div className={`rounded-lg-token border p-md-token mb-lg-token ${isDarkMode ? 'bg-bg-surface-dark border-border-base-dark' : 'bg-bg-surface-light border-border-base-light'}`}>
-            <div className={`flex justify-between text-sm-token font-medium mb-xs-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
-              <span>Booth Fill Rate</span>
-              <span>{assignedBooths} / {totalBooths} booths ({boothFillRate}%)</span>
-            </div>
-            <div className={`w-full h-3 rounded-full overflow-hidden ${isDarkMode ? 'bg-bg-hover-dark' : 'bg-bg-hover-light'}`}>
-              <div className={`h-full rounded-full transition-all ${fillColor}`} style={{ width: `${Math.min(boothFillRate, 100)}%` }} role="progressbar" aria-valuenow={boothFillRate} aria-valuemin={0} aria-valuemax={100} aria-label={`Booth fill rate: ${boothFillRate}%`} />
-            </div>
+            {/* Booth fill rate — inline below header, no card border */}
+            {!loading && totalBooths > 0 && (
+              <div className="mt-md-token">
+                <div className="flex items-center justify-between mb-xs-token">
+                  <span className={`text-xs-token font-medium ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                    Booth capacity
+                  </span>
+                  <span className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                    {assignedBooths} / {totalBooths} ({boothFillRate}%)
+                  </span>
+                </div>
+                <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-bg-hover-dark' : 'bg-bg-hover-light'}`}>
+                  <div
+                    className={`h-full rounded-full transition-all ${fillColor}`}
+                    style={{ width: `${Math.min(boothFillRate, 100)}%` }}
+                    role="progressbar"
+                    aria-valuenow={boothFillRate}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`Booth fill rate: ${boothFillRate}%`}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Filters */}

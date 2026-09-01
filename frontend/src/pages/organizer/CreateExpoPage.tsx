@@ -5,6 +5,7 @@ import { expoService } from '../../services/expoService';
 import { Sidebar } from '../../components/layout/Sidebar';
 import { Header } from '../../components/layout/Header';
 import { BottomNav } from '../../components/layout/BottomNav';
+import PageHeader from '../../components/layout/PageHeader';
 import ExpoForm from '../../components/expo/ExpoForm';
 import toast from 'react-hot-toast';
 
@@ -23,7 +24,7 @@ export default function CreateExpoPage() {
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Failed to create expo';
       toast.error(msg);
-      throw err; // re-throw so ExpoForm shows the inline error too
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -34,26 +35,15 @@ export default function CreateExpoPage() {
       <Sidebar />
       <div className="md:ml-64 flex flex-col min-h-screen">
         <Header title="Create Expo" />
-        <main className={`flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token ${
-          isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'
-        }`}>
-          <div className="max-w-2xl mx-auto">
-            <h2 className={`text-xl-token font-semibold mb-lg-token leading-tight-token ${
-              isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
-            }`}>
-              Create New Expo
-            </h2>
-            <div className={`rounded-lg-token border p-lg-token ${
-              isDarkMode
-                ? 'bg-bg-surface-dark border-border-base-dark'
-                : 'bg-bg-surface-light border-border-base-light'
-            }`}>
-              <ExpoForm
-                onSubmit={handleSubmit}
-                submitLabel="Create Expo"
-                isLoading={isLoading}
-              />
-            </div>
+        <main className={`flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
+          <div className="max-w-3xl mx-auto">
+            <PageHeader
+              title="Create New Expo"
+              subtitle="Fill in the details below to list your event on EventSphere."
+              backFallback="/organizer/expos"
+              backLabel="My Expos"
+            />
+            <ExpoForm onSubmit={handleSubmit} submitLabel="Create Expo" isLoading={isLoading} />
           </div>
         </main>
       </div>

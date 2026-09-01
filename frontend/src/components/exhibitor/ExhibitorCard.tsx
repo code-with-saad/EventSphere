@@ -23,10 +23,10 @@ export default function ExhibitorCard({ exhibitor, onClick }: ExhibitorCardProps
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left rounded-lg-token border p-md-token transition-colors ${
+      className={`w-full text-left rounded-lg-token border p-md-token transition-colors backdrop-blur-sm ${
         isDarkMode
-          ? 'bg-bg-surface-dark border-border-base-dark hover:bg-bg-hover-dark'
-          : 'bg-bg-surface-light border-border-base-light hover:bg-bg-hover-light'
+          ? 'bg-glass-dark border-glass-border-dark hover:bg-bg-hover-dark'
+          : 'bg-glass-light border-glass-border-light hover:bg-bg-hover-light'
       }`}
     >
       <div className="flex items-center gap-sm-token mb-xs-token">

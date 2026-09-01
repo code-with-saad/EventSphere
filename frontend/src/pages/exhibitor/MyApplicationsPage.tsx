@@ -5,6 +5,7 @@ import { applicationService } from '../../services/applicationService';
 import { Sidebar } from '../../components/layout/Sidebar';
 import { Header } from '../../components/layout/Header';
 import { BottomNav } from '../../components/layout/BottomNav';
+import PageHeader from '../../components/layout/PageHeader';
 import ApplicationCard from '../../components/application/ApplicationCard';
 import WithdrawConfirmDialog from '../../components/application/WithdrawConfirmDialog';
 import toast from 'react-hot-toast';
@@ -77,13 +78,10 @@ export default function MyApplicationsPage() {
           isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'
         }`}>
 
-          <div className="flex items-center justify-between mb-lg-token">
-            <h2 className={`text-xl-token font-semibold leading-tight-token ${
-              isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
-            }`}>
-              My Applications
-            </h2>
-          </div>
+          <PageHeader
+            title="My Applications"
+            subtitle="Track your exhibition applications and their status."
+          />
 
           {/* Loading */}
           {loading && (
@@ -117,12 +115,20 @@ export default function MyApplicationsPage() {
           {!loading && !error && applications.length > 0 && (
             <div className="flex flex-col gap-md-token">
               {applications.map((app: any) => (
-                <div key={app._id}>
+                <div
+                  key={app._id}
+                  className={`rounded-lg-token border overflow-hidden ${
+                    isDarkMode ? 'border-border-base-dark' : 'border-border-base-light'
+                  }`}
+                >
+                  {/* Card — no onClick since we handle actions below */}
                   <ApplicationCard application={app} />
 
-                  {/* Pending actions */}
+                  {/* Pending actions — footer strip inside the same border */}
                   {app.status === 'pending' && (
-                    <div className="flex gap-xs-token mt-xs-token">
+                    <div className={`flex gap-xs-token px-md-token py-sm-token border-t ${
+                      isDarkMode ? 'border-border-base-dark bg-bg-surface-dark' : 'border-border-base-light bg-bg-surface-light'
+                    }`}>
                       <button
                         onClick={() => navigate(`/expos/${app.expoId}/apply`)}
                         className={secondaryBtn}
@@ -132,9 +138,7 @@ export default function MyApplicationsPage() {
                       <button
                         onClick={() => setWithdrawTarget({ expoId: app.expoId, appId: app._id })}
                         className={`${secondaryBtn} ${
-                          isDarkMode
-                            ? 'text-text-danger-dark border-text-danger-dark'
-                            : 'text-text-danger-light border-text-danger-light'
+                          isDarkMode ? 'text-text-danger-dark border-text-danger-dark' : 'text-text-danger-light border-text-danger-light'
                         }`}
                       >
                         Withdraw
@@ -143,26 +147,18 @@ export default function MyApplicationsPage() {
                   )}
 
                   {/* Approved extras */}
-                  {app.status === 'approved' && (
-                    <div className={`mt-xs-token flex flex-wrap gap-sm-token text-xs-token ${
-                      isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                  {app.status === 'approved' && (app.boothLabel || app.venueMapUrl) && (
+                    <div className={`flex flex-wrap gap-sm-token px-md-token py-sm-token border-t text-xs-token ${
+                      isDarkMode ? 'border-border-base-dark bg-bg-surface-dark text-text-secondary-dark' : 'border-border-base-light bg-bg-surface-light text-text-secondary-light'
                     }`}>
                       {app.boothLabel && (
-                        <span className={`font-medium ${
-                          isDarkMode ? 'text-text-success-dark' : 'text-text-success-light'
-                        }`}>
+                        <span className={`font-medium ${isDarkMode ? 'text-text-success-dark' : 'text-text-success-light'}`}>
                           Booth: {app.boothLabel}
                         </span>
                       )}
                       {app.venueMapUrl && (
-                        <a
-                          href={app.venueMapUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={
-                            isDarkMode ? 'text-brand-primary-dark underline' : 'text-brand-primary-light underline'
-                          }
-                        >
+                        <a href={app.venueMapUrl} target="_blank" rel="noopener noreferrer"
+                          className={isDarkMode ? 'text-brand-primary-dark underline' : 'text-brand-primary-light underline'}>
                           View Venue Map
                         </a>
                       )}
@@ -171,11 +167,11 @@ export default function MyApplicationsPage() {
 
                   {/* Rejected reason */}
                   {app.status === 'rejected' && app.rejectionReason && (
-                    <p className={`mt-xs-token text-xs-token ${
-                      isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'
+                    <div className={`px-md-token py-sm-token border-t text-xs-token ${
+                      isDarkMode ? 'border-border-base-dark bg-bg-surface-dark text-text-danger-dark' : 'border-border-base-light bg-bg-surface-light text-text-danger-light'
                     }`}>
                       Reason: {app.rejectionReason}
-                    </p>
+                    </div>
                   )}
                 </div>
               ))}

@@ -269,145 +269,163 @@ export default function ExpoForm({
 
   // ── Render ────────────────────────────────────────────────────────────────
 
+  const sectionHeadClass = `text-sm-token font-semibold uppercase tracking-wide ${
+    isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+  }`;
+
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-md-token">
 
-      {/* Expo Name */}
-      {field('name', 'Expo Name', 'text', 'e.g. TechFest 2025', true)}
+      {/* ── Group 1: Basic Information ──────────────────────────────────────── */}
+      <div className="flex flex-col gap-md-token">
+        <h3 className={sectionHeadClass}>Basic Information</h3>
 
-      {/* Description */}
-      <div>
-        <label htmlFor="description" className={labelClass}>
-          Description{' '}
-          <span aria-hidden="true" className="ml-xs-token text-text-danger-dark">
-            *
-          </span>
-        </label>
-        <textarea
-          id="description"
-          name="description"
-          rows={4}
-          value={form.description}
-          onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-          placeholder="Describe your expo…"
-          className={`${inputClass(errors.description)} resize-y`}
-          aria-describedby={errors.description ? 'description-error' : undefined}
-        />
-        {errors.description && (
-          <p id="description-error" role="alert" className={errorClass}>
-            {errors.description}
-          </p>
-        )}
-      </div>
+        {/* Expo Name */}
+        {field('name', 'Expo Name', 'text', 'e.g. TechFest 2025', true)}
 
-      {/* Date range */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-md-token">
-        {field('startDate', 'Start Date', 'datetime-local', '', true)}
-        {field('endDate', 'End Date', 'datetime-local', '', true)}
-      </div>
-
-      {/* Venue */}
-      {field('venueName', 'Venue Name', 'text', 'e.g. Convention Centre', true)}
-      {field('venueAddress', 'Venue Address', 'text', 'e.g. 123 Main St, City', true)}
-
-      {/* Total Booths */}
-      <div>
-        <label htmlFor="totalBooths" className={labelClass}>
-          Total Booths{' '}
-          <span aria-hidden="true" className="ml-xs-token text-text-danger-dark">
-            *
-          </span>
-        </label>
-        <input
-          id="totalBooths"
-          name="totalBooths"
-          type="number"
-          min={1}
-          value={form.totalBooths}
-          onChange={(e) =>
-            setForm((p) => ({
-              ...p,
-              totalBooths:
-                e.target.value === '' ? '' : Number(e.target.value),
-            }))
-          }
-          className={inputClass(errors.totalBooths)}
-          aria-describedby={errors.totalBooths ? 'totalBooths-error' : undefined}
-        />
-        {errors.totalBooths && (
-          <p id="totalBooths-error" role="alert" className={errorClass}>
-            {errors.totalBooths}
-          </p>
-        )}
-      </div>
-
-      {/* Banner upload */}
-      <div>
-        <label htmlFor="banner-upload" className={labelClass}>
-          Banner Image (PNG/JPG/WebP, max 5 MB)
-        </label>
-        <div className="flex flex-col gap-sm-token">
-          {bannerPreview && (
-            <img
-              src={bannerPreview}
-              alt="Banner preview"
-              className="w-full h-40 object-cover rounded-md-token"
-            />
-          )}
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className={`px-sm-token py-xs-token rounded-md-token text-sm-token font-medium border transition-colors disabled:opacity-60 ${
-              isDarkMode
-                ? 'border-border-base-dark text-text-primary-dark hover:bg-bg-hover-dark'
-                : 'border-border-base-light text-text-primary-light hover:bg-bg-hover-light'
-            }`}
-          >
-            {uploading ? 'Uploading…' : bannerPreview ? 'Change Banner' : 'Upload Banner'}
-          </button>
-          <input
-            ref={fileInputRef}
-            id="banner-upload"
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            onChange={handleBannerChange}
-            className="sr-only"
-            aria-label="Upload banner image"
+        {/* Description */}
+        <div>
+          <label htmlFor="description" className={labelClass}>
+            Description{' '}
+            <span aria-hidden="true" className="ml-xs-token text-text-danger-dark">
+              *
+            </span>
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            rows={4}
+            value={form.description}
+            onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+            placeholder="Describe your expo…"
+            className={`${inputClass(errors.description)} resize-y`}
+            aria-describedby={errors.description ? 'description-error' : undefined}
           />
-          {errors.banner && (
-            <p role="alert" className={errorClass}>
-              {errors.banner}
+          {errors.description && (
+            <p id="description-error" role="alert" className={errorClass}>
+              {errors.description}
+            </p>
+          )}
+        </div>
+
+        {/* Category */}
+        <div>
+          <label htmlFor="category" className={labelClass}>
+            Category
+          </label>
+          <select
+            id="category"
+            name="category"
+            value={form.category}
+            onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
+            className={inputClass()}
+          >
+            <option value="">Select a category…</option>
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Banner upload */}
+        <div>
+          <label htmlFor="banner-upload" className={labelClass}>
+            Banner Image (PNG/JPG/WebP, max 5 MB)
+          </label>
+          <div className="flex flex-col gap-sm-token">
+            {bannerPreview && (
+              <img
+                src={bannerPreview}
+                alt="Banner preview"
+                className="w-full h-40 object-cover rounded-md-token"
+              />
+            )}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className={`px-sm-token py-xs-token rounded-md-token text-sm-token font-medium border transition-colors disabled:opacity-60 ${
+                isDarkMode
+                  ? 'border-border-base-dark text-text-primary-dark hover:bg-bg-hover-dark'
+                  : 'border-border-base-light text-text-primary-light hover:bg-bg-hover-light'
+              }`}
+            >
+              {uploading ? 'Uploading…' : bannerPreview ? 'Change Banner' : 'Upload Banner'}
+            </button>
+            <input
+              ref={fileInputRef}
+              id="banner-upload"
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              onChange={handleBannerChange}
+              className="sr-only"
+              aria-label="Upload banner image"
+            />
+            {errors.banner && (
+              <p role="alert" className={errorClass}>
+                {errors.banner}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Group 2: Schedule & Venue ───────────────────────────────────────── */}
+      <div className={`flex flex-col gap-md-token pt-lg-token border-t ${isDarkMode ? 'border-border-base-dark' : 'border-border-base-light'}`}>
+        <h3 className={sectionHeadClass}>Schedule &amp; Venue</h3>
+
+        {/* Date range */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-md-token">
+          {field('startDate', 'Start Date', 'datetime-local', '', true)}
+          {field('endDate', 'End Date', 'datetime-local', '', true)}
+        </div>
+
+        {/* Venue */}
+        {field('venueName', 'Venue Name', 'text', 'e.g. Convention Centre', true)}
+        {field('venueAddress', 'Venue Address', 'text', 'e.g. 123 Main St, City', true)}
+
+        {/* Total Booths */}
+        <div>
+          <label htmlFor="totalBooths" className={labelClass}>
+            Total Booths{' '}
+            <span aria-hidden="true" className="ml-xs-token text-text-danger-dark">
+              *
+            </span>
+          </label>
+          <input
+            id="totalBooths"
+            name="totalBooths"
+            type="number"
+            min={1}
+            value={form.totalBooths}
+            onChange={(e) =>
+              setForm((p) => ({
+                ...p,
+                totalBooths:
+                  e.target.value === '' ? '' : Number(e.target.value),
+              }))
+            }
+            className={inputClass(errors.totalBooths)}
+            aria-describedby={errors.totalBooths ? 'totalBooths-error' : undefined}
+          />
+          {errors.totalBooths && (
+            <p id="totalBooths-error" role="alert" className={errorClass}>
+              {errors.totalBooths}
             </p>
           )}
         </div>
       </div>
 
-      {/* Category */}
-      <div>
-        <label htmlFor="category" className={labelClass}>
-          Category
-        </label>
-        <select
-          id="category"
-          name="category"
-          value={form.category}
-          onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
-          className={inputClass()}
-        >
-          <option value="">Select a category…</option>
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-      </div>
+      {/* ── Group 3: Optional Details ───────────────────────────────────────── */}
+      <div className={`flex flex-col gap-md-token pt-lg-token border-t ${isDarkMode ? 'border-border-base-dark' : 'border-border-base-light'}`}>
+        <h3 className={sectionHeadClass}>Optional Details</h3>
 
-      {/* Optional URL fields and tags */}
-      {field('websiteUrl', 'Website URL', 'url', 'https://…')}
-      {field('tags', 'Tags (comma-separated)', 'text', 'e.g. tech, innovation, AI')}
-      {field('venueMapUrl', 'Venue Map URL', 'url', 'https://maps.google.com/…')}
+        {field('websiteUrl', 'Website URL', 'url', 'https://…')}
+        {field('tags', 'Tags (comma-separated)', 'text', 'e.g. tech, innovation, AI')}
+        {field('venueMapUrl', 'Venue Map URL', 'url', 'https://maps.google.com/…')}
+      </div>
 
       {/* Submit error */}
       {submitError && (
@@ -425,7 +443,7 @@ export default function ExpoForm({
       <button
         type="submit"
         disabled={isLoading || uploading}
-        className={`px-md-token py-xs-token rounded-md-token text-sm-token font-semibold transition-colors disabled:opacity-60 ${
+        className={`w-full py-sm-token px-md-token rounded-md-token text-sm-token font-semibold transition-colors disabled:opacity-60 mt-md-token ${
           isDarkMode
             ? 'bg-brand-primary-dark text-text-on-primary-dark hover:opacity-90'
             : 'bg-brand-primary-light text-text-on-primary-light hover:opacity-90'

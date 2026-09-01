@@ -25,6 +25,8 @@ import EditExpoPage from './pages/organizer/EditExpoPage';
 import ApplicationsPage from './pages/organizer/ApplicationsPage';
 import ApplicationFormPage from './pages/exhibitor/ApplicationFormPage';
 import MyApplicationsPage from './pages/exhibitor/MyApplicationsPage';
+import MyTicketsPage from './pages/attendee/MyTicketsPage';
+import TicketDetailPage from './pages/attendee/TicketDetailPage';
 
 /**
  * Single source of truth for where an authenticated user should land.
@@ -87,8 +89,7 @@ const ScheduleBrowsePage = () => <div>ScheduleBrowsePage</div>;
 const ScheduleBuilderPage = () => <div>ScheduleBuilderPage</div>;
 const BoothLayoutPage = () => <div>BoothLayoutPage</div>;
 const ScannerPage = () => <div>ScannerPage</div>;
-const MyTicketsPage = () => <div>MyTicketsPage</div>;
-const TicketDetailPage = () => <div>TicketDetailPage</div>;
+
 
 function App() {
   return (
