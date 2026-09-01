@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+﻿import { useState, useRef } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { uploadService } from '../../services/uploadService';
 
@@ -33,6 +33,7 @@ interface Step2Errors {
 }
 
 interface ApplicationFormProps {
+  initialData?: Partial<ApplicationFormData>;
   onSubmit: (data: Record<string, unknown>) => Promise<void>;
   isLoading?: boolean;
   submitLabel?: string;
@@ -42,6 +43,7 @@ export default function ApplicationForm({
   onSubmit,
   isLoading = false,
   submitLabel = 'Submit Application',
+  initialData,
 }: ApplicationFormProps) {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
@@ -49,28 +51,28 @@ export default function ApplicationForm({
 
   const [step, setStep] = useState<1 | 2>(1);
   const [form, setForm] = useState<ApplicationFormData>({
-    companyName: '',
-    companyDescription: '',
-    category: '',
-    phoneNumber: '',
-    websiteUrl: '',
-    logoUrl: '',
-    organizerNote: '',
+    companyName: initialData?.companyName ?? '',
+    companyDescription: initialData?.companyDescription ?? '',
+    category: initialData?.category ?? '',
+    phoneNumber: initialData?.phoneNumber ?? '',
+    websiteUrl: initialData?.websiteUrl ?? '',
+    logoUrl: initialData?.logoUrl ?? '',
+    organizerNote: initialData?.organizerNote ?? '',
   });
   const [step1Errors, setStep1Errors] = useState<Step1Errors>({});
   const [step2Errors, setStep2Errors] = useState<Step2Errors>({});
-  const [logoPreview, setLogoPreview] = useState('');
+  const [logoPreview, setLogoPreview] = useState(initialData?.logoUrl ?? '');
   const [uploading, setUploading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // ── Shared styles ──────────────────────────────────────────────────────────
+
 
   const labelClass = `block text-sm-token font-medium mb-xs-token ${
     isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
   }`;
 
   const inputClass = (hasError?: string) =>
-    `w-full rounded-md-token border px-sm-token py-xs-token text-sm-token outline-none transition-colors ${
+    `w-full rounded-md-token border px-sm-token py-xs-token text-sm-token outline-none focus:ring-0 transition-colors ${
       hasError
         ? isDarkMode
           ? 'border-text-danger-dark'
@@ -94,8 +96,8 @@ export default function ApplicationForm({
 
   const primaryBtn = `px-md-token py-xs-token rounded-md-token text-sm-token font-semibold transition-colors disabled:opacity-60 ${
     isDarkMode
-      ? 'bg-brand-primary-dark text-text-on-primary-dark hover:opacity-90'
-      : 'bg-brand-primary-light text-text-on-primary-light hover:opacity-90'
+      ? 'bg-brand-primary-dark text-text-on-primary-dark hover:bg-accent-hover-dark'
+      : 'bg-brand-primary-light text-text-on-primary-light hover:bg-accent-hover-light'
   }`;
 
   const secondaryBtn = `px-md-token py-xs-token rounded-md-token text-sm-token font-medium border transition-colors ${
@@ -104,7 +106,6 @@ export default function ApplicationForm({
       : 'border-border-base-light text-text-primary-light hover:bg-bg-hover-light'
   }`;
 
-  // ── Step 1 validation ──────────────────────────────────────────────────────
 
   const validateStep1 = (): boolean => {
     const errors: Step1Errors = {};
@@ -132,8 +133,6 @@ export default function ApplicationForm({
     setStep1Errors(errors);
     return Object.keys(errors).length === 0;
   };
-
-  // ── Logo upload ────────────────────────────────────────────────────────────
 
   const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -164,7 +163,6 @@ export default function ApplicationForm({
     }
   };
 
-  // ── Submit ─────────────────────────────────────────────────────────────────
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -193,9 +191,7 @@ export default function ApplicationForm({
   const update =
     (field: keyof ApplicationFormData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-      setForm(prev => ({ ...prev, [field]: e.target.value }));
-
-  // ── Progress indicator ─────────────────────────────────────────────────────
+      setForm(prev => ({ ...prev, [field]: e.target.value })); 
 
   const Progress = () => (
     <nav aria-label="Form progress" className="flex items-center gap-xs-token mb-lg-token">
@@ -209,15 +205,15 @@ export default function ApplicationForm({
                   : 'bg-brand-primary-light text-text-on-primary-light'
                 : s < step
                   ? isDarkMode
-                    ? 'bg-bg-success-dark text-text-success-dark'
-                    : 'bg-bg-success-light text-text-success-light'
+                    ? 'bg-accent-bg-dark text-brand-primary-dark'
+                    : 'bg-accent-bg-light text-brand-primary-light'
                   : isDarkMode
                     ? 'bg-bg-surface-dark text-text-secondary-dark border border-border-base-dark'
                     : 'bg-bg-surface-light text-text-secondary-light border border-border-base-light'
             }`}
             aria-current={s === step ? 'step' : undefined}
           >
-            {s < step ? '✓' : s}
+            {s < step ? '1' : s}
           </div>
           <span
             className={`text-xs-token hidden sm:inline ${
@@ -244,7 +240,6 @@ export default function ApplicationForm({
     </nav>
   );
 
-  // ── Step 1 ─────────────────────────────────────────────────────────────────
 
   const renderStep1 = () => (
     <div className="flex flex-col gap-md-token">
@@ -284,7 +279,7 @@ export default function ApplicationForm({
           rows={3}
           value={form.companyDescription}
           onChange={update('companyDescription')}
-          placeholder="Describe your company and what you offer…"
+          placeholder="Describe your company and what you offer"
           className={`${inputClass(step1Errors.companyDescription)} resize-y`}
           aria-describedby={step1Errors.companyDescription ? 'companyDescription-error' : undefined}
           aria-required="true"
@@ -313,7 +308,7 @@ export default function ApplicationForm({
           aria-required="true"
           aria-invalid={!!step1Errors.category}
         >
-          <option value="">Select a category…</option>
+          <option value="">Select a category</option>
           {CATEGORIES.map((c) => (
             <option key={c} value={c}>
               {c}
@@ -359,13 +354,12 @@ export default function ApplicationForm({
           }}
           className={primaryBtn}
         >
-          Next →
+          Continue
         </button>
       </div>
     </div>
   );
 
-  // ── Step 2 ─────────────────────────────────────────────────────────────────
 
   const renderStep2 = () => (
     <div className="flex flex-col gap-md-token">
@@ -397,7 +391,7 @@ export default function ApplicationForm({
             disabled={uploading}
             className={`${secondaryBtn} disabled:opacity-60 self-start`}
           >
-            {uploading ? 'Uploading…' : logoPreview ? 'Change Logo' : 'Upload Logo'}
+            {uploading ? 'Uploading' : logoPreview ? 'Change Logo' : 'Upload Logo'}
           </button>
           <input
             ref={fileInputRef}
@@ -448,7 +442,7 @@ export default function ApplicationForm({
           rows={3}
           value={form.organizerNote}
           onChange={update('organizerNote')}
-          placeholder="Anything you'd like the organizer to know…"
+          placeholder="Anything you'd like the organizer to know"
           className={`${inputClass()} resize-y`}
         />
       </div>
@@ -467,20 +461,20 @@ export default function ApplicationForm({
 
       <div className="flex justify-between mt-sm-token">
         <button type="button" onClick={() => setStep(1)} className={secondaryBtn}>
-          ← Back
+          Back
         </button>
         <button
           type="submit"
           disabled={isLoading || uploading}
           className={`${primaryBtn} disabled:opacity-60`}
         >
-          {isLoading ? 'Submitting…' : submitLabel}
+          {isLoading ? 'Submitting' : submitLabel}
         </button>
       </div>
     </div>
   );
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+
 
   return (
     <form onSubmit={handleSubmit} noValidate aria-label="Exhibitor application form">
@@ -489,3 +483,4 @@ export default function ApplicationForm({
     </form>
   );
 }
+

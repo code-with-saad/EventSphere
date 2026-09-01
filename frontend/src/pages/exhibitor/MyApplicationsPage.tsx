@@ -20,6 +20,7 @@ export default function MyApplicationsPage() {
   const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [withdrawnApps, setWithdrawnApps] = useState<any[]>([]);
 
   // Withdraw dialog state
   const [withdrawTarget, setWithdrawTarget] = useState<{ expoId: string; appId: string } | null>(null);
@@ -48,10 +49,16 @@ export default function MyApplicationsPage() {
     if (!withdrawTarget) return;
     setWithdrawing(true);
     try {
+      const withdrawnApp = applications.find(a => a._id === withdrawTarget.appId);
       await applicationService.withdraw(withdrawTarget.expoId, withdrawTarget.appId);
-      toast.success('Application withdrawn successfully.');
+      toast.success('Application withdrawn.');
       setWithdrawTarget(null);
-      fetchApplications();
+      if (withdrawnApp) {
+        setApplications(prev => prev.filter(a => a._id !== withdrawTarget.appId));
+        setWithdrawnApps(prev => [...prev, { ...withdrawnApp, status: 'withdrawn' as const }]);
+      } else {
+        fetchApplications();
+      }
     } catch (err: unknown) {
       toast.error(
         (err as any)?.response?.data?.message ||
@@ -102,7 +109,7 @@ export default function MyApplicationsPage() {
           )}
 
           {/* Empty state */}
-          {!loading && !error && applications.length === 0 && (
+          {!loading && !error && applications.length === 0 && withdrawnApps.length === 0 && (
             <div className={`text-center py-xl-token ${
               isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
             }`}>
@@ -112,12 +119,12 @@ export default function MyApplicationsPage() {
           )}
 
           {/* Application list */}
-          {!loading && !error && applications.length > 0 && (
+          {!loading && !error && [...applications, ...withdrawnApps].length > 0 && (
             <div className="flex flex-col gap-md-token">
-              {applications.map((app: any) => (
+              {[...applications, ...withdrawnApps].map((app: any) => (
                 <div
                   key={app._id}
-                  className={`rounded-lg-token border overflow-hidden ${
+                  className={`border overflow-hidden ${
                     isDarkMode ? 'border-border-base-dark' : 'border-border-base-light'
                   }`}
                 >
@@ -130,7 +137,7 @@ export default function MyApplicationsPage() {
                       isDarkMode ? 'border-border-base-dark bg-bg-surface-dark' : 'border-border-base-light bg-bg-surface-light'
                     }`}>
                       <button
-                        onClick={() => navigate(`/expos/${app.expoId}/apply`)}
+                        onClick={() => navigate(`/expos/${app.expoId}/apply`, { state: { editing: true, applicationId: app._id } })}
                         className={secondaryBtn}
                       >
                         Edit

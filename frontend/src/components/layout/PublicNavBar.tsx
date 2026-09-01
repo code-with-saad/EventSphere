@@ -79,8 +79,8 @@ export default function PublicNavBar() {
                 to="/register"
                 className={`px-sm-token py-xs-token rounded-md-token text-sm-token font-semibold transition-colors ${
                   isDarkMode
-                    ? 'bg-brand-primary-dark text-text-on-primary-dark hover:opacity-90'
-                    : 'bg-brand-primary-light text-text-on-primary-light hover:opacity-90'
+                    ? 'bg-brand-primary-dark text-text-on-primary-dark hover:bg-accent-hover-dark'
+                    : 'bg-brand-primary-light text-text-on-primary-light hover:bg-accent-hover-light'
                 }`}
               >
                 Get started

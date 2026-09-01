@@ -55,8 +55,8 @@ export default function MyExposPage() {
   }`;
   const primaryLinkBtn = `px-md-token py-xs-token rounded-md-token text-sm-token font-semibold transition-colors ${
     isDarkMode
-      ? 'bg-brand-primary-dark text-text-on-primary-dark hover:opacity-90'
-      : 'bg-brand-primary-light text-text-on-primary-light hover:opacity-90'
+      ? 'bg-brand-primary-dark text-text-on-primary-dark hover:bg-accent-hover-dark'
+      : 'bg-brand-primary-light text-text-on-primary-light hover:bg-accent-hover-light'
   }`;
 
   return (
@@ -181,7 +181,7 @@ export default function MyExposPage() {
                     {expo.startDate && expo.endDate
                       ? `${formatDate(expo.startDate)} – ${formatDate(expo.endDate)}`
                       : 'Dates TBD'}
-                    {expo.venueName && ` · ${expo.venueName}`}
+                    {expo.venueName && ` — ${expo.venueName}`}
                   </p>
 
                   {/* Quick-action buttons */}

@@ -135,13 +135,13 @@ export function RequestResetPage() {
                 onChange={(e) => handleInputChange(e.target.value)}
                 className={`
                   w-full px-4 py-3 rounded-lg-token border
-                  focus:outline-none focus:ring-2 focus:border-transparent transition-colors
+                  focus:outline-none focus:ring-0 transition-colors
                   ${isDarkMode
                     ? `bg-bg-surface-dark text-text-primary-dark placeholder-text-secondary-dark
-                       focus:ring-brand-primary-dark
+                       focus:border-brand-primary-dark
                        ${error ? 'border-text-danger-dark' : 'border-border-base-dark'}`
                     : `bg-bg-surface-light text-text-primary-light placeholder-text-secondary-light
-                       focus:ring-brand-primary-light
+                       focus:border-brand-primary-light
                        ${error ? 'border-text-danger-light' : 'border-border-base-light'}`
                   }
                 `}
@@ -162,14 +162,14 @@ export function RequestResetPage() {
               className={`
                 w-full px-4 py-3
                 font-medium rounded-lg-token
-                focus:outline-none focus:ring-2 focus:ring-offset-2
+                focus:outline-none
                 text-text-on-primary-dark
                 transition-colors
                 disabled:opacity-50 disabled:cursor-not-allowed
                 flex items-center justify-center
                 ${isDarkMode
-                  ? 'bg-brand-primary-dark hover:bg-brand-secondary-dark focus:ring-brand-primary-dark focus:ring-offset-bg-base-dark'
-                  : 'bg-brand-primary-light hover:bg-brand-secondary-light focus:ring-brand-primary-light focus:ring-offset-bg-base-light'
+                  ? 'bg-brand-primary-dark hover:bg-accent-hover-dark'
+                  : 'bg-brand-primary-light hover:bg-accent-hover-light'
                 }
               `}
             >
@@ -209,7 +209,7 @@ export function RequestResetPage() {
               Remember your password?{' '}
               <button
                 onClick={() => navigate('/login')}
-                className={`font-medium transition-colors ${isDarkMode ? 'text-brand-primary-dark hover:text-brand-secondary-dark' : 'text-brand-primary-light hover:text-brand-secondary-light'}`}
+                className={`font-medium transition-colors ${isDarkMode ? 'text-brand-primary-dark hover:opacity-80' : 'text-brand-primary-light hover:opacity-80'}`}
                 disabled={isLoading}
               >
                 Back to Login
@@ -219,7 +219,7 @@ export function RequestResetPage() {
               Don't have an account?{' '}
               <button
                 onClick={() => navigate('/register')}
-                className={`font-medium transition-colors ${isDarkMode ? 'text-brand-primary-dark hover:text-brand-secondary-dark' : 'text-brand-primary-light hover:text-brand-secondary-light'}`}
+                className={`font-medium transition-colors ${isDarkMode ? 'text-brand-primary-dark hover:opacity-80' : 'text-brand-primary-light hover:opacity-80'}`}
                 disabled={isLoading}
               >
                 Create one

@@ -86,14 +86,10 @@ export default function ExpoDetailPage() {
     navigate(`/expos/${id}/apply`);
   };
 
-  const primaryBtn = `px-md-token py-sm-token rounded-md-token text-sm-token font-semibold transition-all disabled:opacity-60 ${
+  const primaryBtn = `px-md-token py-sm-token rounded-md-token text-sm-token font-semibold transition-colors disabled:opacity-60 ${
     isDarkMode
-      ? 'bg-brand-primary-dark text-text-on-primary-dark hover:opacity-90 focus:outline-none focus:shadow-glow-brand-dark'
-      : 'bg-brand-primary-light text-text-on-primary-light hover:opacity-90 focus:outline-none focus:shadow-glow-brand-light'
-  }`;
-
-  const secondaryBtn = `px-md-token py-sm-token rounded-md-token text-sm-token font-semibold border transition-colors ${
-    isDarkMode ? 'border-border-base-dark text-text-primary-dark hover:bg-bg-hover-dark' : 'border-border-base-light text-text-primary-light hover:bg-bg-hover-light'
+      ? 'bg-brand-primary-dark text-text-on-primary-dark hover:bg-accent-hover-dark focus:outline-none'
+      : 'bg-brand-primary-light text-text-on-primary-light hover:bg-accent-hover-light focus:outline-none'
   }`;
 
   if (loading) return (
@@ -119,7 +115,7 @@ export default function ExpoDetailPage() {
       <PublicNavBar />
 
       {/* Hero banner — full width, no side padding */}
-      <div className="w-full h-64 md:h-80 relative overflow-hidden">
+      <div className="w-full relative overflow-hidden" style={{ height: '320px' }}>
         {expo.bannerUrl ? (
           <>
             <img
@@ -132,8 +128,8 @@ export default function ExpoDetailPage() {
               className="absolute inset-0 pointer-events-none"
               style={{
                 background: isDarkMode
-                  ? 'linear-gradient(to bottom, transparent 40%, rgba(11,17,32,0.7) 100%)'
-                  : 'linear-gradient(to bottom, transparent 40%, rgba(248,250,252,0.6) 100%)',
+                  ? 'linear-gradient(to bottom, rgba(10,10,12,0) 50%, rgba(10,10,12,1) 100%)'
+                  : undefined,
               }}
               aria-hidden="true"
             />
@@ -143,9 +139,7 @@ export default function ExpoDetailPage() {
           <div
             className="w-full h-full flex flex-col items-center justify-center gap-sm-token"
             style={{
-              background: isDarkMode
-                ? 'linear-gradient(135deg, #0B1120 0%, #1E293B 60%, rgba(129,140,248,0.12) 100%)'
-                : 'linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 60%, rgba(79,70,229,0.06) 100%)',
+              background: isDarkMode ? '#0A0A0C' : '#F5F5F4',
             }}
           >
             <span
@@ -191,7 +185,7 @@ export default function ExpoDetailPage() {
               </button>
             )}
             {expo.status === 'published' && (!isAuthenticated || user?.role === 'exhibitor') && (
-              <button onClick={handleApply} className={secondaryBtn}>Apply to Exhibit</button>
+              <button onClick={handleApply} className={primaryBtn}>Apply to Exhibit</button>
             )}
           </div>
         </div>

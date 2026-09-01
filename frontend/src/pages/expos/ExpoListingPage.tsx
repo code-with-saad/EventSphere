@@ -94,7 +94,7 @@ export default function ExpoListingPage() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               aria-label="Search expos"
-              className={`w-full pl-[32px] pr-sm-token py-xs-token rounded-md-token border text-sm-token outline-none transition-colors ${
+              className={`w-full pl-[32px] pr-sm-token py-xs-token rounded-md-token border text-sm-token outline-none focus:ring-0 transition-colors ${
                 isDarkMode
                   ? 'bg-bg-surface-dark border-border-base-dark text-text-primary-dark placeholder:text-text-secondary-dark focus:border-brand-primary-dark'
                   : 'bg-bg-surface-light border-border-base-light text-text-primary-light placeholder:text-text-secondary-light focus:border-brand-primary-light'

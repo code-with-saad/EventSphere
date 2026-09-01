@@ -1,4 +1,5 @@
 import { useTheme } from '../../contexts/ThemeContext';
+import { Link } from 'react-router-dom';
 import ApplicationStatusBadge from './ApplicationStatusBadge';
 
 interface ApplicationCardProps {
@@ -7,10 +8,12 @@ interface ApplicationCardProps {
     companyName: string;
     companyDescription?: string;
     category: string;
-    status: 'pending' | 'approved' | 'rejected';
+    status: 'pending' | 'approved' | 'rejected' | 'withdrawn';
     submittedAt: string;
     boothLabel?: string;
     rejectionReason?: string;
+    expoId?: string;
+    expoName?: string;
   };
   onClick?: () => void;
 }
@@ -32,10 +35,18 @@ export default function ApplicationCard({ application, onClick }: ApplicationCar
   return (
     <Wrapper
       onClick={onClick}
-      className={`w-full text-left rounded-lg-token border p-md-token transition-colors ${
+      className={`w-full text-left border p-md-token transition-colors rounded-r-xl rounded-bl-xl ${
         isDarkMode
           ? 'bg-bg-surface-dark border-border-base-dark' + (onClick ? ' hover:bg-bg-hover-dark' : '')
           : 'bg-bg-surface-light border-border-base-light' + (onClick ? ' hover:bg-bg-hover-light' : '')
+      } ${
+        application.status === 'pending'
+          ? isDarkMode ? 'border-l-[3px] border-l-text-warning-dark' : 'border-l-[3px] border-l-text-warning-light'
+          : application.status === 'approved'
+            ? isDarkMode ? 'border-l-[3px] border-l-text-success-dark' : 'border-l-[3px] border-l-text-success-light'
+            : application.status === 'rejected'
+              ? isDarkMode ? 'border-l-[3px] border-l-text-danger-dark' : 'border-l-[3px] border-l-text-danger-light'
+              : isDarkMode ? 'border-l-[3px] border-l-border-strong-dark' : 'border-l-[3px] border-l-border-strong-light'
       }`}
     >
       {/* Top row: company name + status badge */}
@@ -49,6 +60,21 @@ export default function ApplicationCard({ application, onClick }: ApplicationCar
         </span>
         <ApplicationStatusBadge status={application.status} />
       </div>
+
+      {/* Expo link */}
+      {application.expoId && (
+        <div className="mb-xs-token">
+          <Link
+            to={`/expos/${application.expoId}`}
+            onClick={(e) => e.stopPropagation()}
+            className={`text-xs-token underline transition-colors ${
+              isDarkMode ? 'text-brand-primary-dark hover:opacity-80' : 'text-brand-primary-light hover:opacity-80'
+            }`}
+          >
+            {application.expoName ?? 'View Expo'}
+          </Link>
+        </div>
+      )}
 
       {/* Category + date */}
       <div

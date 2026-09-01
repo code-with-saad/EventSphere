@@ -1,4 +1,6 @@
-﻿@tailwind base;
+﻿@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -24,15 +26,15 @@
 
 @layer base {
   :root {
-    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    font-family: Inter, system-ui, sans-serif;
   }
 
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0 1000px #1E293B inset !important;
-    -webkit-text-fill-color: #F1F5F9 !important;
-    caret-color: #F1F5F9 !important;
+    -webkit-box-shadow: 0 0 0 1000px #151517 inset !important;
+    -webkit-text-fill-color: #F2F1ED !important;
+    caret-color: #F2F1ED !important;
     transition: background-color 5000s ease-in-out 0s;
   }
 
@@ -40,8 +42,8 @@
   html.light input:-webkit-autofill:hover,
   html.light input:-webkit-autofill:focus {
     -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset !important;
-    -webkit-text-fill-color: #0F172A !important;
-    caret-color: #0F172A !important;
+    -webkit-text-fill-color: #111110 !important;
+    caret-color: #111110 !important;
   }
 
   body {
@@ -50,53 +52,29 @@
   }
 
   html, body {
-    background-color: #0B1120;
-    color: white;
+    background-color: #0A0A0C;
+    color: #F2F1ED;
   }
 
   html.light,
   html.light body {
-    background-color: #F8FAFC;
-    color: #111827;
+    background-color: #F5F5F4;
+    color: #111110;
   }
 }
 
-/* ── Dashboard layout root ──────────────────────────────────────────────── */
-/*
- * .dashboard-root is the outermost div on every dashboard/admin page.
- * It must be transparent so the body background shows through behind
- * the fixed sidebar — backdrop-filter on the sidebar samples what is
- * painted *behind* it in the stacking context, which is the body.
- * An opaque div here would block the body gradient entirely.
- *
- * DIAGNOSTIC: gradients are at 45% opacity so the blur mechanism can be
- * visually confirmed. Dial back to 10-12% once confirmed working.
- */
+/* ── Dashboard layout root — Voltage: flat background, no gradients ───── */
 .dashboard-root {
   min-height: 100vh;
   position: relative;
-  /* Dark mode gradient — intense for diagnostic confirmation */
-  background-color: #0B1120;
-  background-image:
-    radial-gradient(ellipse 90% 60% at 15% 25%, rgba(129, 140, 248, 0.45) 0%, transparent 55%),
-    radial-gradient(ellipse 70% 50% at 85% 75%, rgba(34, 211, 238, 0.30) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(129, 140, 248, 0.15) 0%, transparent 60%);
+  background-color: #0A0A0C;
 }
 
 html.light .dashboard-root {
-  background-color: #F8FAFC;
-  background-image:
-    radial-gradient(ellipse 90% 60% at 15% 25%, rgba(79, 70, 229, 0.35) 0%, transparent 55%),
-    radial-gradient(ellipse 70% 50% at 85% 75%, rgba(8, 145, 178, 0.25) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(79, 70, 229, 0.12) 0%, transparent 60%);
+  background-color: #F5F5F4;
 }
 
-/* ── Glass surfaces ─────────────────────────────────────────────────────── */
-/*
- * Explicit backdrop-filter as a non-Tailwind rule to guarantee it applies
- * even if Tailwind's backdrop-blur-md gets purged or overridden.
- * Using -webkit- prefix for Safari compatibility.
- */
+/* ── Glass surfaces ────────────────────────────────────────────────────── */
 .glass-surface {
   -webkit-backdrop-filter: blur(12px) saturate(1.4);
   backdrop-filter: blur(12px) saturate(1.4);

@@ -78,8 +78,8 @@ export default function ExpoStatusTransitionButton({
   // ── Variant styles ────────────────────────────────────────────────────────
   const variantStyles: Record<Variant, string> = {
     primary: isDarkMode
-      ? 'bg-brand-primary-dark text-text-on-primary-dark hover:opacity-90'
-      : 'bg-brand-primary-light text-text-on-primary-light hover:opacity-90',
+      ? 'bg-brand-primary-dark text-text-on-primary-dark hover:bg-accent-hover-dark'
+      : 'bg-brand-primary-light text-text-on-primary-light hover:bg-accent-hover-light',
     warning: isDarkMode
       ? 'bg-bg-warning-dark text-text-warning-dark border border-text-warning-dark hover:opacity-80'
       : 'bg-bg-warning-light text-text-warning-light border border-text-warning-light hover:opacity-80',

@@ -47,8 +47,8 @@ export default function PDFDownloadButton({ ticketId }: PDFDownloadButtonProps) 
         disabled={loading}
         className={`px-md-token py-xs-token rounded-md-token text-sm-token font-semibold transition-colors disabled:opacity-60 ${
           isDarkMode
-            ? 'bg-brand-primary-dark text-text-on-primary-dark hover:opacity-90'
-            : 'bg-brand-primary-light text-text-on-primary-light hover:opacity-90'
+            ? 'bg-brand-primary-dark text-text-on-primary-dark hover:bg-accent-hover-dark'
+            : 'bg-brand-primary-light text-text-on-primary-light hover:bg-accent-hover-light'
         }`}
       >
         {loading ? 'Generating PDF…' : 'Download PDF Ticket'}

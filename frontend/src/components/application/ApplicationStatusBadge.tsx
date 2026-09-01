@@ -1,6 +1,6 @@
 import { useTheme } from '../../contexts/ThemeContext';
 
-type ApplicationStatus = 'pending' | 'approved' | 'rejected';
+type ApplicationStatus = 'pending' | 'approved' | 'rejected' | 'withdrawn';
 
 interface ApplicationStatusBadgeProps {
   status: ApplicationStatus;
@@ -28,6 +28,12 @@ export default function ApplicationStatusBadge({ status }: ApplicationStatusBadg
       classes: isDarkMode
         ? 'bg-bg-danger-dark text-text-danger-dark'
         : 'bg-bg-danger-light text-text-danger-light',
+    },
+    withdrawn: {
+      label: 'Withdrawn',
+      classes: isDarkMode
+        ? 'bg-bg-surface-dark text-text-secondary-dark border border-border-base-dark'
+        : 'bg-bg-surface-light text-text-secondary-light border border-border-base-light',
     },
   };
 

@@ -120,7 +120,11 @@ export default function ApplicationsPage() {
   const chipBase = 'px-sm-token py-xs-token rounded-sm-token text-xs-token font-medium cursor-pointer transition-colors';
   const chipActive = isDarkMode ? 'bg-brand-primary-dark text-text-on-primary-dark' : 'bg-brand-primary-light text-text-on-primary-light';
   const chipInactive = isDarkMode ? 'bg-bg-surface-dark text-text-secondary-dark border border-border-base-dark hover:bg-bg-hover-dark' : 'bg-bg-surface-light text-text-secondary-light border border-border-base-light hover:bg-bg-hover-light';
-  const fillColor = boothFillRate >= 100 ? (isDarkMode ? 'bg-text-danger-dark' : 'bg-text-danger-light') : boothFillRate >= 80 ? (isDarkMode ? 'bg-text-warning-dark' : 'bg-text-warning-light') : (isDarkMode ? 'bg-text-success-dark' : 'bg-text-success-light');
+  const fillColor = boothFillRate >= 100
+    ? (isDarkMode ? 'bg-text-danger-dark' : 'bg-text-danger-light')
+    : boothFillRate >= 80
+      ? (isDarkMode ? 'bg-text-warning-dark' : 'bg-text-warning-light')
+      : (isDarkMode ? 'bg-brand-primary-dark' : 'bg-brand-primary-light');
 
   return (
     <div className="dashboard-root">
@@ -198,7 +202,7 @@ export default function ApplicationsPage() {
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-sm-token mb-lg-token">
             <input type="text" placeholder="Search by company name…" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} aria-label="Search applications"
-              className={`flex-1 rounded-md-token border px-sm-token py-xs-token text-sm-token outline-none transition-colors ${isDarkMode ? 'bg-bg-surface-dark border-border-base-dark text-text-primary-dark placeholder:text-text-secondary-dark focus:border-brand-primary-dark' : 'bg-bg-surface-light border-border-base-light text-text-primary-light placeholder:text-text-secondary-light focus:border-brand-primary-light'}`} />
+              className={`flex-1 rounded-md-token border px-sm-token py-xs-token text-sm-token outline-none focus:ring-0 transition-colors ${isDarkMode ? 'bg-bg-surface-dark border-border-base-dark text-text-primary-dark placeholder:text-text-secondary-dark focus:border-brand-primary-dark' : 'bg-bg-surface-light border-border-base-light text-text-primary-light placeholder:text-text-secondary-light focus:border-brand-primary-light'}`} />
             <div className="flex gap-xs-token flex-wrap">
               {(['all', 'pending', 'approved', 'rejected'] as StatusFilter[]).map((s) => (
                 <button key={s} onClick={() => setStatusFilter(s)} className={`${chipBase} ${statusFilter === s ? chipActive : chipInactive}`}>

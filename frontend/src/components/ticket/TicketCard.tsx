@@ -26,10 +26,10 @@ export default function TicketCard({ ticket }: TicketCardProps) {
   return (
     <Link
       to={`/attendee/tickets/${ticket.ticketId}`}
-      className={`block rounded-lg-token border p-md-token transition-colors hover:opacity-90 ${
+      className={`block rounded-lg-token border p-md-token transition-colors ${
         isDarkMode
-          ? 'bg-bg-surface-dark border-border-base-dark'
-          : 'bg-bg-surface-light border-border-base-light'
+          ? 'bg-bg-surface-dark border-border-base-dark hover:border-brand-primary-dark'
+          : 'bg-bg-surface-light border-border-base-light hover:border-brand-primary-light'
       }`}
     >
       {/* Top row: expo name + status badge */}

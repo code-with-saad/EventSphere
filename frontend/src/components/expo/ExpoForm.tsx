@@ -269,7 +269,7 @@ export default function ExpoForm({
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  const sectionHeadClass = `text-sm-token font-semibold uppercase tracking-wide ${
+  const sectionHeadClass = `text-xs-token font-semibold ${
     isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
   }`;
 
@@ -320,7 +320,7 @@ export default function ExpoForm({
             onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
             className={inputClass()}
           >
-            <option value="">Select a category…</option>
+            <option value="">Select a category</option>
             {CATEGORIES.map((c) => (
               <option key={c} value={c}>
                 {c}

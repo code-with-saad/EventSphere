@@ -119,7 +119,7 @@ export default function TicketDetailPage() {
 
                 {/* Ticket ID */}
                 <div>
-                  <p className={`text-xs-token font-medium uppercase tracking-wide mb-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                  <p className={`text-xs-token font-medium mb-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
                     Ticket ID
                   </p>
                   <p className={`text-xs-token font-mono break-all ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>

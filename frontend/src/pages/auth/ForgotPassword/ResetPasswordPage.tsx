@@ -196,14 +196,14 @@ export function ResetPasswordPage() {
                   onChange={(e) => handleInputChange('newPassword', e.target.value)}
                   className={`
                     w-full px-4 py-3 rounded-lg-token border
-                    focus:outline-none focus:ring-2 focus:border-transparent transition-colors
+                    focus:outline-none focus:ring-0 transition-colors
                     pr-12
                     ${isDarkMode
                       ? `bg-bg-surface-dark text-text-primary-dark placeholder-text-secondary-dark
-                         focus:ring-brand-primary-dark
+                         focus:border-brand-primary-dark
                          ${errors.newPassword ? 'border-text-danger-dark' : 'border-border-base-dark'}`
                       : `bg-bg-surface-light text-text-primary-light placeholder-text-secondary-light
-                         focus:ring-brand-primary-light
+                         focus:border-brand-primary-light
                          ${errors.newPassword ? 'border-text-danger-light' : 'border-border-base-light'}`
                     }
                   `}
@@ -260,14 +260,14 @@ export function ResetPasswordPage() {
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                   className={`
                     w-full px-4 py-3 rounded-lg-token border
-                    focus:outline-none focus:ring-2 focus:border-transparent transition-colors
+                    focus:outline-none focus:ring-0 transition-colors
                     pr-12
                     ${isDarkMode
                       ? `bg-bg-surface-dark text-text-primary-dark placeholder-text-secondary-dark
-                         focus:ring-brand-primary-dark
+                         focus:border-brand-primary-dark
                          ${errors.confirmPassword ? 'border-text-danger-dark' : 'border-border-base-dark'}`
                       : `bg-bg-surface-light text-text-primary-light placeholder-text-secondary-light
-                         focus:ring-brand-primary-light
+                         focus:border-brand-primary-light
                          ${errors.confirmPassword ? 'border-text-danger-light' : 'border-border-base-light'}`
                     }
                   `}
@@ -312,14 +312,14 @@ export function ResetPasswordPage() {
               className={`
                 w-full px-4 py-3
                 font-medium rounded-lg-token
-                focus:outline-none focus:ring-2 focus:ring-offset-2
+                focus:outline-none
                 text-text-on-primary-dark
                 transition-colors
                 disabled:opacity-50 disabled:cursor-not-allowed
                 flex items-center justify-center
                 ${isDarkMode
-                  ? 'bg-brand-primary-dark hover:bg-brand-secondary-dark focus:ring-brand-primary-dark focus:ring-offset-bg-base-dark'
-                  : 'bg-brand-primary-light hover:bg-brand-secondary-light focus:ring-brand-primary-light focus:ring-offset-bg-base-light'
+                  ? 'bg-brand-primary-dark hover:bg-accent-hover-dark'
+                  : 'bg-brand-primary-light hover:bg-accent-hover-light'
                 }
               `}
             >

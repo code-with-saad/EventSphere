@@ -23,7 +23,7 @@ export default function QRTicketDisplay({ ticketId, qrCodeDataUrl }: QRTicketDis
       isDarkMode ? 'bg-bg-surface-dark border-border-base-dark' : 'bg-bg-surface-light border-border-base-light'
     }`}>
       {/* QR image — always white bg, black QR regardless of theme (REQ-5.11) */}
-      <div className="bg-white p-sm-token rounded-md-token shadow-sm">
+      <div className="bg-white p-sm-token rounded-md-token">
         <img
           src={qrCodeDataUrl}
           alt={`QR code for ticket ${ticketId}`}
