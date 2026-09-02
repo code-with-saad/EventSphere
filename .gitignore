@@ -44,7 +44,7 @@ pnpm-debug.log*
 .vercel/
 
 # design & architecture (managed by Kiro)
-.kiro/
+# .kiro/
 
 # Archive folder - not for committing
 /_archive/

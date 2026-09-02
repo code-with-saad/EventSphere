@@ -1,0 +1,3217 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1. Install new backend npm dependencies": [
+      {
+        "executionId": "ec7297b6-87bb-4164-b92c-a7046830f3f7",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787992667867
+      },
+      {
+        "executionId": "ec7297b6-87bb-4164-b92c-a7046830f3f7",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787992907772
+      }
+    ],
+    "2. Extend `backend/src/config/env.ts` with Cloudinary env vars": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993422561
+      },
+      {
+        "executionId": "497b987a-c47f-46c2-847c-67251fd55ac5",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993481967
+      },
+      {
+        "executionId": "497b987a-c47f-46c2-847c-67251fd55ac5",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993933814
+      }
+    ],
+    "2a. Add `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` to the validated env config": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993422766
+      }
+    ],
+    "2b. Add the three keys to `backend/.env` (placeholder values) and document them in `PROGRESS.md`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993423279
+      }
+    ],
+    "3. Create `backend/src/models/Expo.model.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993423521
+      },
+      {
+        "executionId": "0966d9e6-5796-485c-908d-5cfc2abdb67d",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787994239606
+      },
+      {
+        "executionId": "0966d9e6-5796-485c-908d-5cfc2abdb67d",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787994387047
+      }
+    ],
+    "3a. Define `ExpoStatus` union type and `IExpo` / `IExpoCreate` interfaces per design": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993423854
+      }
+    ],
+    "3b. Implement `ExpoModel` class following `User.model.ts` singleton pattern; include `createIndexes()` with all four indexes (ownership, public listing, text search, _id default)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993424248
+      }
+    ],
+    "4. Create `backend/src/models/Application.model.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993424602
+      },
+      {
+        "executionId": "2015132b-d86c-4210-a267-7035b61a2db6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787995488036
+      },
+      {
+        "executionId": "2015132b-d86c-4210-a267-7035b61a2db6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787995598488
+      }
+    ],
+    "4a. Define `ApplicationStatus` union type and `IApplication` / `IApplicationCreate` interfaces per design": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993424837
+      }
+    ],
+    "4b. Implement `ApplicationModel` class with `createIndexes()` including the partial unique index on `(expoId, boothLabel)` for REQ-12.21": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993424977
+      }
+    ],
+    "5. Create `backend/src/models/Ticket.model.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993425153
+      }
+    ],
+    "5a. Define `TicketStatus` union type and `ITicket` / `ITicketCreate` interfaces per design": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993425300
+      }
+    ],
+    "5b. Implement `TicketModel` class with `createIndexes()` including the unique index on `ticketId` (REQ-12.22) and the composite `(ticketId, expoId)` index for check-in lookups": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993425432
+      }
+    ],
+    "6. Create `backend/src/models/Session.model.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993425590
+      },
+      {
+        "executionId": "999adeef-1de3-4df8-96cc-dd0cdbdd35d5",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788074535208
+      },
+      {
+        "executionId": "999adeef-1de3-4df8-96cc-dd0cdbdd35d5",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788074640285
+      }
+    ],
+    "6a. Define `ISession` / `ISessionCreate` interfaces per design": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993425731
+      }
+    ],
+    "6b. Implement `SessionModel` class with `createIndexes()` for `(expoId, startTime)` and the room conflict index `(expoId, room, startTime, endTime)`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993425908
+      }
+    ],
+    "7. Create `backend/src/models/Bookmark.model.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993426059
+      },
+      {
+        "executionId": "b2335451-e986-4d97-b70f-d5db8550b83a",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788074703742
+      },
+      {
+        "executionId": "b2335451-e986-4d97-b70f-d5db8550b83a",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788074788866
+      }
+    ],
+    "7a. Define `IBookmark` / `IBookmarkCreate` interfaces per design": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993426632
+      }
+    ],
+    "7b. Implement `BookmarkModel` class with `createIndexes()` including the unique index on `(sessionId, attendeeId)` and the `sessionId` cascade index": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993427073
+      }
+    ],
+    "8. Register all five new model `createIndexes()` calls in `backend/src/server.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993427279
+      },
+      {
+        "executionId": "67a03907-2bbe-4c60-872b-d08f3258729a",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788074836840
+      },
+      {
+        "executionId": "67a03907-2bbe-4c60-872b-d08f3258729a",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788074947496
+      }
+    ],
+    "9. Create `backend/src/services/upload.service.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993427418
+      },
+      {
+        "executionId": "706ad5d7-107b-4c6f-839b-c2e5561036a1",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788076687860
+      },
+      {
+        "executionId": "706ad5d7-107b-4c6f-839b-c2e5561036a1",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788076964609
+      }
+    ],
+    "9a. Implement magic-byte MIME validation: PNG (`\\x89PNG`), JPEG (`\\xFF\\xD8`), WebP (`RIFF...WEBP`) — reject any other type with `UPLOAD_INVALID_TYPE`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993427537
+      }
+    ],
+    "9b. Enforce size limits by purpose: `expo_banner` ≤ 5 MB, `company_logo` ≤ 2 MB; reject with `UPLOAD_TOO_LARGE`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993427669
+      }
+    ],
+    "9c. Upload validated buffer to Cloudinary using the SDK; store in `eventsphere/banners` or `eventsphere/logos` folder by purpose; return `{ url, publicId }`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993427826
+      }
+    ],
+    "10. Create `backend/src/routes/upload.routes.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993427935
+      },
+      {
+        "executionId": "41595fb3-a5f4-4657-8c1a-885237bf7775",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788077051403
+      },
+      {
+        "executionId": "41595fb3-a5f4-4657-8c1a-885237bf7775",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788077437468
+      }
+    ],
+    "10a. `POST /api/upload/image` — `authenticate` middleware, multipart/form-data (`multer` or equivalent), call `UploadService.uploadImage()`; wrap handler in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993428049
+      }
+    ],
+    "10b. Register upload routes in `app.ts`: `app.use('/api/upload', uploadRoutes)`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993428190
+      }
+    ],
+    "11. Create `backend/src/services/expo.service.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993428339
+      },
+      {
+        "executionId": "31fbd410-e53a-4bd3-a1a3-dfb4ac8dc87f",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788077575295
+      },
+      {
+        "executionId": "31fbd410-e53a-4bd3-a1a3-dfb4ac8dc87f",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788077888139
+      }
+    ],
+    "11a. Implement `create()` — sets `status: 'draft'`, associates `organizerId`, validates all required field lengths and date logic (startDate in future, endDate > startDate); returns new `IExpo`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993428451
+      }
+    ],
+    "11b. Implement `update()` — validates ownership (403 if mismatch), applies partial field updates, re-validates date logic on any date change": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993428572
+      }
+    ],
+    "11c. Implement `transition()` — enforces `VALID_TRANSITIONS` map; `draft→published` additionally calls `validateForPublish()`; `*→archived` and delete go through cascade gate (checks `confirmed` flag, throws `CASCADE_CONFIRMATION_REQUIRED` 409 if counts > 0 and not confirmed)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993428724
+      }
+    ],
+    "11d. Implement `getCascadePreview()` — counts `active` tickets and `pending`/`approved` applications for the expo; returns `{ activeTickets, pendingApplications, approvedApplications, requiresConfirmation }`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993428880
+      }
+    ],
+    "11e. Implement `delete()` — validates ownership; runs cascade gate; calls `executeCascade()` if confirmed; permanently removes expo document": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993429037
+      }
+    ],
+    "11f. Implement `listPublic()` — paginated query (max 12/page), status filter mapping (`upcoming` → `published`, `ongoing` → `ongoing`, `completed` → `completed`), MongoDB text search on name+description; truncates description to 160 chars in returned DTO; includes `approvedExhibitorCount` via aggregation": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993429186
+      }
+    ],
+    "11g. Implement `getPublicDetail()` — full expo document + all approved applications for exhibitor list": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993429481
+      }
+    ],
+    "11h. Implement `listByOrganizer()` and `getExpoStats()` for organizer-scoped queries": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993429660
+      }
+    ],
+    "11i. Implement private `validateForPublish()` — returns array of missing field names; and private `executeCascade()` — bulk-updates active tickets to `cancelled` and pending applications to `rejected`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993430043
+      }
+    ],
+    "12. Create `backend/src/routes/expo.routes.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993430355
+      },
+      {
+        "executionId": "ccfbdf7e-fa1b-4dc8-9cfa-d050214cfb6f",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788078079680
+      },
+      {
+        "executionId": "ccfbdf7e-fa1b-4dc8-9cfa-d050214cfb6f",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788078331511
+      }
+    ],
+    "12a. `GET /api/expos` (public) and `GET /api/expos/:id` (public) — call `ExpoService.listPublic()` / `getPublicDetail()`; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993430773
+      }
+    ],
+    "12b. `POST /api/expos` — `authenticate`, `authorize('organizer')`; call `ExpoService.create()`; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993430950
+      }
+    ],
+    "12c. `PATCH /api/expos/:id` and `PATCH /api/expos/:id/status` — `authenticate`, `authorize('organizer')`; ownership validated inside service; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993431247
+      }
+    ],
+    "12d. `GET /api/expos/:id/cascade-preview` — `authenticate`, `authorize('organizer')`; call `ExpoService.getCascadePreview()`; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993431765
+      }
+    ],
+    "12e. `DELETE /api/expos/:id` — `authenticate`, `authorize('organizer')`; call `ExpoService.delete()`; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993431935
+      }
+    ],
+    "12f. `GET /api/expos/:id/stats` and `GET /api/organizer/expos` — `authenticate`, `authorize('organizer')`; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993432065
+      }
+    ],
+    "12g. Register expo routes in `app.ts`: `app.use('/api/expos', expoRoutes)` and `app.use('/api/organizer', expoRoutes)`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993432357
+      }
+    ],
+    "13. Write `backend/src/__tests__/expo.crud.test.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993432670
+      },
+      {
+        "executionId": "4bc3d880-816b-4919-bc54-4baaa5cd1d88",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788078437975
+      },
+      {
+        "executionId": "4bc3d880-816b-4919-bc54-4baaa5cd1d88",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788078933536
+      }
+    ],
+    "13a. Test create expo: valid payload → draft status + correct organizerId; missing required field → 400; past startDate → 400; endDate before startDate → 400": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993432985
+      }
+    ],
+    "13b. Test update expo: owner can update; non-owner gets 403": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993433329
+      }
+    ],
+    "13c. Test status transitions: valid transition succeeds; invalid transition (e.g. `completed→published`) → 400 `INVALID_STATUS_TRANSITION`; publish with missing fields → 400": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993433795
+      }
+    ],
+    "13d. Test cascade gate: archive/delete with active tickets and no `confirmed` → 409 `CASCADE_CONFIRMATION_REQUIRED`; with `confirmed: true` → succeeds, tickets cancelled, applications rejected": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993434101
+      }
+    ],
+    "13e. Test public listing: only `published`/`ongoing`/`completed` expos returned; pagination limits to 12; text search returns matching results": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993434284
+      }
+    ],
+    "14. Write `backend/src/__tests__/properties/expo.properties.test.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993434604
+      },
+      {
+        "executionId": "7afbe6b1-baf9-49bc-b9e7-47991c814f0c",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788079037940
+      },
+      {
+        "executionId": "169d6466-239c-4599-b39d-a3c74b7609fe",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788085994157
+      }
+    ],
+    "14a. Property 1: public listing returns only visible-status expos (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993434758
+      }
+    ],
+    "14b. Property 2: description in ExpoCardDTO is always ≤ 160 chars (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993434968
+      }
+    ],
+    "14c. Property 3: pagination response never exceeds 12 items (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993435151
+      }
+    ],
+    "14d. Property 4: new expo always has `status=draft` and correct `organizerId` (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993436078
+      }
+    ],
+    "14e. Property 5: organizer expo list contains only own expos (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993436596
+      }
+    ],
+    "14f. Property 6: `endDate ≤ startDate` always rejected (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993437108
+      }
+    ],
+    "14g. Property 7: delete without `confirmed` blocked when tickets/approved applications exist (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993437612
+      }
+    ],
+    "14h. Property 20: only valid status transitions accepted (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993438180
+      }
+    ],
+    "14i. Property 22: cross-organizer access returns 403 (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993438555
+      }
+    ],
+    "15. Create `backend/src/services/application.service.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993438744
+      },
+      {
+        "executionId": "f0cc34ff-0363-4e27-b589-e3e74f2ff6b1",
+        "chatSessionId": "sess_3cb6b9e5-cfd4-4bd2-840c-7f6155d9bb89",
+        "timestamp": 1788086178670
+      },
+      {
+        "executionId": "8b5b6b88-ccb7-4f83-9779-f2d3be1601c8",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788088468489
+      }
+    ],
+    "15a. Implement `submit()` — validates expo is `published`; checks no existing `pending`/`approved` application for (exhibitorId, expoId) pair (throws `DUPLICATE_APPLICATION`); creates record with `status: 'pending'`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993439050
+      }
+    ],
+    "15b. Implement `edit()` — validates ownership + `status === 'pending'`; applies partial field updates": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993439284
+      }
+    ],
+    "15c. Implement `withdraw()` — validates ownership + `status === 'pending'`; hard-deletes the application record": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993439724
+      }
+    ],
+    "15d. Implement `approve()` — validates organizer ownership of expo; validates boothLabel is present and not already assigned in this expo (throws `BOOTH_CONFLICT`); warns if `approvedCount >= expo.totalBooths`; sets `status: 'approved'`, stores `boothLabel`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993440084
+      },
+      {
+        "executionId": "4255f959-4b8f-4963-9925-2ba396132326",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788094861820
+      },
+      {
+        "executionId": "4255f959-4b8f-4963-9925-2ba396132326",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095352236
+      }
+    ],
+    "15e. Implement `reject()` — validates organizer ownership; sets `status: 'rejected'`, stores optional `rejectionReason`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993440277
+      },
+      {
+        "executionId": "4255f959-4b8f-4963-9925-2ba396132326",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788094866633
+      },
+      {
+        "executionId": "4255f959-4b8f-4963-9925-2ba396132326",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095357576
+      }
+    ],
+    "15f. Implement `revokeApproval()` — validates organizer ownership; resets status to `pending`, clears `boothLabel`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993440507
+      },
+      {
+        "executionId": "4255f959-4b8f-4963-9925-2ba396132326",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788094871614
+      },
+      {
+        "executionId": "4255f959-4b8f-4963-9925-2ba396132326",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095363233
+      }
+    ],
+    "15g. Implement `listForExpo()` — returns applications grouped by status with `boothFillRate`, `totalBooths`, `assignedBooths`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993440665
+      },
+      {
+        "executionId": "4255f959-4b8f-4963-9925-2ba396132326",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788094876790
+      },
+      {
+        "executionId": "4255f959-4b8f-4963-9925-2ba396132326",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095369500
+      }
+    ],
+    "15h. Implement `getByExhibitorAndExpo()` and `getBoothFillRate()`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993440784
+      },
+      {
+        "executionId": "4255f959-4b8f-4963-9925-2ba396132326",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788094881730
+      },
+      {
+        "executionId": "4255f959-4b8f-4963-9925-2ba396132326",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095375317
+      }
+    ],
+    "16. Create `backend/src/routes/application.routes.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993440952
+      },
+      {
+        "executionId": "b4961927-3615-43b8-bb1e-e0e2a934d6c7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095581279
+      },
+      {
+        "executionId": "b4961927-3615-43b8-bb1e-e0e2a934d6c7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095992321
+      }
+    ],
+    "16a. `POST /api/expos/:expoId/applications` — `authenticate`, `authorize('exhibitor')`; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993441086
+      },
+      {
+        "executionId": "b4961927-3615-43b8-bb1e-e0e2a934d6c7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095583482
+      },
+      {
+        "executionId": "b4961927-3615-43b8-bb1e-e0e2a934d6c7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095963072
+      }
+    ],
+    "16b. `GET /api/expos/:expoId/applications` — `authenticate`, `authorize('organizer')`; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993441246
+      },
+      {
+        "executionId": "b4961927-3615-43b8-bb1e-e0e2a934d6c7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095591983
+      },
+      {
+        "executionId": "b4961927-3615-43b8-bb1e-e0e2a934d6c7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095967988
+      }
+    ],
+    "16c. `GET /api/expos/:expoId/applications/mine` and `GET /api/exhibitor/applications` — `authenticate`, `authorize('exhibitor')`; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993441388
+      },
+      {
+        "executionId": "b4961927-3615-43b8-bb1e-e0e2a934d6c7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095595652
+      },
+      {
+        "executionId": "b4961927-3615-43b8-bb1e-e0e2a934d6c7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095972664
+      }
+    ],
+    "16d. `PATCH /api/expos/:expoId/applications/:id` (edit) and `DELETE /api/expos/:expoId/applications/:id` (withdraw) — `authenticate`, `authorize('exhibitor')`; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993441549
+      },
+      {
+        "executionId": "b4961927-3615-43b8-bb1e-e0e2a934d6c7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095597080
+      },
+      {
+        "executionId": "b4961927-3615-43b8-bb1e-e0e2a934d6c7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095977518
+      }
+    ],
+    "16e. `PATCH /api/expos/:expoId/applications/:id/review` — `authenticate`, `authorize('organizer')`; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993441683
+      },
+      {
+        "executionId": "b4961927-3615-43b8-bb1e-e0e2a934d6c7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095598530
+      },
+      {
+        "executionId": "b4961927-3615-43b8-bb1e-e0e2a934d6c7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095982118
+      }
+    ],
+    "16f. Register routes in `app.ts`: `app.use('/api/expos', applicationRoutes)` and `app.use('/api/exhibitor', applicationRoutes)`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993441862
+      },
+      {
+        "executionId": "b4961927-3615-43b8-bb1e-e0e2a934d6c7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095599283
+      },
+      {
+        "executionId": "b4961927-3615-43b8-bb1e-e0e2a934d6c7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788095987325
+      }
+    ],
+    "17. Write `backend/src/__tests__/application.flow.test.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993442034
+      },
+      {
+        "executionId": "4b56f37e-cc03-4fca-a359-8641ea45f4d4",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788096254272
+      },
+      {
+        "executionId": "4b56f37e-cc03-4fca-a359-8641ea45f4d4",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788098451943
+      }
+    ],
+    "17a. Submit: valid → 201 pending; duplicate → 409; non-published expo → error": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993442158
+      },
+      {
+        "executionId": "4b56f37e-cc03-4fca-a359-8641ea45f4d4",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788096255528
+      },
+      {
+        "executionId": "4b56f37e-cc03-4fca-a359-8641ea45f4d4",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788098413626
+      }
+    ],
+    "17b. Edit: owner + pending → updated; non-owner → 403; approved status → rejected": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993442265
+      },
+      {
+        "executionId": "4b56f37e-cc03-4fca-a359-8641ea45f4d4",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788096256666
+      },
+      {
+        "executionId": "4b56f37e-cc03-4fca-a359-8641ea45f4d4",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788098419087
+      }
+    ],
+    "17c. Withdraw: owner + pending → deleted; can reapply after withdraw": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993442696
+      },
+      {
+        "executionId": "4b56f37e-cc03-4fca-a359-8641ea45f4d4",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788096257996
+      },
+      {
+        "executionId": "4b56f37e-cc03-4fca-a359-8641ea45f4d4",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788098424286
+      }
+    ],
+    "17d. Approve: valid boothLabel → approved; duplicate boothLabel → 409 `BOOTH_CONFLICT`; overfill → 200 with warning": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993443032
+      },
+      {
+        "executionId": "4b56f37e-cc03-4fca-a359-8641ea45f4d4",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788096259794
+      },
+      {
+        "executionId": "4b56f37e-cc03-4fca-a359-8641ea45f4d4",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788098431392
+      }
+    ],
+    "17e. Reject with reason; revoke approval clears boothLabel": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993443144
+      },
+      {
+        "executionId": "4b56f37e-cc03-4fca-a359-8641ea45f4d4",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788096264586
+      },
+      {
+        "executionId": "4b56f37e-cc03-4fca-a359-8641ea45f4d4",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788098438840
+      }
+    ],
+    "18. Write `backend/src/__tests__/properties/application.properties.test.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993443248
+      },
+      {
+        "executionId": "57e0d51f-9292-42cc-91cb-587230f44682",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788098543441
+      },
+      {
+        "executionId": "57e0d51f-9292-42cc-91cb-587230f44682",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788101830776
+      }
+    ],
+    "18a. Property 8: booth labels unique within expo (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993443380
+      },
+      {
+        "executionId": "57e0d51f-9292-42cc-91cb-587230f44682",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788098550382
+      },
+      {
+        "executionId": "57e0d51f-9292-42cc-91cb-587230f44682",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788101822876
+      }
+    ],
+    "18b. Property 9: booth fill rate calculation is correct (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993443599
+      },
+      {
+        "executionId": "57e0d51f-9292-42cc-91cb-587230f44682",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788098551591
+      },
+      {
+        "executionId": "57e0d51f-9292-42cc-91cb-587230f44682",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788101823939
+      }
+    ],
+    "18c. Property 10: duplicate application for same exhibitor×expo rejected (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993443703
+      },
+      {
+        "executionId": "57e0d51f-9292-42cc-91cb-587230f44682",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788098552595
+      },
+      {
+        "executionId": "57e0d51f-9292-42cc-91cb-587230f44682",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788101824150
+      }
+    ],
+    "19. Create `backend/src/services/ticket.service.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993443814
+      },
+      {
+        "executionId": "eee7f5b7-0b14-46fb-8c6a-e63c6c1bd64a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102269027
+      },
+      {
+        "executionId": "eee7f5b7-0b14-46fb-8c6a-e63c6c1bd64a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102651489
+      }
+    ],
+    "19a. Implement `register()` — validates expo is `published` or `ongoing`; checks no existing `active`/`checked_in` ticket for (attendeeId, expoId) (throws `DUPLICATE_REGISTRATION`); generates UUID v4 `ticketId`; calls `generateQRPNG()`; inserts ticket; returns `TicketRegistrationResponse` with qrCodeDataUrl, expo details, and attendee name": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993444076
+      },
+      {
+        "executionId": "eee7f5b7-0b14-46fb-8c6a-e63c6c1bd64a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102277546
+      },
+      {
+        "executionId": "eee7f5b7-0b14-46fb-8c6a-e63c6c1bd64a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102644780
+      }
+    ],
+    "19b. Implement private `generateQRPNG()` — calls `QRCode.toDataURL(ticketId, { width: 300, margin: 4, errorCorrectionLevel: 'M', color: { dark: '#000000', light: '#FFFFFF' } })`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993444223
+      },
+      {
+        "executionId": "eee7f5b7-0b14-46fb-8c6a-e63c6c1bd64a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102278757
+      },
+      {
+        "executionId": "eee7f5b7-0b14-46fb-8c6a-e63c6c1bd64a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102647529
+      }
+    ],
+    "19c. Implement `getQRCode()` — looks up ticket by ticketId, re-calls `generateQRPNG()`; returns data URL (deterministic re-render)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993444367
+      },
+      {
+        "executionId": "eee7f5b7-0b14-46fb-8c6a-e63c6c1bd64a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102279977
+      },
+      {
+        "executionId": "eee7f5b7-0b14-46fb-8c6a-e63c6c1bd64a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102648419
+      }
+    ],
+    "19d. Implement `generatePDF()` — validates ownership; uses `pdf-lib` to compose: expo name (heading), attendee full name, start+end dates, venue name, embedded QR PNG (via `embedPng`), ticket ID in `CourierPrime` or `Helvetica` mono; returns `Buffer`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993444538
+      },
+      {
+        "executionId": "eee7f5b7-0b14-46fb-8c6a-e63c6c1bd64a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102281889
+      },
+      {
+        "executionId": "eee7f5b7-0b14-46fb-8c6a-e63c6c1bd64a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102648959
+      }
+    ],
+    "19e. Implement `cancel()` — validates ownership + `status === 'active'`; sets status to `cancelled`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993444681
+      },
+      {
+        "executionId": "eee7f5b7-0b14-46fb-8c6a-e63c6c1bd64a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102282922
+      },
+      {
+        "executionId": "eee7f5b7-0b14-46fb-8c6a-e63c6c1bd64a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102649929
+      }
+    ],
+    "19f. Implement `processCheckIn()` — looks up ticket by ticketId; if not found → `invalid_ticket`; if `cancelled` → `cancelled_ticket`; if expoId mismatch → `wrong_event`; if `checked_in` → `already_checked_in` with original `checkedInAt`; if `active` → update to `checked_in`, set `checkedInAt: new Date()`, return `checked_in` with attendee name and expo name": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993444796
+      },
+      {
+        "executionId": "eee7f5b7-0b14-46fb-8c6a-e63c6c1bd64a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102285078
+      },
+      {
+        "executionId": "eee7f5b7-0b14-46fb-8c6a-e63c6c1bd64a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102650809
+      }
+    ],
+    "20. Create `backend/src/routes/ticket.routes.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993444957
+      },
+      {
+        "executionId": "0b09e2d1-5441-4581-8e7b-5bed8e848f52",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102748205
+      },
+      {
+        "executionId": "a6ba9ba4-9eed-4502-b376-95652819c5b0",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788105513381
+      }
+    ],
+    "20a. `POST /api/expos/:expoId/tickets` — `authenticate`, `authorize('attendee')`; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993445082
+      },
+      {
+        "executionId": "0b09e2d1-5441-4581-8e7b-5bed8e848f52",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102753871
+      },
+      {
+        "executionId": "a6ba9ba4-9eed-4502-b376-95652819c5b0",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788105501854
+      }
+    ],
+    "20b. `GET /api/tickets/mine` and `GET /api/tickets/:ticketId` — `authenticate`, `authorize('attendee')`; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993445190
+      },
+      {
+        "executionId": "0b09e2d1-5441-4581-8e7b-5bed8e848f52",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102754751
+      },
+      {
+        "executionId": "a6ba9ba4-9eed-4502-b376-95652819c5b0",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788105502937
+      }
+    ],
+    "20c. `PATCH /api/tickets/:ticketId/cancel` — `authenticate`, `authorize('attendee')`; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993445298
+      },
+      {
+        "executionId": "0b09e2d1-5441-4581-8e7b-5bed8e848f52",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102755566
+      },
+      {
+        "executionId": "a6ba9ba4-9eed-4502-b376-95652819c5b0",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788105503537
+      }
+    ],
+    "20d. `POST /api/tickets/checkin` — `authenticate`, `authorize('organizer')`; always returns HTTP 200 with `result` discriminator; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993445463
+      },
+      {
+        "executionId": "0b09e2d1-5441-4581-8e7b-5bed8e848f52",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102756608
+      },
+      {
+        "executionId": "a6ba9ba4-9eed-4502-b376-95652819c5b0",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788105504804
+      }
+    ],
+    "20e. `GET /api/tickets/:ticketId/pdf` — `authenticate`, `authorize('attendee')`; validates ownership; calls `TicketService.generatePDF()`; sets `Content-Type: application/pdf` and `Content-Disposition: attachment; filename=\"ticket-{ticketId}.pdf\"`; pipes Buffer as response; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993445611
+      },
+      {
+        "executionId": "0b09e2d1-5441-4581-8e7b-5bed8e848f52",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102765114
+      },
+      {
+        "executionId": "a6ba9ba4-9eed-4502-b376-95652819c5b0",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788105506228
+      }
+    ],
+    "20f. Register routes in `app.ts`: `app.use('/api/tickets', ticketRoutes)` and `app.use('/api/expos', ticketRoutes)` (for the registration endpoint)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993445727
+      },
+      {
+        "executionId": "0b09e2d1-5441-4581-8e7b-5bed8e848f52",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788102759270
+      },
+      {
+        "executionId": "a6ba9ba4-9eed-4502-b376-95652819c5b0",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788105507362
+      }
+    ],
+    "21. Write `backend/src/__tests__/ticket.checkin.test.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993445832
+      },
+      {
+        "executionId": "288a5765-08ef-48da-8fac-460a752fe518",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788107244534
+      },
+      {
+        "executionId": "c600713e-ffe7-45ca-945a-b53266afbad7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788113407279
+      }
+    ],
+    "21a. Register: published expo + authenticated attendee → 201 with qrCodeDataUrl; completed/archived expo → error; duplicate → 409": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993446321
+      },
+      {
+        "executionId": "288a5765-08ef-48da-8fac-460a752fe518",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788107251369
+      },
+      {
+        "executionId": "c600713e-ffe7-45ca-945a-b53266afbad7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788113396559
+      }
+    ],
+    "21b. PDF: `GET /api/tickets/:ticketId/pdf` → 200 with `Content-Type: application/pdf`; non-owner → 403": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993446504
+      },
+      {
+        "executionId": "288a5765-08ef-48da-8fac-460a752fe518",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788107252588
+      },
+      {
+        "executionId": "c600713e-ffe7-45ca-945a-b53266afbad7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788113398226
+      }
+    ],
+    "21c. Check-in: active ticket → `{ result: 'checked_in' }`; checked_in ticket → `{ result: 'already_checked_in', checkedInAt: <original> }`; wrong expo → `{ result: 'wrong_event' }`; cancelled → `{ result: 'cancelled_ticket' }`; non-existent → `{ result: 'invalid_ticket' }`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993446695
+      },
+      {
+        "executionId": "288a5765-08ef-48da-8fac-460a752fe518",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788107254324
+      },
+      {
+        "executionId": "c600713e-ffe7-45ca-945a-b53266afbad7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788113399827
+      }
+    ],
+    "21d. Cancel: active ticket → cancelled; already-cancelled → error; non-owner → 403": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993446831
+      },
+      {
+        "executionId": "288a5765-08ef-48da-8fac-460a752fe518",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788107255136
+      },
+      {
+        "executionId": "c600713e-ffe7-45ca-945a-b53266afbad7",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788113401136
+      }
+    ],
+    "22. Write `backend/src/__tests__/properties/ticket.properties.test.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993446993
+      },
+      {
+        "executionId": "1ab73014-4d1f-4ca3-b31b-77b6a56730a9",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788113657473
+      },
+      {
+        "executionId": "1ab73014-4d1f-4ca3-b31b-77b6a56730a9",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788116113507
+      }
+    ],
+    "22a. Property 11: new ticket has `status=active` and UUID v4 format ticketId (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993447140
+      }
+    ],
+    "22b. Property 12: QR generation is deterministic — same ticketId always produces same data URL (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993447251
+      }
+    ],
+    "22c. Property 13: duplicate registration for same attendee×expo blocked (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993447424
+      }
+    ],
+    "22d. Property 18: check-in transitions `active→checked_in` with `checkedInAt > registeredAt` (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993447579
+      }
+    ],
+    "22e. Property 19: second check-in scan returns `already_checked_in` with unchanged original timestamp (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993447753
+      }
+    ],
+    "23. Create `backend/src/services/session.service.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993447891
+      }
+    ],
+    "23a. Implement `create()` — validates organizer owns the expo; validates `endTime > startTime` (throws `INVALID_TIME_RANGE`); calls `checkRoomConflict()`; if conflict → throws `ROOM_CONFLICT` with conflicting session data; inserts session": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993448061
+      }
+    ],
+    "23b. Implement `update()` — validates ownership; re-validates time range; re-runs `checkRoomConflict()` excluding current session id": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993448198
+      }
+    ],
+    "23c. Implement `delete()` — validates ownership; deletes session; bulk-deletes all bookmarks with matching `sessionId` (cascade per REQ-6.7)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993448320
+      }
+    ],
+    "23d. Implement `listByExpo()` — returns sessions sorted by `startTime` ascending": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993448496
+      }
+    ],
+    "23e. Implement private `checkRoomConflict()` — query: same `expoId` + same `room` + overlapping time range (`startTime < B.endTime && endTime > B.startTime`); exclude `excludeId` if provided": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993448639
+      }
+    ],
+    "24. Create `backend/src/services/bookmark.service.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993448775
+      },
+      {
+        "executionId": "52581e9f-151a-49b9-91eb-911cc6c2e83a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788117203943
+      },
+      {
+        "executionId": "52581e9f-151a-49b9-91eb-911cc6c2e83a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788117533130
+      }
+    ],
+    "24a. Implement `add()` — upsert on `(sessionId, attendeeId)`; idempotent": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993448922
+      }
+    ],
+    "24b. Implement `remove()` — deleteOne on `(sessionId, attendeeId)`; no-op if not found": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993449079
+      }
+    ],
+    "24c. Implement `listForAttendeeAndExpo()` — find bookmarks by attendeeId; join with sessions to filter by `expoId`; return sessions sorted by startTime": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993449206
+      }
+    ],
+    "25. Create `backend/src/routes/session.routes.ts` and `backend/src/routes/bookmark.routes.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993449384
+      },
+      {
+        "executionId": "21019951-f50c-4890-a08f-17c74be5f6ac",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788117613937
+      },
+      {
+        "executionId": "21019951-f50c-4890-a08f-17c74be5f6ac",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788119446329
+      }
+    ],
+    "25a. Session routes: `GET /api/expos/:expoId/sessions` (`authenticate` only, any role); `POST`, `PATCH /:id`, `DELETE /:id` — `authenticate`, `authorize('organizer')`; all wrapped in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993449724
+      }
+    ],
+    "25b. Bookmark routes: `POST` and `DELETE /api/expos/:expoId/sessions/:sessionId/bookmarks` — `authenticate`, `authorize('attendee')`; `GET /api/expos/:expoId/bookmarks/mine` — `authenticate`, `authorize('attendee')`; all wrapped in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993449945
+      }
+    ],
+    "25c. Register in `app.ts`: `app.use('/api/expos', sessionRoutes)` and `app.use('/api/expos', bookmarkRoutes)`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993450092
+      }
+    ],
+    "26. Write `backend/src/__tests__/session.schedule.test.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993450211
+      },
+      {
+        "executionId": "951e68df-6aca-4ed2-948d-9cd38af10ad4",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788119638718
+      },
+      {
+        "executionId": "137510b5-f465-42f0-99a7-e6dff44f246c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788122027632
+      }
+    ],
+    "26a. Create session: valid → 201; `endTime ≤ startTime` → 400 `INVALID_TIME_RANGE`; room conflict → 409 `ROOM_CONFLICT` with conflicting session title": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993450314
+      },
+      {
+        "executionId": "137510b5-f465-42f0-99a7-e6dff44f246c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788122040899
+      }
+    ],
+    "26b. Update session: room conflict excluding self works correctly": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993450461
+      },
+      {
+        "executionId": "137510b5-f465-42f0-99a7-e6dff44f246c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788122048415
+      }
+    ],
+    "26c. Delete session: verifies all associated bookmarks are also deleted": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993450607
+      },
+      {
+        "executionId": "137510b5-f465-42f0-99a7-e6dff44f246c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788122053926
+      }
+    ],
+    "27. Write `backend/src/__tests__/properties/session.properties.test.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993450740
+      },
+      {
+        "executionId": "137510b5-f465-42f0-99a7-e6dff44f246c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788122065642
+      },
+      {
+        "executionId": "137510b5-f465-42f0-99a7-e6dff44f246c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788124076287
+      }
+    ],
+    "27a. Property 14: `endTime ≤ startTime` always rejected (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993450852
+      },
+      {
+        "executionId": "137510b5-f465-42f0-99a7-e6dff44f246c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788124082570
+      }
+    ],
+    "27b. Property 15: overlapping sessions in same room rejected with conflict error (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993450998
+      },
+      {
+        "executionId": "137510b5-f465-42f0-99a7-e6dff44f246c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788124088755
+      }
+    ],
+    "27c. Property 16: deleting session removes all associated bookmarks (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993451144
+      },
+      {
+        "executionId": "137510b5-f465-42f0-99a7-e6dff44f246c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788124095119
+      }
+    ],
+    "28. Write `backend/src/__tests__/properties/bookmark.properties.test.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993451250
+      },
+      {
+        "executionId": "137510b5-f465-42f0-99a7-e6dff44f246c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788124101390
+      }
+    ],
+    "28a. Property 17: bookmark then remove returns session to pre-bookmarked state (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993451365
+      }
+    ],
+    "29. Create `backend/src/services/stats.service.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993451524
+      }
+    ],
+    "29a. Implement `getOrganizerDashboard()` — MongoDB aggregation: count active expos (`published`/`ongoing`) for organizer; sum attendees and check-ins across those expos; compute aggregate booth fill rate; fetch last 5 updated expos": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993451677
+      }
+    ],
+    "29b. Implement `getExpoStats()` — per-expo: count applications by status, ticket count, check-in count, booth fill rate": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993451793
+      }
+    ],
+    "29c. Implement `getSuperAdminDashboard()` — platform totals: total expos (all statuses), total attendees, total applications, total check-ins; 5 most recently created expos joined with organizer name from users collection": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993451957
+      }
+    ],
+    "30. Create `backend/src/routes/dashboard.routes.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993452123
+      },
+      {
+        "executionId": "be45e810-0630-40e7-88f2-609002b6f72c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788155748607
+      },
+      {
+        "executionId": "be45e810-0630-40e7-88f2-609002b6f72c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788157618522
+      }
+    ],
+    "30a. `GET /api/dashboard/organizer` — `authenticate`, `authorize('organizer')`; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993452241
+      },
+      {
+        "executionId": "be45e810-0630-40e7-88f2-609002b6f72c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788157632005
+      }
+    ],
+    "30b. `GET /api/dashboard/organizer/:expoId` — `authenticate`, `authorize('organizer')`; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993452364
+      },
+      {
+        "executionId": "be45e810-0630-40e7-88f2-609002b6f72c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788157638112
+      }
+    ],
+    "30c. `GET /api/dashboard/superadmin` — `authenticate`, `authorize('superadmin')`; wrap in `asyncHandler`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993452855
+      },
+      {
+        "executionId": "be45e810-0630-40e7-88f2-609002b6f72c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788157643752
+      }
+    ],
+    "30d. Register in `app.ts`: `app.use('/api/dashboard', dashboardRoutes)`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993452988
+      },
+      {
+        "executionId": "be45e810-0630-40e7-88f2-609002b6f72c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788157649972
+      }
+    ],
+    "31. Write `backend/src/__tests__/dashboard.stats.test.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993453143
+      },
+      {
+        "executionId": "be45e810-0630-40e7-88f2-609002b6f72c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788157655269
+      }
+    ],
+    "31a. Organizer dashboard: correct counts for active expos, attendees, check-ins, booth fill rate": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993453263
+      },
+      {
+        "executionId": "be45e810-0630-40e7-88f2-609002b6f72c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788157971259
+      }
+    ],
+    "31b. SuperAdmin dashboard: platform-wide totals and recent expos with organizer names": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993453378
+      },
+      {
+        "executionId": "be45e810-0630-40e7-88f2-609002b6f72c",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788157979918
+      }
+    ],
+    "32. Write `backend/src/__tests__/properties/cascade.properties.test.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993453547
+      }
+    ],
+    "32a. Property 21: after archive/delete with confirmed cascade, no `active` tickets and no `pending` applications remain for that expo (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993453695
+      }
+    ],
+    "33. Install frontend dependencies": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993453817
+      },
+      {
+        "executionId": "774c848c-162a-4059-8214-a7a29fb281ac",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788163234212
+      }
+    ],
+    "33a. Install production dep: `html5-qrcode@^2.3.8`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993453938
+      },
+      {
+        "executionId": "774c848c-162a-4059-8214-a7a29fb281ac",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788163378943
+      }
+    ],
+    "33b. Install dev deps: `fast-check@^4.1.0`, `@fast-check/vitest@^0.2.0`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993454097
+      },
+      {
+        "executionId": "774c848c-162a-4059-8214-a7a29fb281ac",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788163384375
+      }
+    ],
+    "34. Create all frontend axios service modules in `frontend/src/services/`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993454233
+      },
+      {
+        "executionId": "1f182ab6-c8ed-4343-93c7-097ef63feb51",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788163825022
+      }
+    ],
+    "34a. `expoService.ts` — `list(query)`, `getById(id)`, `create(data)`, `update(id, data)`, `transitionStatus(id, status, confirmed?)`, `getCascadePreview(id)`, `delete(id, confirmed)`, `getStats(id)`, `listMine()`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993454344
+      },
+      {
+        "executionId": "1f182ab6-c8ed-4343-93c7-097ef63feb51",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788164020132
+      }
+    ],
+    "34b. `applicationService.ts` — `submit(expoId, data)`, `getMine(expoId)`, `listForExpo(expoId)`, `edit(expoId, applicationId, data)`, `withdraw(expoId, applicationId)`, `review(expoId, applicationId, body)`, `listAllMine()`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993454514
+      },
+      {
+        "executionId": "1f182ab6-c8ed-4343-93c7-097ef63feb51",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788164026414
+      }
+    ],
+    "34c. `ticketService.ts` — `register(expoId)`, `getMine()`, `getById(ticketId)`, `cancel(ticketId)`, `checkIn(ticketId, expoId)`, `downloadPDF(ticketId)` (responseType: 'blob')": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993454672
+      },
+      {
+        "executionId": "1f182ab6-c8ed-4343-93c7-097ef63feb51",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788164027836
+      }
+    ],
+    "34d. `sessionService.ts` — `list(expoId)`, `create(expoId, data)`, `update(expoId, sessionId, data)`, `delete(expoId, sessionId)`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993454784
+      },
+      {
+        "executionId": "1f182ab6-c8ed-4343-93c7-097ef63feb51",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788164028265
+      }
+    ],
+    "34e. `bookmarkService.ts` — `add(expoId, sessionId)`, `remove(expoId, sessionId)`, `getMine(expoId)`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993454902
+      },
+      {
+        "executionId": "1f182ab6-c8ed-4343-93c7-097ef63feb51",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788164028931
+      }
+    ],
+    "34f. `statsService.ts` — `getOrganizerDashboard()`, `getExpoStats(expoId)`, `getSuperAdminDashboard()`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993455055
+      },
+      {
+        "executionId": "1f182ab6-c8ed-4343-93c7-097ef63feb51",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788164033053
+      }
+    ],
+    "34g. `uploadService.ts` — `uploadImage(file, purpose)` — posts multipart/form-data to `/api/upload/image`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993455193
+      },
+      {
+        "executionId": "1f182ab6-c8ed-4343-93c7-097ef63feb51",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788164033593
+      }
+    ],
+    "35. Create all custom hooks in `frontend/src/hooks/`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993455302
+      },
+      {
+        "executionId": "1435e297-8229-4ed4-bb09-314665a5dd5e",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788164458393
+      }
+    ],
+    "35a. `useExpos.ts` — accepts `{ organizerOnly?, query? }`; fetches and returns expo list + loading/error state": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993455686
+      },
+      {
+        "executionId": "ca691c79-7a74-47aa-97c1-e10b5fcdba96",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788166080890
+      }
+    ],
+    "35b. `useApplications.ts` — accepts `(expoId, role)`; returns application list and action handlers": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993455925
+      },
+      {
+        "executionId": "ca691c79-7a74-47aa-97c1-e10b5fcdba96",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788166089895
+      }
+    ],
+    "35c. `useTickets.ts` — returns attendee's own tickets": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993456108
+      },
+      {
+        "executionId": "ca691c79-7a74-47aa-97c1-e10b5fcdba96",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788166092620
+      }
+    ],
+    "35d. `useSessions.ts` — accepts `expoId`; returns sessions list": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993456318
+      },
+      {
+        "executionId": "ca691c79-7a74-47aa-97c1-e10b5fcdba96",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788166093249
+      }
+    ],
+    "35e. `useBookmarks.ts` — accepts `expoId`; returns bookmarked sessions": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993456470
+      },
+      {
+        "executionId": "ca691c79-7a74-47aa-97c1-e10b5fcdba96",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788166094617
+      }
+    ],
+    "35f. `useOrganizerStats.ts` — fetches organizer dashboard stats immediately on mount and every 60 seconds via `setInterval`; clears interval on unmount (REQ-10.4)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993456632
+      },
+      {
+        "executionId": "ca691c79-7a74-47aa-97c1-e10b5fcdba96",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788166095956
+      }
+    ],
+    "36. Register all new routes in `frontend/src/App.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993456762
+      },
+      {
+        "executionId": "3c82286b-e52d-4c6e-a255-30f221a0f9a3",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788166448303
+      }
+    ],
+    "36a. Public routes (no ProtectedRoute): `/expos` → `ExpoListingPage`, `/expos/:id` → `ExpoDetailPage`, `/expos/:id/schedule` → `ScheduleBrowsePage`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993456883
+      },
+      {
+        "executionId": "3c82286b-e52d-4c6e-a255-30f221a0f9a3",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788166699777
+      }
+    ],
+    "36b. Organizer routes (ProtectedRoute `allowedRoles=['organizer']`): `/organizer/expos`, `/organizer/expos/new`, `/organizer/expos/:id/edit`, `/organizer/expos/:id/applications`, `/organizer/expos/:id/schedule`, `/organizer/expos/:id/booths`, `/organizer/scanner`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993457019
+      },
+      {
+        "executionId": "3c82286b-e52d-4c6e-a255-30f221a0f9a3",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788166708089
+      }
+    ],
+    "36c. Exhibitor routes (ProtectedRoute `allowedRoles=['exhibitor']`): `/exhibitor/applications`, `/expos/:id/apply`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993457161
+      },
+      {
+        "executionId": "3c82286b-e52d-4c6e-a255-30f221a0f9a3",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788166715205
+      }
+    ],
+    "36d. Attendee routes (ProtectedRoute `allowedRoles=['attendee']`): `/attendee/tickets`, `/attendee/tickets/:ticketId`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993457292
+      },
+      {
+        "executionId": "3c82286b-e52d-4c6e-a255-30f221a0f9a3",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788166721937
+      }
+    ],
+    "37. Create `frontend/src/components/expo/ExpoStatusBadge.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993457409
+      },
+      {
+        "executionId": "831b0c81-cd30-4ebf-9946-79ae79e66fd5",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788166886538
+      },
+      {
+        "executionId": "831b0c81-cd30-4ebf-9946-79ae79e66fd5",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788167161534
+      }
+    ],
+    "37a. Color-coded status pill: `draft` (secondary text), `published` (success), `ongoing` (brand primary), `completed` (warning), `archived` (danger); uses design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993457569
+      },
+      {
+        "executionId": "831b0c81-cd30-4ebf-9946-79ae79e66fd5",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788167172836
+      }
+    ],
+    "38. Create `frontend/src/components/expo/ExpoCard.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993457741
+      },
+      {
+        "executionId": "831b0c81-cd30-4ebf-9946-79ae79e66fd5",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788167183546
+      }
+    ],
+    "38a. Displays: name, description (truncated to 160 chars client-side), startDate, endDate, venueName, `approvedExhibitorCount`, `ExpoStatusBadge`; wraps in a link to `/expos/:id`; uses design token classes only; supports dark/light mode via `useTheme()`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993457853
+      },
+      {
+        "executionId": "831b0c81-cd30-4ebf-9946-79ae79e66fd5",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788167190684
+      }
+    ],
+    "39. Create `frontend/src/components/exhibitor/ExhibitorCard.tsx`, `ExhibitorFilterBar.tsx`, `ExhibitorDetailModal.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993457966
+      },
+      {
+        "executionId": "831b0c81-cd30-4ebf-9946-79ae79e66fd5",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788167198422
+      }
+    ],
+    "39a. `ExhibitorCard`: company logo (with `alt` text) or placeholder, name, category, description snippet (120 chars); design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993458137
+      },
+      {
+        "executionId": "831b0c81-cd30-4ebf-9946-79ae79e66fd5",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788167208352
+      }
+    ],
+    "39b. `ExhibitorFilterBar`: text search input (debounced 300ms) + category chip/dropdown filter; design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993458260
+      },
+      {
+        "executionId": "831b0c81-cd30-4ebf-9946-79ae79e66fd5",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788167221626
+      }
+    ],
+    "39c. `ExhibitorDetailModal`: full description, logo, website link, booth number, contact info; accessible modal with focus trap; design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993458447
+      },
+      {
+        "executionId": "831b0c81-cd30-4ebf-9946-79ae79e66fd5",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788167227775
+      }
+    ],
+    "40. Create `frontend/src/pages/expos/ExpoListingPage.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993458847
+      },
+      {
+        "executionId": "22d29f26-bca5-41d4-b695-5d9b7bafc6df",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788167770782
+      },
+      {
+        "executionId": "22d29f26-bca5-41d4-b695-5d9b7bafc6df",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788168012796
+      }
+    ],
+    "40a. Fetch `expoService.list(query)` on mount and on filter/search/page change; render `ExpoCard` grid (max 12/page)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993459057
+      },
+      {
+        "executionId": "22d29f26-bca5-41d4-b695-5d9b7bafc6df",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788168019373
+      }
+    ],
+    "40b. Status filter chips (`upcoming`, `ongoing`, `completed`); debounced text search input (300ms)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993459263
+      },
+      {
+        "executionId": "22d29f26-bca5-41d4-b695-5d9b7bafc6df",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788168025661
+      }
+    ],
+    "40c. Pagination controls (prev/next); empty-state when no results (REQ-1.7)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993459410
+      },
+      {
+        "executionId": "22d29f26-bca5-41d4-b695-5d9b7bafc6df",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788168032784
+      }
+    ],
+    "40d. Design token classes only; supports dark/light mode": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993459574
+      },
+      {
+        "executionId": "22d29f26-bca5-41d4-b695-5d9b7bafc6df",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788168041702
+      }
+    ],
+    "41. Create `frontend/src/pages/expos/ExpoDetailPage.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993459717
+      },
+      {
+        "executionId": "44aca3c4-2edf-47e1-b33f-1c30de4bfdb1",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788168222856
+      },
+      {
+        "executionId": "015c3615-8887-4c5a-ab4e-0df2941fc89b",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788168852477
+      }
+    ],
+    "41a. Fetch expo by id; show name, full description, banner image (`alt` = expo name), dates, venue, category": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993459851
+      },
+      {
+        "executionId": "015c3615-8887-4c5a-ab4e-0df2941fc89b",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788168859662
+      }
+    ],
+    "41b. Approved exhibitor list with `ExhibitorFilterBar` (client-side filter); `ExhibitorDetailModal` on card click": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993459992
+      },
+      {
+        "executionId": "74e7b374-1389-4175-853d-abc7e766045a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788175175264
+      }
+    ],
+    "41c. Schedule preview section (sessions list, read-only on this page)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993460130
+      },
+      {
+        "executionId": "74e7b374-1389-4175-853d-abc7e766045a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788175181349
+      }
+    ],
+    "41d. \"Register for Expo\" button (Attendee or unauthenticated): if not authenticated → navigate to `/login?redirect=/expos/:id`; if authenticated attendee → trigger registration flow": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993460257
+      }
+    ],
+    "41e. \"Apply to Exhibit\" button (Exhibitor or unauthenticated): if not authenticated → navigate to `/login?redirect=/expos/:id`; if authenticated exhibitor → navigate to `/expos/:id/apply`; hidden if expo not `published` (REQ-3.11)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993460382
+      }
+    ],
+    "41f. Design token classes only; supports dark/light mode": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993460519
+      }
+    ],
+    "42. Create `frontend/src/components/expo/ExpoForm.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993460691
+      },
+      {
+        "executionId": "74e7b374-1389-4175-853d-abc7e766045a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788175565460
+      },
+      {
+        "executionId": "74e7b374-1389-4175-853d-abc7e766045a",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788176070881
+      }
+    ],
+    "42a. Controlled form with all required fields (name, description, startDate, endDate, venueName, venueAddress, totalBooths) and optional fields (bannerUrl, websiteUrl, category, tags, venueMapUrl)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993460850
+      }
+    ],
+    "42b. Cloudinary banner upload: calls `uploadService.uploadImage(file, 'expo_banner')`; validates PNG/JPG/WebP, ≤ 5 MB client-side before upload; displays preview": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993461017
+      }
+    ],
+    "42c. Date validation: startDate must be in future; endDate must be after startDate; field-level error messages with `<label>` bindings (REQ-12.15)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993461193
+      }
+    ],
+    "42d. Design token classes only; all form fields have `<label>` + `id` pairs; supports dark/light mode": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993461356
+      }
+    ],
+    "43. Create `frontend/src/components/expo/ExpoStatusTransitionButton.tsx` and `CascadeConfirmDialog.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993461797
+      },
+      {
+        "executionId": "8164c387-cd11-484a-81e6-46a43e80d9f5",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788179076016
+      },
+      {
+        "executionId": "8164c387-cd11-484a-81e6-46a43e80d9f5",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788179505961
+      }
+    ],
+    "43a. `ExpoStatusTransitionButton`: calls `expoService.getCascadePreview(id)` before archive/delete; if `requiresConfirmation` → opens `CascadeConfirmDialog`; otherwise proceeds directly; design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993462110
+      }
+    ],
+    "43b. `CascadeConfirmDialog`: accessible modal displaying \"X tickets will be cancelled and Y applications will be rejected\"; requires explicit confirm click to proceed; cancel aborts; design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993462327
+      }
+    ],
+    "44. Create `frontend/src/pages/organizer/MyExposPage.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993462521
+      },
+      {
+        "executionId": "cee93dd3-98b4-40f4-b8e3-3e539e50c505",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788179710491
+      },
+      {
+        "executionId": "cee93dd3-98b4-40f4-b8e3-3e539e50c505",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788180122415
+      }
+    ],
+    "44a. Fetch `expoService.listMine()`; render list of expo cards with `ExpoStatusBadge` and quick-action buttons: Edit, Manage Applications, Manage Schedule, Delete": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993462697
+      }
+    ],
+    "44b. Delete action: triggers `ExpoStatusTransitionButton` cascade gate flow": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993462870
+      }
+    ],
+    "44c. Design token classes only; supports dark/light mode": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993463046
+      }
+    ],
+    "45. Create `frontend/src/pages/organizer/CreateExpoPage.tsx` and `EditExpoPage.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993463237
+      },
+      {
+        "executionId": "fbd44215-d4f1-4298-ac43-79c9193ab264",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788180292506
+      },
+      {
+        "executionId": "fbd44215-d4f1-4298-ac43-79c9193ab264",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788180696996
+      }
+    ],
+    "45a. `CreateExpoPage`: renders `ExpoForm` in create mode; on submit calls `expoService.create()`; on success → `showSuccess` toast + navigate to `/organizer/expos`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993463353
+      }
+    ],
+    "45b. `EditExpoPage`: fetches expo by id; renders `ExpoForm` pre-filled; on submit calls `expoService.update()`; includes `ExpoStatusTransitionButton` for publish/archive actions; `showSuccess` toast on save": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993463475
+      }
+    ],
+    "46. Create `frontend/src/components/application/ApplicationStatusBadge.tsx` and `ApplicationCard.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993463641
+      },
+      {
+        "executionId": "a8c7a49d-643c-4d46-8373-f70af383a032",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788185151846
+      },
+      {
+        "executionId": "a8c7a49d-643c-4d46-8373-f70af383a032",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788185371559
+      }
+    ],
+    "46a. `ApplicationStatusBadge`: `pending` (warning), `approved` (success), `rejected` (danger); design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993463804
+      }
+    ],
+    "46b. `ApplicationCard`: company name, category, submission date, `ApplicationStatusBadge`; design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993463956
+      }
+    ],
+    "47. Create `frontend/src/components/application/ApplicationForm.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993464143
+      }
+    ],
+    "47a. Two-step multi-page form: Step 1 — company name, description, category (predefined list), phone number; Step 2 — website URL, logo upload, note to organizer": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993464321
+      }
+    ],
+    "47b. Progress indicator showing current step; Back button on Step 2": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993464480
+      }
+    ],
+    "47c. Logo upload: calls `uploadService.uploadImage(file, 'company_logo')`; validates PNG/JPG/WebP, ≤ 2 MB; preview": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993464674
+      }
+    ],
+    "47d. Field-level validation errors; all fields have `<label>` + `id` pairs; responsive 320px–1920px (REQ-3.12); design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993464956
+      }
+    ],
+    "48. Create `frontend/src/pages/exhibitor/ApplicationFormPage.tsx` and `MyApplicationsPage.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993465340
+      },
+      {
+        "executionId": "523a00cf-409a-44cf-812e-67434e66ed21",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788189144164
+      },
+      {
+        "executionId": "523a00cf-409a-44cf-812e-67434e66ed21",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788189798151
+      }
+    ],
+    "48a. `ApplicationFormPage`: renders `ApplicationForm`; on submit calls `applicationService.submit(expoId, data)`; `showSuccess` toast on success; `showError` on `DUPLICATE_APPLICATION`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993465470
+      }
+    ],
+    "48b. `MyApplicationsPage`: fetches `applicationService.listAllMine()`; renders `ApplicationCard` list; for `pending` applications: shows Edit and Withdraw buttons; `WithdrawConfirmDialog` before withdraw; on withdraw calls `applicationService.withdraw()` and `showSuccess`; for `approved`: shows booth label + venue map link; for `rejected`: shows rejection reason": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993465655
+      }
+    ],
+    "49. Create `frontend/src/components/application/WithdrawConfirmDialog.tsx`, `ReviewPanel.tsx`, `BoothAssignmentModal.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993465793
+      },
+      {
+        "executionId": "6992ceef-cf6d-43ed-9fef-e6d4cee26ae6",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788189953382
+      },
+      {
+        "executionId": "6992ceef-cf6d-43ed-9fef-e6d4cee26ae6",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788190310796
+      }
+    ],
+    "49a. `WithdrawConfirmDialog`: accessible modal confirming withdrawal; design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993465942
+      }
+    ],
+    "49b. `ReviewPanel`: slide-in side panel showing full application details; action buttons: Approve, Reject, Revoke (for approved); design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993466134
+      }
+    ],
+    "49c. `BoothAssignmentModal`: text input for booth label (1–20 chars); shows current fill rate; warns if all booths filled; design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993466315
+      }
+    ],
+    "50. Create `frontend/src/pages/organizer/ApplicationsPage.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993466471
+      },
+      {
+        "executionId": "37062998-7b7d-4532-9fec-a11a58bbe0d9",
+        "chatSessionId": "sess_0017b108-7b19-485f-b0e6-1cebcc0c7f17",
+        "timestamp": 1788190477947
+      }
+    ],
+    "50a. Fetch `applicationService.listForExpo(expoId)`; render three columns by status (`pending`, `approved`, `rejected`) with `ApplicationCard` items": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993466638
+      }
+    ],
+    "50b. Booth fill rate progress bar at top of page (REQ-4.7); status filter and company name search (REQ-4.11)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993466856
+      }
+    ],
+    "50c. Clicking an application card opens `ReviewPanel`; approve action opens `BoothAssignmentModal`; all actions call appropriate `applicationService` methods and show toasts": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993466998
+      }
+    ],
+    "50d. Design token classes only; supports dark/light mode": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993467189
+      }
+    ],
+    "51. Create `frontend/src/components/ticket/QRTicketDisplay.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993467363
+      }
+    ],
+    "51a. Renders QR code as `<img src={qrCodeDataUrl}>` with `alt=\"QR code for ticket {ticketId}\"`; always uses white card background with dark QR regardless of current theme (REQ-5.11); \"Download PNG\" button triggers `<a download>` with the data URL": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993467527
+      }
+    ],
+    "51b. Design token classes for surrounding card; QR image itself is always high-contrast (white bg, black QR)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993467692
+      }
+    ],
+    "52. Create `frontend/src/components/ticket/PDFDownloadButton.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993467887
+      }
+    ],
+    "52a. On click: calls `ticketService.downloadPDF(ticketId)` with `responseType: 'blob'`; constructs object URL; triggers programmatic `<a>` click with `download=\"ticket-{ticketId}.pdf\"`; revokes object URL after click; shows loading state during fetch; design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993468431
+      }
+    ],
+    "53. Create `frontend/src/components/ticket/TicketStatusBadge.tsx` and `TicketCard.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993468737
+      }
+    ],
+    "53a. `TicketStatusBadge`: `active` (success), `checked_in` (brand primary), `cancelled` (danger); design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993468903
+      }
+    ],
+    "53b. `TicketCard`: expo name, registration date, `TicketStatusBadge`, link to `TicketDetailPage`; design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993469072
+      }
+    ],
+    "54. Create `frontend/src/pages/attendee/MyTicketsPage.tsx` and `TicketDetailPage.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993469264
+      }
+    ],
+    "54a. `MyTicketsPage`: fetches `ticketService.getMine()`; renders `TicketCard` list; empty state if no tickets": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993469441
+      }
+    ],
+    "54b. `TicketDetailPage`: fetches ticket by id; renders `QRTicketDisplay`, `PDFDownloadButton`, `TicketStatusBadge`; Cancel Registration button (only for `active` tickets) calls `ticketService.cancel()` + `showSuccess` toast; design token classes only; supports dark/light mode": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993469674
+      }
+    ],
+    "55. Create `frontend/src/components/session/DayTabs.tsx`, `SessionCard.tsx`, `ConflictWarning.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993470026
+      }
+    ],
+    "55a. `DayTabs`: renders one tab per expo day; active tab highlighted with brand primary; design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993470171
+      }
+    ],
+    "55b. `SessionCard`: title, speaker name, startTime–endTime, room, track badge (if set), description (if set); optional bookmark icon (toggle); design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993470371
+      }
+    ],
+    "55c. `ConflictWarning`: inline warning banner showing \"Conflicts with: {sessionTitle} ({startTime}–{endTime})\"; uses warning background/text tokens": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993470577
+      }
+    ],
+    "56. Create `frontend/src/components/session/SessionForm.tsx` and `ScheduleGrid.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993470814
+      }
+    ],
+    "56a. `SessionForm`: modal form for create/edit; all required fields + optional description/track; `endTime > startTime` client-side validation; conflict warning displayed inline if API returns `ROOM_CONFLICT`; all fields have `<label>` + `id` pairs; design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993471042
+      }
+    ],
+    "56b. `ScheduleGrid`: timeline-style layout of `SessionCard` items for a given day, sorted by startTime; design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993471206
+      }
+    ],
+    "57. Create `frontend/src/pages/organizer/ScheduleBuilderPage.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993471420
+      },
+      {
+        "executionId": "fa871e3a-b655-48d1-a4b7-76d9234d3003",
+        "chatSessionId": "sess_a5b23e16-b90c-4a97-808e-001f6d0e2fdf",
+        "timestamp": 1788287418896
+      },
+      {
+        "executionId": "fa871e3a-b655-48d1-a4b7-76d9234d3003",
+        "chatSessionId": "sess_a5b23e16-b90c-4a97-808e-001f6d0e2fdf",
+        "timestamp": 1788288008546
+      }
+    ],
+    "57a. Fetch sessions via `sessionService.list(expoId)`; render `DayTabs` + `ScheduleGrid` for selected day": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993472057
+      }
+    ],
+    "57b. \"Add Session\" button opens `SessionForm` modal; on submit calls `sessionService.create()`; handles `ROOM_CONFLICT` by showing `ConflictWarning`; `showSuccess` toast on create": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993472329
+      }
+    ],
+    "57c. Edit: clicking session card opens `SessionForm` pre-filled; calls `sessionService.update()`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993472457
+      }
+    ],
+    "57d. Delete: confirm then calls `sessionService.delete()`; `showSuccess` toast; design token classes only; supports dark/light mode": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993472603
+      }
+    ],
+    "58. Create `frontend/src/pages/attendee/ScheduleBrowsePage.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993472768
+      },
+      {
+        "executionId": "adf6a8bb-34fe-4d5b-8d0b-a2b430be01fd",
+        "chatSessionId": "sess_a5b23e16-b90c-4a97-808e-001f6d0e2fdf",
+        "timestamp": 1788288503130
+      },
+      {
+        "executionId": "adf6a8bb-34fe-4d5b-8d0b-a2b430be01fd",
+        "chatSessionId": "sess_a5b23e16-b90c-4a97-808e-001f6d0e2fdf",
+        "timestamp": 1788289102467
+      }
+    ],
+    "58a. Fetch sessions via `sessionService.list(expoId)`; render `DayTabs` + `SessionCard` list for selected day": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993472974
+      }
+    ],
+    "58b. Check if user has an `active`/`checked_in` ticket via `useTickets()`; if yes → render bookmark icons on each `SessionCard` (toggle via `bookmarkService.add/remove()`); if no → read-only with \"Register to access bookmarks\" prompt (REQ-7.7)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993473122
+      }
+    ],
+    "58c. \"My Bookmarks\" tab/filter showing only bookmarked sessions; day and track/tag filter controls": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993473280
+      }
+    ],
+    "58d. Design token classes only; supports dark/light mode; no `ProtectedRoute` wrapper (public read-only access)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993473435
+      }
+    ],
+    "59. Create `frontend/src/components/scanner/QRScanner.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993473586
+      },
+      {
+        "executionId": "1bd7b324-1871-4977-8ef1-1ed5515a9807",
+        "chatSessionId": "sess_a5b23e16-b90c-4a97-808e-001f6d0e2fdf",
+        "timestamp": 1788289902081
+      },
+      {
+        "executionId": "1bd7b324-1871-4977-8ef1-1ed5515a9807",
+        "chatSessionId": "sess_a5b23e16-b90c-4a97-808e-001f6d0e2fdf",
+        "timestamp": 1788290263658
+      }
+    ],
+    "59a. Mounts `html5-qrcode` scanner on a `<div id=\"qr-reader\">`; requests camera permission on mount; if permission denied → shows clear error message with instructions (REQ-8.2)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993473731
+      }
+    ],
+    "59b. On successful scan: calls `onScan(decodedText)` prop within 300ms; implements 5-second debounce — ignores re-scans of the same `ticketId` within the window (REQ-8.13)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993473946
+      }
+    ],
+    "59c. `useEffect` cleanup: calls `html5QrcodeScanner.clear()` to stop camera stream on unmount (REQ-8.15)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993474154
+      }
+    ],
+    "60. Create `frontend/src/components/scanner/ScanResultDisplay.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993474405
+      }
+    ],
+    "60a. Accepts `result: 'checked_in' | 'already_checked_in' | 'invalid_ticket' | 'cancelled_ticket' | 'wrong_event' | null` prop": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993474582
+      }
+    ],
+    "60b. `checked_in` → green background (`bg-bg-success-dark`), attendee name, \"✓ Checked In\" — auto-dismisses after 3 seconds": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993475070
+      }
+    ],
+    "60c. `already_checked_in` → yellow background (`bg-bg-warning-dark`), \"Already checked in\" + original timestamp — auto-dismisses after 3 seconds": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993475455
+      }
+    ],
+    "60d. `invalid_ticket` / `cancelled_ticket` / `wrong_event` → red background (`bg-bg-danger-dark`), appropriate message — auto-dismisses after 3 seconds": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993475603
+      }
+    ],
+    "60e. Design token classes only; no glassmorphism": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993476062
+      }
+    ],
+    "61. Create `frontend/src/pages/organizer/ScannerPage.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993476226
+      }
+    ],
+    "61a. Expo selector dropdown: fetches organizer's active expos; Organizer must select an expo before camera activates (REQ-8.12)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993476826
+      }
+    ],
+    "61b. Renders `QRScanner` component; on scan calls `ticketService.checkIn(ticketId, expoId)`; passes result to `ScanResultDisplay`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993477008
+      }
+    ],
+    "61c. Always uses `bg-bg-base-dark` for page background regardless of current theme — NOT controlled by ThemeContext (REQ-8.10); `text-text-primary-dark` for all text; camera viewfinder takes `min-h-[60vh]` on mobile < 768px (REQ-8.11)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993477122
+      }
+    ],
+    "61d. Mobile-first layout; no glassmorphism anywhere on this page": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993477277
+      }
+    ],
+    "62. Create `frontend/src/components/dashboard/OrganizerStatsPanel.tsx` and `ExpoStatCard.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993477420
+      }
+    ],
+    "62a. `OrganizerStatsPanel`: renders four `BentoCard` components (from Phase 1) for: active expo count, total attendees, total check-ins, aggregate booth fill rate; uses `useOrganizerStats()` hook (60-second auto-refresh); empty-state if no active expos (REQ-10.6); design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993477638
+      },
+      {
+        "executionId": "860967b8-0bc3-447d-b204-26a5a3464607",
+        "chatSessionId": "sess_3d47f0b8-b32a-4183-be62-b007f57f8ed4",
+        "timestamp": 1788349767733
+      },
+      {
+        "executionId": "860967b8-0bc3-447d-b204-26a5a3464607",
+        "chatSessionId": "sess_3d47f0b8-b32a-4183-be62-b007f57f8ed4",
+        "timestamp": 1788350051630
+      }
+    ],
+    "62b. `ExpoStatCard`: per-expo breakdown showing applications by status, registrations, check-ins, booth fill rate; design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993477813
+      },
+      {
+        "executionId": "860967b8-0bc3-447d-b204-26a5a3464607",
+        "chatSessionId": "sess_3d47f0b8-b32a-4183-be62-b007f57f8ed4",
+        "timestamp": 1788349772246
+      },
+      {
+        "executionId": "860967b8-0bc3-447d-b204-26a5a3464607",
+        "chatSessionId": "sess_3d47f0b8-b32a-4183-be62-b007f57f8ed4",
+        "timestamp": 1788350057023
+      }
+    ],
+    "63. Update `frontend/src/pages/dashboard/OrganizerDashboard.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993477959
+      }
+    ],
+    "63a. Add `OrganizerStatsPanel` at top of dashboard; add link/button to \"Manage Expos\" (`/organizer/expos`) and \"Scanner\" (`/organizer/scanner`)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993478092
+      },
+      {
+        "executionId": "c854ed89-7a1c-46c0-84a4-de5139360e48",
+        "chatSessionId": "sess_3d47f0b8-b32a-4183-be62-b007f57f8ed4",
+        "timestamp": 1788350097016
+      },
+      {
+        "executionId": "c854ed89-7a1c-46c0-84a4-de5139360e48",
+        "chatSessionId": "sess_3d47f0b8-b32a-4183-be62-b007f57f8ed4",
+        "timestamp": 1788350419894
+      }
+    ],
+    "63b. Clicking an expo in the dashboard shows `ExpoStatCard` for that expo; design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993478251
+      },
+      {
+        "executionId": "c854ed89-7a1c-46c0-84a4-de5139360e48",
+        "chatSessionId": "sess_3d47f0b8-b32a-4183-be62-b007f57f8ed4",
+        "timestamp": 1788350097936
+      },
+      {
+        "executionId": "c854ed89-7a1c-46c0-84a4-de5139360e48",
+        "chatSessionId": "sess_3d47f0b8-b32a-4183-be62-b007f57f8ed4",
+        "timestamp": 1788350424826
+      }
+    ],
+    "64. Update `frontend/src/pages/dashboard/SuperAdminDashboard.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993478427
+      }
+    ],
+    "64a. Add platform-wide stats section: total expos, total attendees, total applications, total check-ins — using `statsService.getSuperAdminDashboard()` (REQ-11.1)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993478578
+      }
+    ],
+    "64b. Recent expos table: 5 most recently created expos with name, organizer name, status, creation date (REQ-11.2); design token classes only": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993478735
+      }
+    ],
+    "65. Create `frontend/src/pages/organizer/BoothLayoutPage.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993478891
+      }
+    ],
+    "65a. Fetch approved applications for expo; display table sorted by booth label with company name and label; design token classes only (polish item — fill rate bar on ApplicationsPage covers minimum requirement)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993479009
+      }
+    ],
+    "66. Write `frontend/src/__tests__/components/ExpoCard.test.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993479246
+      }
+    ],
+    "66a. Renders expo name, truncated description, dates, exhibitor count; snapshot test for stable rendering": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993479825
+      }
+    ],
+    "67. Write `frontend/src/__tests__/components/QRTicketDisplay.test.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993480016
+      }
+    ],
+    "67a. Renders QR image with correct `src` and `alt` text; snapshot test to detect regressions in QR display": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993480170
+      }
+    ],
+    "68. Write `frontend/src/__tests__/components/ScanResultDisplay.test.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993480359
+      }
+    ],
+    "68a. `checked_in` renders green state with attendee name; `already_checked_in` renders yellow with timestamp; error states render red with correct messages": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993480559
+      }
+    ],
+    "69. Write `frontend/src/__tests__/components/ApplicationForm.test.tsx`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993480701
+      }
+    ],
+    "69a. Step 1 fields validated before advancing to Step 2; missing required field shows field-level error; submit blocked if required fields absent": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993480878
+      }
+    ],
+    "70. Write `frontend/src/__tests__/hooks/useOrganizerStats.test.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993481018
+      }
+    ],
+    "70a. Fetches on mount; sets up 60-second interval; clears interval on unmount": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993481166
+      }
+    ],
+    "71. Write `frontend/src/__tests__/properties/expoValidation.properties.test.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993481322
+      }
+    ],
+    "71a. Property 2: description in ExpoCardDTO is always ≤ 160 chars client-side (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993481541
+      }
+    ],
+    "71b. Property 3: paginated response array length ≤ 12 (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993481757
+      }
+    ],
+    "71c. Property 6: `endDate ≤ startDate` always produces validation error in form (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993482259
+      }
+    ],
+    "72. Write `frontend/src/__tests__/properties/ticketLogic.properties.test.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993482594
+      }
+    ],
+    "72a. Property 12: QR generation utility produces same output for same ticketId input (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993482754
+      }
+    ],
+    "72b. Property 13: duplicate registration for same expo blocked by service layer (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993483002
+      }
+    ],
+    "73. Write `frontend/src/__tests__/properties/sessionLogic.properties.test.ts`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993483155
+      }
+    ],
+    "73a. Property 14: session form rejects `endTime ≤ startTime` for any generated time pair (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993483722
+      }
+    ],
+    "73b. Property 15: room conflict detection flags overlapping sessions (100 iterations)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993484014
+      }
+    ],
+    "74. Manual end-to-end smoke test: full expo lifecycle": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993484142
+      }
+    ],
+    "74a. Organizer creates expo (draft → published); Exhibitor applies; Organizer approves with booth label; Attendee registers and downloads QR ticket; Organizer scans QR on ScannerPage; ticket shows `checked_in`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993484322
+      }
+    ],
+    "74b. Verify cascade gate: attempt to archive expo with active tickets → confirmation dialog appears with correct counts → confirm → tickets cancelled": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993484469
+      }
+    ],
+    "76. Update `PROGRESS.md`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993484596
+      }
+    ],
+    "76a. Add Phase 2 completion section: what was built, new env vars (`CLOUDINARY_*`), any deviations from spec": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993484715
+      }
+    ],
+    "76b. Update \"Next Steps\" to Phase 3 (email notifications, PDF polish, lead capture, analytics)": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993484875
+      }
+    ],
+    "77. Commit and tag Phase 2 completion": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993485062
+      }
+    ],
+    "77a. Stage all Phase 2 files; commit with message: `Complete Phase 2 (Core Expo Operations)`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993485201
+      }
+    ],
+    "77b. Tag: `git tag v1.0.0-phase2`": [
+      {
+        "executionId": "6a39ed2d-4021-466c-89ad-9090c53d18c6",
+        "chatSessionId": "sess_0a9d9607-eb9e-4191-a24d-f799ad195719",
+        "timestamp": 1787993485369
+      }
+    ]
+  }
+}
