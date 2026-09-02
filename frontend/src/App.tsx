@@ -29,6 +29,7 @@ import MyTicketsPage from './pages/attendee/MyTicketsPage';
 import ScheduleBuilderPage from './pages/organizer/ScheduleBuilderPage';
 import TicketDetailPage from './pages/attendee/TicketDetailPage';
 import ScheduleBrowsePage from './pages/attendee/ScheduleBrowsePage';
+import ScannerPage from './pages/organizer/ScannerPage';
 
 /**
  * Single source of truth for where an authenticated user should land.
@@ -88,7 +89,6 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
 
 // -- Phase 2 page placeholders (replaced by real imports as pages are built) --
 const BoothLayoutPage = () => <div>BoothLayoutPage</div>;
-const ScannerPage = () => <div>ScannerPage</div>;
 
 
 function App() {
