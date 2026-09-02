@@ -1,4 +1,4 @@
-﻿import api from './api';
+import api from './api';
 
 export const expoService = {
   // Public listing with optional query params: { status?, search?, page?, limit? }
@@ -32,6 +32,6 @@ export const expoService = {
     api.get(`/api/dashboard/organizer/${id}`).then(r => r.data.data),
 
   listMine: () =>
-    api.get('/api/organizer/expos').then(r => r.data.data),
+    api.get('/api/organizer/expos').then(r => r.data.data.expos),
 };
 

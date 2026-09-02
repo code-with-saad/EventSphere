@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -63,15 +63,11 @@
   }
 }
 
-/* ── Dashboard layout root — Voltage: flat background, no gradients ───── */
+/* ── Dashboard layout root — transparent so PageBackground blobs show through ── */
 .dashboard-root {
   min-height: 100vh;
   position: relative;
-  background-color: #0A0A0C;
-}
-
-html.light .dashboard-root {
-  background-color: #F5F5F4;
+  background-color: transparent;
 }
 
 /* ── Glass surfaces ────────────────────────────────────────────────────── */

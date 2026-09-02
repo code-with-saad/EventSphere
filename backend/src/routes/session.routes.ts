@@ -13,11 +13,10 @@ const router = Router();
  *
  * Returns all sessions for the given expo.
  *
- * Access: Any authenticated user (REQ-6.1)
+ * Access: Public — no auth required (REQ-6.1, public schedule browse)
  */
 router.get(
   '/:expoId/sessions',
-  authenticate,
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const sessions = await SessionService.listByExpo(req.params.expoId as string);
 
