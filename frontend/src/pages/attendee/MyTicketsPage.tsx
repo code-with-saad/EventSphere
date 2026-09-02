@@ -78,10 +78,14 @@ export default function MyTicketsPage() {
 
           {/* Ticket list */}
           {!loading && !error && tickets.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md-token">
-              {tickets.map((ticket: any) => (
-                <TicketCard key={ticket._id} ticket={ticket} />
-              ))}
+            <div className={`rounded-xl-token border backdrop-blur-md p-md-token md:p-lg-token ${
+              isDarkMode ? 'bg-glass-dark border-glass-border-dark' : 'bg-glass-light border-glass-border-light'
+            }`}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md-token">
+                {tickets.map((ticket: any) => (
+                  <TicketCard key={ticket._id} ticket={ticket} />
+                ))}
+              </div>
             </div>
           )}
 

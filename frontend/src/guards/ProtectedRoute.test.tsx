@@ -90,12 +90,12 @@ function mockAuth(partial: {
   } as any);
 }
 
-function renderRoute(allowedRoles: string[], children = React.createElement('div', { 'data-testid': 'children' }, 'Protected Content')) {
+function renderRoute(allowedRoles: string[], children: React.ReactNode = React.createElement('div', { 'data-testid': 'children' }, 'Protected Content')) {
   return render(
     React.createElement(
       MemoryRouter,
       null,
-      React.createElement(ProtectedRoute, { allowedRoles }, children)
+      React.createElement(ProtectedRoute, { allowedRoles, children })
     )
   );
 }

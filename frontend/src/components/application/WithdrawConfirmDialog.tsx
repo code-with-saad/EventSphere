@@ -40,10 +40,10 @@ export default function WithdrawConfirmDialog({
       onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
     >
       <div className="absolute inset-0 bg-black/50" aria-hidden="true" />
-      <div className={`relative z-10 w-full max-w-sm rounded-xl-token border p-lg-token shadow-xl ${
+      <div className={`relative z-10 w-full max-w-sm rounded-xl-token border p-lg-token backdrop-blur-md ${
         isDarkMode
-          ? 'bg-bg-surface-dark border-border-base-dark'
-          : 'bg-bg-surface-light border-border-base-light'
+          ? 'bg-glass-dark border-glass-border-dark'
+          : 'bg-glass-light border-glass-border-light'
       }`}>
         <h2
           id="withdraw-dialog-title"

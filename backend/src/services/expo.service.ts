@@ -1,4 +1,4 @@
-﻿import { ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import ExpoModel from '../models/Expo.model';
 import ApplicationModel from '../models/Application.model';
 import TicketModel from '../models/Ticket.model';
@@ -68,16 +68,6 @@ export interface CascadePreview {
   pendingApplications: number;
   approvedApplications: number;
   requiresConfirmation: boolean;
-}
-
-export interface ExpoStatsDTO {
-  totalApplications: number;
-  pendingApplications: number;
-  approvedExhibitors: number;
-  rejectedApplications: number;
-  totalAttendees: number;
-  confirmedCheckIns: number;
-  boothFillRate: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -624,49 +614,6 @@ class ExpoService {
    */
   async listByOrganizer(organizerId: string): Promise<IExpo[]> {
     return ExpoModel.findByOrganizer(organizerId);
-  }
-
-  /**
-   * Compute per-expo statistics for the organizer dashboard.
-   *
-   * Queries tickets and applications collections directly.
-   */
-  async getExpoStats(expoId: string, organizerId: string): Promise<ExpoStatsDTO> {
-    const expo = await this._requireExpo(expoId);
-    this._requireOwnership(expo, organizerId);
-
-    const expoObjectId = expo._id;
-
-    const [
-      totalApplications,
-      pendingApplications,
-      approvedExhibitors,
-      rejectedApplications,
-      totalAttendees,
-      confirmedCheckIns,
-    ] = await Promise.all([
-      ApplicationModel.getCollection().countDocuments({ expoId: expoObjectId }),
-      ApplicationModel.getCollection().countDocuments({ expoId: expoObjectId, status: 'pending' }),
-      ApplicationModel.getCollection().countDocuments({ expoId: expoObjectId, status: 'approved' }),
-      ApplicationModel.getCollection().countDocuments({ expoId: expoObjectId, status: 'rejected' }),
-      TicketModel.getCollection().countDocuments({ expoId: expoObjectId }),
-      TicketModel.getCollection().countDocuments({ expoId: expoObjectId, status: 'checked_in' }),
-    ]);
-
-    const boothFillRate =
-      expo.totalBooths > 0
-        ? Math.round((approvedExhibitors / expo.totalBooths) * 10000) / 100 // 2 decimal places
-        : 0;
-
-    return {
-      totalApplications,
-      pendingApplications,
-      approvedExhibitors,
-      rejectedApplications,
-      totalAttendees,
-      confirmedCheckIns,
-      boothFillRate,
-    };
   }
 
   // -------------------------------------------------------------------------

@@ -56,10 +56,10 @@ export default function ExhibitorDetailModal({
 
       {/* Panel */}
       <div
-        className={`relative z-10 w-full max-w-lg rounded-xl-token border p-lg-token shadow-xl ${
+        className={`relative z-10 w-full max-w-lg rounded-xl-token border p-lg-token backdrop-blur-md ${
           isDarkMode
-            ? 'bg-bg-surface-dark border-border-base-dark'
-            : 'bg-bg-surface-light border-border-base-light'
+            ? 'bg-glass-dark border-glass-border-dark'
+            : 'bg-glass-light border-glass-border-light'
         }`}
       >
         {/* Close button */}

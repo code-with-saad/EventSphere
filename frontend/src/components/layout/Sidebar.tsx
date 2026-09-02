@@ -1,7 +1,21 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { LayoutDashboard, CheckCircle, Users, BarChart3, Store, Ticket, Sun, Moon, LogOut } from 'lucide-react';
+import {
+  LayoutDashboard,
+  CheckCircle,
+  Users,
+  BarChart3,
+  CalendarDays,
+  ScanLine,
+  Store,
+  FileText,
+  Ticket,
+  Compass,
+  Sun,
+  Moon,
+  LogOut,
+} from 'lucide-react';
 
 interface NavLink {
   label: string;
@@ -15,9 +29,20 @@ const NAV_LINKS: Record<string, NavLink[]> = {
     { label: 'Organizer Approvals', path: '/admin/approvals',      icon: CheckCircle },
     { label: 'All Organizers',      path: '/admin/organizers',     icon: Users },
   ],
-  organizer: [{ label: 'Dashboard', path: '/dashboard/organizer', icon: BarChart3 }],
-  exhibitor:  [{ label: 'Dashboard', path: '/dashboard/exhibitor', icon: Store }],
-  attendee:   [{ label: 'Dashboard', path: '/dashboard/attendee',  icon: Ticket }],
+  organizer: [
+    { label: 'Dashboard', path: '/dashboard/organizer', icon: BarChart3 },
+    { label: 'My Expos',  path: '/organizer/expos',      icon: CalendarDays },
+    { label: 'Scanner',   path: '/organizer/scanner',   icon: ScanLine },
+  ],
+  exhibitor: [
+    { label: 'Dashboard',       path: '/dashboard/exhibitor',      icon: Store },
+    { label: 'My Applications', path: '/exhibitor/applications',  icon: FileText },
+  ],
+  attendee: [
+    { label: 'Dashboard',    path: '/dashboard/attendee', icon: Ticket },
+    { label: 'My Tickets',   path: '/attendee/tickets',   icon: Ticket },
+    { label: 'Browse Expos', path: '/expos',              icon: Compass },
+  ],
 };
 
 interface SidebarProps {

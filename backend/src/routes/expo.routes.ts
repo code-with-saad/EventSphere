@@ -1,6 +1,7 @@
-﻿import { Router, Response } from 'express';
+import { Router, Response } from 'express';
 import asyncHandler from '../utils/asyncHandler';
 import ExpoService from '../services/expo.service';
+import StatsService from '../services/stats.service';
 import { authenticate, AuthRequest } from '../middleware/auth.middleware';
 import { authorize } from '../middleware/authorize.middleware';
 import type { ExpoListStatusFilter } from '../services/expo.service';
@@ -267,7 +268,7 @@ router.get(
   authenticate,
   authorize('organizer'),
   asyncHandler(async (req: AuthRequest, res: Response) => {
-    const stats = await ExpoService.getExpoStats(
+    const stats = await StatsService.getExpoStats(
       req.params.id as string,
       req.user!.userId
     );

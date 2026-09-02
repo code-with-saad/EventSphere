@@ -3,6 +3,7 @@ import { AuthProvider, ThemeProvider } from './contexts';
 import { useAuth } from './contexts/AuthContext';
 import { ToastContainer } from './components/common/ToastContainer';
 import React from 'react';
+import { PageBackground } from './components/common/PageBackground';
 import { RegisterPage, VerifyOTPPage } from './pages/auth';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RequestResetPage } from './pages/auth/ForgotPassword/RequestResetPage';
@@ -30,6 +31,7 @@ import ScheduleBuilderPage from './pages/organizer/ScheduleBuilderPage';
 import TicketDetailPage from './pages/attendee/TicketDetailPage';
 import ScheduleBrowsePage from './pages/attendee/ScheduleBrowsePage';
 import ScannerPage from './pages/organizer/ScannerPage';
+import BoothLayoutPage from './pages/organizer/BoothLayoutPage';
 
 /**
  * Single source of truth for where an authenticated user should land.
@@ -87,15 +89,12 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// -- Phase 2 page placeholders (replaced by real imports as pages are built) --
-const BoothLayoutPage = () => <div>BoothLayoutPage</div>;
-
-
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <Router>
+          <PageBackground />
           <ToastContainer />
           <Routes>
             <Route path="/" element={<RootRedirect />} />

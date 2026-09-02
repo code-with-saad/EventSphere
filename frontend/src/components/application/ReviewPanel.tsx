@@ -79,10 +79,10 @@ export default function ReviewPanel({
       <aside
         role="complementary"
         aria-label="Application review panel"
-        className={`fixed right-0 top-0 z-50 h-full w-full max-w-md flex flex-col shadow-2xl overflow-y-auto ${
+        className={`fixed right-0 top-0 z-50 h-full w-full max-w-md flex flex-col backdrop-blur-md overflow-y-auto ${
           isDarkMode
-            ? 'bg-bg-surface-dark border-l border-border-base-dark'
-            : 'bg-bg-surface-light border-l border-border-base-light'
+            ? 'bg-glass-dark border-l border-glass-border-dark'
+            : 'bg-glass-light border-l border-glass-border-light'
         }`}
       >
         {/* Header */}

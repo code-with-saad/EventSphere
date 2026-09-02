@@ -33,10 +33,10 @@ export default function ExpoCard({ expo }: ExpoCardProps) {
   return (
     <Link
       to={`/expos/${expo._id}`}
-      className={`group block rounded-lg-token overflow-hidden transition-all hover:translate-y-[-2px] ${
+      className={`group block rounded-lg-token overflow-hidden transition-all backdrop-blur-sm hover:translate-y-[-2px] ${
         isDarkMode
-          ? 'bg-bg-surface-dark border border-border-base-dark hover:border-brand-primary-dark'
-          : 'bg-bg-surface-light border border-border-base-light hover:border-brand-primary-light'
+          ? 'bg-glass-dark border border-glass-border-dark hover:border-brand-primary-dark'
+          : 'bg-glass-light border border-glass-border-light hover:border-brand-primary-light'
       }`}
       style={{ willChange: 'transform' }}
     >

@@ -147,8 +147,8 @@ export default function SessionForm({
       <div className="absolute inset-0 bg-black/50" aria-hidden="true" />
 
       {/* Panel */}
-      <div className={`relative z-10 w-full max-w-lg rounded-xl-token border shadow-xl overflow-y-auto max-h-[90vh] ${
-        isDarkMode ? 'bg-bg-surface-dark border-border-base-dark' : 'bg-bg-surface-light border-border-base-light'
+      <div className={`relative z-10 w-full max-w-lg rounded-xl-token border backdrop-blur-md overflow-y-auto max-h-[90vh] ${
+        isDarkMode ? 'bg-glass-dark border-glass-border-dark' : 'bg-glass-light border-glass-border-light'
       }`}>
         {/* Header */}
         <div className={`flex items-center justify-between px-lg-token py-md-token border-b ${
