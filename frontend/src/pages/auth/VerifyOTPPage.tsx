@@ -213,7 +213,7 @@ export function VerifyOTPPage() {
   }
 
   return (
-    <div className={`min-h-screen flex items-center justify-center px-4 py-8 ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
+    <div className="min-h-screen flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
         <BentoCard>
           {/* Header */}

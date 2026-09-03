@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, MapPin, Building2, Globe } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -93,7 +93,7 @@ export default function ExpoDetailPage() {
   }`;
 
   if (loading) return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
+    <div className="min-h-screen">
       <PublicNavBar />
       <div className="flex items-center justify-center py-xxl-token">
         <p className={`text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>Loading…</p>
@@ -102,7 +102,7 @@ export default function ExpoDetailPage() {
   );
 
   if (error || !expo) return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
+    <div className="min-h-screen">
       <PublicNavBar />
       <div className="flex items-center justify-center py-xxl-token">
         <p className={`text-sm-token ${isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'}`}>{error || 'Expo not found.'}</p>
@@ -111,7 +111,7 @@ export default function ExpoDetailPage() {
   );
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
+    <div className="min-h-screen">
       <PublicNavBar />
 
       {/* Hero banner — full width, no side padding */}

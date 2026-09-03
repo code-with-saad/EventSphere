@@ -123,7 +123,7 @@ export default function ScannerPage() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-bg-base-dark">
+    <div className="min-h-screen">
       <div className="max-w-2xl mx-auto px-md-token py-lg-token flex flex-col gap-lg-token">
 
         {/* Page title */}

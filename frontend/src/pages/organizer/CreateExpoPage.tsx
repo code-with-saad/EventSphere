@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContext';
+
 import { expoService } from '../../services/expoService';
 import { Sidebar } from '../../components/layout/Sidebar';
 import { Header } from '../../components/layout/Header';
@@ -11,8 +11,7 @@ import toast from 'react-hot-toast';
 
 export default function CreateExpoPage() {
   const navigate = useNavigate();
-  const { theme } = useTheme();
-  const isDarkMode = theme === 'dark';
+
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (data: Record<string, unknown>) => {
@@ -35,7 +34,7 @@ export default function CreateExpoPage() {
       <Sidebar />
       <div className="md:ml-64 flex flex-col min-h-screen">
         <Header title="Create Expo" />
-        <main className={`flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
+        <main className="flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token">
           <div className="max-w-3xl mx-auto">
             <PageHeader
               title="Create New Expo"

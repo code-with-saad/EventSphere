@@ -65,7 +65,7 @@ export default function ExpoListingPage() {
     : 'text-text-secondary-light hover:text-text-primary-light hover:bg-bg-hover-light';
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
+    <div className="min-h-screen">
       <PublicNavBar />
 
       <div className="max-w-6xl mx-auto px-md-token md:px-lg-token py-lg-token md:py-xl-token">

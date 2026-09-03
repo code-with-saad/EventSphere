@@ -166,7 +166,7 @@ export function AllOrganizersPage() {
 
   // ── Render ─────────────────────────────────────────────────────────────
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
+    <div className="min-h-screen dashboard-root">
       <Sidebar />
       <div className="md:ml-64 flex flex-col min-h-screen">
         <Header title="All Organizers" />

@@ -38,9 +38,7 @@ export default function MyTicketsPage() {
       <Sidebar />
       <div className="md:ml-64 flex flex-col min-h-screen">
         <Header title="My Tickets" />
-        <main className={`flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token ${
-          isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'
-        }`}>
+        <main className="flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token">
 
           <h2 className={`text-xl-token font-semibold mb-lg-token leading-tight-token ${
             isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'

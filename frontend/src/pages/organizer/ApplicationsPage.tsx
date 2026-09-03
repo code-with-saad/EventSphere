@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { applicationService } from '../../services/applicationService';
@@ -131,7 +131,7 @@ export default function ApplicationsPage() {
       <Sidebar />
       <div className="md:ml-64 flex flex-col min-h-screen">
         <Header title="Manage Applications" />
-        <main className={`flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
+        <main className="flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token">
 
           {/* Page header with expo context */}
           <div className="mb-xl-token">

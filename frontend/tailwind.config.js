@@ -59,8 +59,8 @@ export default {
         'brand-secondary-light': '#9CA3AF',
 
         // ── Glass (sidebar/header backdrop-blur) ───────────────────────────
-        'glass-dark':         'rgba(10,10,12,0.80)',
-        'glass-light':        'rgba(245,245,244,0.85)',
+        'glass-dark':         'rgba(10,10,12,0.55)',
+        'glass-light':        'rgba(245,245,244,0.65)',
         'glass-border-dark':  'rgba(38,38,42,0.70)',
         'glass-border-light': 'rgba(229,231,235,0.60)',
       },

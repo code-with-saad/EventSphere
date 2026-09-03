@@ -239,7 +239,7 @@ export default function ScheduleBrowsePage() {
   // ── Styling helpers ────────────────────────────────────────────────────────
   const textPrimary = isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light';
   const textSecondary = isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light';
-  const bgBase = isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light';
+
   const borderBase = isDarkMode ? 'border-border-base-dark' : 'border-border-base-light';
   const borderStrong = isDarkMode ? 'border-[#3A3A3F]' : 'border-[#3A3A3F]';
 
@@ -251,9 +251,8 @@ export default function ScheduleBrowsePage() {
 
   const isLoading = sessionsLoading || ticketsLoading;
 
-  // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className={`min-h-screen ${bgBase}`}>
+    <div className="min-h-screen">
       <PublicNavBar />
 
       <div className="max-w-4xl mx-auto px-md-token md:px-lg-token py-lg-token md:py-xl-token">

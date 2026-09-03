@@ -58,7 +58,7 @@ export default function BoothLayoutPage() {
       <Sidebar />
       <div className="md:ml-64 flex flex-col min-h-screen">
         <Header title="Booth layout" />
-        <main className={`flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
+        <main className="flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token">
 
           {/* Page header */}
           <div className="mb-xl-token">

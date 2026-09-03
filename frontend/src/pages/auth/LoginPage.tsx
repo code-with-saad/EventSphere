@@ -1,4 +1,4 @@
-﻿import { useState, FormEvent } from 'react';
+import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -113,11 +113,7 @@ export function LoginPage() {
   };
 
   return (
-    <div
-      className={`min-h-screen flex items-center justify-center px-4 py-8 ${
-        isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'
-      }`}
-    >
+    <div className="min-h-screen flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
         <BentoCard>
           {/* Header */}

@@ -1,6 +1,6 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContext';
+
 import { applicationService } from '../../services/applicationService';
 import { Sidebar } from '../../components/layout/Sidebar';
 import { Header } from '../../components/layout/Header';
@@ -13,8 +13,7 @@ export default function ApplicationFormPage() {
   const { id: expoId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { theme } = useTheme();
-  const isDarkMode = theme === 'dark';
+
   const [isLoading, setIsLoading] = useState(false);
   const [alreadyApplied, setAlreadyApplied] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -109,9 +108,7 @@ export default function ApplicationFormPage() {
       <Sidebar />
       <div className="md:ml-64 flex flex-col min-h-screen">
         <Header title={isEditing ? 'Edit Application' : 'Apply to Exhibit'} />
-        <main className={`flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token ${
-          isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'
-        }`}>
+        <main className="flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token">
           <div className="max-w-3xl mx-auto">
             <PageHeader
               title={isEditing ? 'Edit Application' : 'Apply to Exhibit'}

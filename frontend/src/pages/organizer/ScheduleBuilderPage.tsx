@@ -235,7 +235,7 @@ export default function ScheduleBuilderPage() {
 
   const textPrimary = isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light';
   const textSecondary = isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light';
-  const bgBase = isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light';
+  const bgBase = ''; // transparent — blobs from PageBackground show through
 
   return (
     <div className="dashboard-root">

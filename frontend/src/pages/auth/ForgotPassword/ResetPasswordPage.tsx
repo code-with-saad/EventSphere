@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { BentoCard } from '../../../components/common';
 import { showSuccess, showError } from '../../../utils/toast';
@@ -165,7 +165,7 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <div className={`min-h-screen flex items-center justify-center px-4 py-8 ${isDarkMode ? 'bg-bg-base-dark' : 'bg-bg-base-light'}`}>
+    <div className="min-h-screen flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
         <BentoCard>
           {/* Header */}
