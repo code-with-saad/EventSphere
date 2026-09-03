@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, Building2, Globe } from 'lucide-react';
+import { Calendar, MapPin, Building2, Globe, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { expoService } from '../../services/expoService';
@@ -11,6 +11,7 @@ import ExhibitorCard from '../../components/exhibitor/ExhibitorCard';
 import ExhibitorFilterBar from '../../components/exhibitor/ExhibitorFilterBar';
 import ExhibitorDetailModal from '../../components/exhibitor/ExhibitorDetailModal';
 import PublicNavBar from '../../components/layout/PublicNavBar';
+import { BentoCard } from '../../components/common/BentoCard';
 
 function formatDate(iso: string | Date): string {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -86,10 +87,16 @@ export default function ExpoDetailPage() {
     navigate(`/expos/${id}/apply`);
   };
 
-  const primaryBtn = `px-md-token py-sm-token rounded-md-token text-sm-token font-semibold transition-colors disabled:opacity-60 ${
+  const primaryBtn = `w-full py-sm-token px-md-token rounded-md-token text-sm-token font-semibold text-center transition-colors disabled:opacity-60 ${
     isDarkMode
       ? 'bg-brand-primary-dark text-text-on-primary-dark hover:bg-accent-hover-dark focus:outline-none'
       : 'bg-brand-primary-light text-text-on-primary-light hover:bg-accent-hover-light focus:outline-none'
+  }`;
+
+  const secondaryBtn = `w-full py-sm-token px-md-token rounded-md-token text-sm-token font-medium text-center border transition-colors ${
+    isDarkMode
+      ? 'border-border-strong-dark text-text-primary-dark hover:bg-bg-hover-dark'
+      : 'border-border-strong-light text-text-primary-light hover:bg-bg-hover-light'
   }`;
 
   if (loading) return (
@@ -114,7 +121,7 @@ export default function ExpoDetailPage() {
     <div className="min-h-screen">
       <PublicNavBar />
 
-      {/* Hero banner — full width, no side padding */}
+      {/* Hero banner — full width, fixed height */}
       <div className="w-full relative overflow-hidden" style={{ height: '320px' }}>
         {expo.bannerUrl ? (
           <>
@@ -123,19 +130,18 @@ export default function ExpoDetailPage() {
               alt={expo.name}
               className="w-full h-full object-cover"
             />
-            {/* Gradient overlay — bottom fade so content below has breathing room */}
+            {/* Gradient overlay bottom fade */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
                 background: isDarkMode
-                  ? 'linear-gradient(to bottom, rgba(10,10,12,0) 50%, rgba(10,10,12,1) 100%)'
-                  : undefined,
+                  ? 'linear-gradient(to bottom, rgba(10,10,12,0) 40%, rgba(10,10,12,1) 100%)'
+                  : 'linear-gradient(to bottom, rgba(245,245,244,0) 40%, rgba(245,245,244,1) 100%)',
               }}
               aria-hidden="true"
             />
           </>
         ) : (
-          /* Brand gradient fallback — no arbitrary hex, uses inline style mapping to existing token values */
           <div
             className="w-full h-full flex flex-col items-center justify-center gap-sm-token"
             style={{
@@ -156,154 +162,254 @@ export default function ExpoDetailPage() {
         )}
       </div>
 
-      <div className="max-w-4xl mx-auto px-md-token md:px-lg-token pt-lg-token md:pt-xl-token pb-xxl-token">
-
-        {/* Title + actions row */}
-        <div className="flex flex-wrap items-start justify-between gap-md-token mb-lg-token">
-          <div>
-            <div className="flex flex-wrap items-center gap-sm-token mb-xs-token">
-              <ExpoStatusBadge status={expo.status} />
-              {expo.category && (
-                <span className={`inline-flex items-center px-sm-token py-xs-token rounded-sm-token text-xs-token font-medium ${
-                  isDarkMode
-                    ? 'bg-bg-surface-dark text-text-secondary-dark border border-border-base-dark'
-                    : 'bg-bg-surface-light text-text-secondary-light border border-border-base-light'
-                }`}>
-                  {expo.category}
-                </span>
-              )}
+      {/* Main Content Area: Two Columns on lg+ */}
+      <div className="max-w-6xl mx-auto px-md-token md:px-lg-token pt-lg-token md:pt-xl-token pb-xxl-token">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-lg-token lg:gap-xl-token items-start">
+          
+          {/* ── Left Column (~65% width: 8 cols on lg) ────────────────── */}
+          <div className="lg:col-span-8 flex flex-col gap-xl-token min-w-0">
+            
+            {/* Header / Title block */}
+            <div>
+              <div className="flex flex-wrap items-center gap-sm-token mb-sm-token">
+                <ExpoStatusBadge status={expo.status} />
+                {expo.category && (
+                  <span className={`inline-flex items-center px-sm-token py-xs-token rounded-sm-token text-xs-token font-medium ${
+                    isDarkMode
+                      ? 'bg-bg-surface-dark text-text-secondary-dark border border-border-base-dark'
+                      : 'bg-bg-surface-light text-text-secondary-light border border-border-base-light'
+                  }`}>
+                    {expo.category}
+                  </span>
+                )}
+              </div>
+              <h1 className={`text-2xl-token md:text-display-token font-bold leading-tight-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                {expo.name}
+              </h1>
             </div>
-            <h1 className={`text-xl-token font-bold leading-tight-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
-              {expo.name}
-            </h1>
-          </div>
 
-          <div className="flex flex-wrap gap-sm-token items-center">
-            {(!isAuthenticated || user?.role === 'attendee') && (
-              <button onClick={handleRegister} disabled={registering} className={primaryBtn}>
-                {registering ? 'Registering…' : 'Register for Expo'}
-              </button>
-            )}
-            {expo.status === 'published' && (!isAuthenticated || user?.role === 'exhibitor') && (
-              <button onClick={handleApply} className={primaryBtn}>Apply to Exhibit</button>
-            )}
-          </div>
-        </div>
-
-        {/* Registration feedback */}
-        {registerMessage && (
-          <div className={`mb-lg-token px-md-token py-sm-token rounded-md-token text-sm-token ${
-            registerMessage.type === 'success'
-              ? isDarkMode ? 'bg-bg-success-dark text-text-success-dark' : 'bg-bg-success-light text-text-success-light'
-              : isDarkMode ? 'bg-bg-warning-dark text-text-warning-dark' : 'bg-bg-warning-light text-text-warning-light'
-          }`}>
-            {registerMessage.text}
-          </div>
-        )}
-
-        {/* Metadata row — icon + text, no emojis */}
-        <div className={`flex flex-wrap gap-lg-token mb-xl-token px-md-token py-sm-token rounded-lg-token border backdrop-blur-sm text-sm-token ${
-          isDarkMode
-            ? 'bg-glass-dark border-glass-border-dark text-text-secondary-dark'
-            : 'bg-glass-light border-glass-border-light text-text-secondary-light'
-        }`}>
-          <span className="flex items-center gap-xs-token">
-            <Calendar className="w-4 h-4 shrink-0" aria-hidden="true" />
-            {formatDate(expo.startDate)} – {formatDate(expo.endDate)}
-          </span>
-          <span className="flex items-center gap-xs-token">
-            <MapPin className="w-4 h-4 shrink-0" aria-hidden="true" />
-            {expo.venueName}{expo.venueAddress ? `, ${expo.venueAddress}` : ''}
-          </span>
-          {expo.totalBooths && (
-            <span className="flex items-center gap-xs-token">
-              <Building2 className="w-4 h-4 shrink-0" aria-hidden="true" />
-              {expo.totalBooths} booths
-            </span>
-          )}
-          {expo.websiteUrl && (
-            <a
-              href={expo.websiteUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`flex items-center gap-xs-token underline transition-colors ${isDarkMode ? 'text-brand-primary-dark hover:opacity-80' : 'text-brand-primary-light hover:opacity-80'}`}
-            >
-              <Globe className="w-4 h-4 shrink-0" aria-hidden="true" />
-              Website
-            </a>
-          )}
-        </div>
-
-        {/* About section */}
-        <section className="mb-xl-token">
-          <h2 className={`text-base-token font-semibold mb-sm-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
-            About this Expo
-          </h2>
-          <p className={`text-sm-token leading-loose-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
-            {expo.description}
-          </p>
-        </section>
-
-        {/* Exhibitors */}
-        {exhibitors.length > 0 && (
-          <section className="mb-xl-token">
-            <h2 className={`text-base-token font-semibold mb-md-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
-              Exhibitors{' '}
-              <span className={`text-sm-token font-regular ml-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
-                ({exhibitors.length})
-              </span>
-            </h2>
-            <div className="mb-md-token">
-              <ExhibitorFilterBar
-                onSearch={setSearchQuery}
-                onCategoryChange={setSelectedCategory}
-                categories={categories}
-                selectedCategory={selectedCategory}
-              />
-            </div>
-            {filteredExhibitors.length === 0 ? (
-              <p className={`text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
-                No exhibitors match your search.
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md-token">
-                {filteredExhibitors.map((ex: any) => (
-                  <ExhibitorCard key={ex._id} exhibitor={ex} onClick={() => setSelectedExhibitor(ex)} />
-                ))}
+            {/* Registration feedback */}
+            {registerMessage && (
+              <div className={`p-md-token rounded-md-token text-sm-token flex items-center gap-sm-token border ${
+                registerMessage.type === 'success'
+                  ? isDarkMode 
+                    ? 'bg-bg-success-dark border-text-success-dark text-text-success-dark' 
+                    : 'bg-bg-success-light border-text-success-light text-text-success-light'
+                  : isDarkMode 
+                    ? 'bg-bg-warning-dark border-text-warning-dark text-text-warning-dark' 
+                    : 'bg-bg-warning-light border-text-warning-light text-text-warning-light'
+              }`}>
+                {registerMessage.type === 'success' ? (
+                  <CheckCircle2 className="w-5 h-5 shrink-0" aria-hidden="true" />
+                ) : (
+                  <AlertCircle className="w-5 h-5 shrink-0" aria-hidden="true" />
+                )}
+                <span>{registerMessage.text}</span>
               </div>
             )}
-          </section>
-        )}
 
-        {/* Schedule */}
-        {sessions.length > 0 && (
-          <section className="mb-xl-token">
-            <h2 className={`text-base-token font-semibold mb-md-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
-              Schedule
-            </h2>
-            <div className={`rounded-lg-token overflow-hidden border ${isDarkMode ? 'border-border-base-dark' : 'border-border-base-light'}`}>
-              {sessions.map((s: any, i: number) => (
-                <div
-                  key={s._id}
-                  className={`flex flex-wrap items-start gap-md-token px-md-token py-sm-token ${
-                    i < sessions.length - 1
-                      ? isDarkMode ? 'border-b border-border-base-dark' : 'border-b border-border-base-light'
-                      : ''
-                  } ${isDarkMode ? 'bg-bg-surface-dark' : 'bg-bg-surface-light'}`}
-                >
-                  <div className={`text-xs-token font-medium w-[100px] shrink-0 pt-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
-                    {formatTime(s.startTime)} – {formatTime(s.endTime)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm-token font-medium ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>{s.title}</p>
-                    <p className={`text-xs-token mt-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>{s.speakerName} · {s.room}</p>
-                  </div>
+            {/* About Section */}
+            <section aria-labelledby="about-heading">
+              <h2 id="about-heading" className={`text-lg-token font-semibold mb-sm-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                About this Expo
+              </h2>
+              <div className={`text-base-token leading-loose-token whitespace-pre-line ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                {expo.description}
+              </div>
+            </section>
+
+            {/* Exhibitors Section with subtle surface container */}
+            {exhibitors.length > 0 && (
+              <section aria-labelledby="exhibitors-heading" className={`p-md-token md:p-lg-token rounded-xl-token border ${
+                isDarkMode 
+                  ? 'bg-bg-surface-dark/90 border-border-base-dark' 
+                  : 'bg-bg-surface-light/95 border-border-base-light'
+              }`}>
+                <div className="flex flex-wrap items-center justify-between gap-sm-token mb-md-token">
+                  <h2 id="exhibitors-heading" className={`text-lg-token font-semibold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                    Featured Exhibitors{' '}
+                    <span className={`text-sm-token font-normal ml-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                      ({exhibitors.length})
+                    </span>
+                  </h2>
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
 
+                <div className="mb-md-token">
+                  <ExhibitorFilterBar
+                    onSearch={setSearchQuery}
+                    onCategoryChange={setSelectedCategory}
+                    categories={categories}
+                    selectedCategory={selectedCategory}
+                  />
+                </div>
+
+                {filteredExhibitors.length === 0 ? (
+                  <p className={`text-sm-token py-md-token text-center ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                    No exhibitors match your search or filter.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-md-token">
+                    {filteredExhibitors.map((ex: any) => (
+                      <ExhibitorCard key={ex._id} exhibitor={ex} onClick={() => setSelectedExhibitor(ex)} />
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Schedule Section — Timeline Layout */}
+            {sessions.length > 0 && (
+              <section aria-labelledby="schedule-heading">
+                <h2 id="schedule-heading" className={`text-lg-token font-semibold mb-md-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                  Event Schedule
+                </h2>
+
+                <div className="relative pl-6 md:pl-8 space-y-md-token before:absolute before:left-[11px] md:before:left-[15px] before:top-3 before:bottom-3 before:w-[2px] before:bg-brand-primary-dark/40">
+                  {sessions.map((s: any) => (
+                    <div key={s._id} className="relative group">
+                      {/* Timeline Dot */}
+                      <div className={`absolute -left-[24px] md:-left-[33px] top-4 w-3.5 h-3.5 rounded-full border-2 ${
+                        isDarkMode 
+                          ? 'bg-bg-base-dark border-brand-primary-dark' 
+                          : 'bg-bg-base-light border-brand-primary-light'
+                      } group-hover:scale-125 transition-transform`} aria-hidden="true" />
+
+                      {/* Session Content Card */}
+                      <div className={`p-md-token rounded-lg-token border transition-colors ${
+                        isDarkMode
+                          ? 'bg-glass-dark border-glass-border-dark hover:border-brand-primary-dark/60'
+                          : 'bg-glass-light border-glass-border-light hover:border-brand-primary-light/60'
+                      }`}>
+                        <div className="flex flex-wrap items-center justify-between gap-xs-token mb-xs-token">
+                          <span className={`inline-flex items-center gap-xs-token text-xs-token font-semibold ${
+                            isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'
+                          }`}>
+                            <Clock className="w-3.5 h-3.5" aria-hidden="true" />
+                            {formatTime(s.startTime)} – {formatTime(s.endTime)}
+                          </span>
+                          {s.track && (
+                            <span className={`text-xs-token px-xs-token py-0.5 rounded-sm-token font-medium ${
+                              isDarkMode ? 'bg-bg-hover-dark text-text-secondary-dark' : 'bg-bg-hover-light text-text-secondary-light'
+                            }`}>
+                              {s.track}
+                            </span>
+                          )}
+                        </div>
+
+                        <h3 className={`text-base-token font-semibold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                          {s.title}
+                        </h3>
+
+                        <p className={`text-xs-token mt-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                          Speaker: <span className="font-medium text-text-primary-dark">{s.speakerName}</span> · Room: <span className="font-medium">{s.room}</span>
+                        </p>
+
+                        {s.description && (
+                          <p className={`text-xs-token mt-sm-token leading-normal-token ${isDarkMode ? 'text-text-muted-dark' : 'text-text-muted-light'}`}>
+                            {s.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+          </div>
+
+          {/* ── Right Column (~35% width: 4 cols on lg, sticky on scroll) ─ */}
+          <aside className="lg:col-span-4 w-full lg:sticky lg:top-6 flex flex-col gap-md-token" aria-label="Expo Summary & Actions">
+            <BentoCard>
+              <div className="flex flex-col gap-lg-token p-xs-token">
+                <div>
+                  <h2 className={`text-lg-token font-bold mb-xs-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                    Expo Details
+                  </h2>
+                  <p className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                    Key event information & registration
+                  </p>
+                </div>
+
+                <div className="space-y-md-token border-t border-b py-md-token border-glass-border-dark/50">
+                  {/* Date Range */}
+                  <div className="flex items-start gap-sm-token">
+                    <Calendar className={`w-5 h-5 mt-0.5 shrink-0 ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`} aria-hidden="true" />
+                    <div>
+                      <span className={`block text-xs-token font-medium ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>Date & Duration</span>
+                      <span className={`text-sm-token font-semibold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                        {formatDate(expo.startDate)} – {formatDate(expo.endDate)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Venue Location */}
+                  <div className="flex items-start gap-sm-token">
+                    <MapPin className={`w-5 h-5 mt-0.5 shrink-0 ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`} aria-hidden="true" />
+                    <div>
+                      <span className={`block text-xs-token font-medium ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>Venue</span>
+                      <span className={`text-sm-token font-semibold block ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                        {expo.venueName}
+                      </span>
+                      {expo.venueAddress && (
+                        <span className={`text-xs-token block mt-0.5 ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                          {expo.venueAddress}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Booths Capacity */}
+                  {expo.totalBooths && (
+                    <div className="flex items-start gap-sm-token">
+                      <Building2 className={`w-5 h-5 mt-0.5 shrink-0 ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`} aria-hidden="true" />
+                      <div>
+                        <span className={`block text-xs-token font-medium ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>Capacity</span>
+                        <span className={`text-sm-token font-semibold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                          {expo.totalBooths} Booths Total
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Official Website */}
+                  {expo.websiteUrl && (
+                    <div className="flex items-start gap-sm-token">
+                      <Globe className={`w-5 h-5 mt-0.5 shrink-0 ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`} aria-hidden="true" />
+                      <div>
+                        <span className={`block text-xs-token font-medium ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>Website</span>
+                        <a
+                          href={expo.websiteUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`text-sm-token font-medium underline break-all ${isDarkMode ? 'text-brand-primary-dark hover:opacity-80' : 'text-brand-primary-light hover:opacity-80'}`}
+                        >
+                          Visit Official Site
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Primary & Secondary Call to Actions */}
+                <div className="flex flex-col gap-sm-token pt-xs-token">
+                  {(!isAuthenticated || user?.role === 'attendee') && (
+                    <button onClick={handleRegister} disabled={registering} className={primaryBtn}>
+                      {registering ? 'Processing…' : 'Register for Expo'}
+                    </button>
+                  )}
+
+                  {expo.status === 'published' && (!isAuthenticated || user?.role === 'exhibitor') && (
+                    <button onClick={handleApply} className={(!isAuthenticated || user?.role === 'attendee') ? secondaryBtn : primaryBtn}>
+                      Apply to Exhibit
+                    </button>
+                  )}
+                </div>
+              </div>
+            </BentoCard>
+          </aside>
+
+        </div>
       </div>
 
       <ExhibitorDetailModal exhibitor={selectedExhibitor} onClose={() => setSelectedExhibitor(null)} />
