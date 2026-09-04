@@ -30,10 +30,12 @@ const NAV_LINKS: Record<string, NavLink[]> = {
     { label: 'Dashboard', path: '/dashboard/organizer', icon: BarChart3 },
     { label: 'My Expos',  path: '/organizer/expos',      icon: CalendarDays },
     { label: 'Scanner',   path: '/organizer/scanner',   icon: ScanLine },
+    { label: 'Expos',     path: '/expos',               icon: Compass },
   ],
   exhibitor: [
     { label: 'Dashboard',    path: '/dashboard/exhibitor',     icon: Store },
     { label: 'Applications', path: '/exhibitor/applications', icon: FileText },
+    { label: 'Expos',        path: '/expos',                  icon: Compass },
   ],
   attendee: [
     { label: 'Dashboard', path: '/dashboard/attendee', icon: Ticket },

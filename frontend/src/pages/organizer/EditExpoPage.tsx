@@ -127,6 +127,28 @@ export default function EditExpoPage() {
                     onError={(msg) => toast.error(msg)}
                   />
                 )}
+                {expo.status === 'published' && (
+                  <ExpoStatusTransitionButton
+                    expoId={expo._id}
+                    action="ongoing"
+                    onSuccess={() => {
+                      toast.success('Expo is now ongoing!');
+                      expoService.getByIdForOrganizer(id!).then((d: any) => setExpo(d?.expo ?? d));
+                    }}
+                    onError={(msg) => toast.error(msg)}
+                  />
+                )}
+                {expo.status === 'ongoing' && (
+                  <ExpoStatusTransitionButton
+                    expoId={expo._id}
+                    action="complete"
+                    onSuccess={() => {
+                      toast.success('Expo completed!');
+                      expoService.getByIdForOrganizer(id!).then((d: any) => setExpo(d?.expo ?? d));
+                    }}
+                    onError={(msg) => toast.error(msg)}
+                  />
+                )}
                 {(expo.status === 'published' || expo.status === 'ongoing') && (
                   <ExpoStatusTransitionButton
                     expoId={expo._id}

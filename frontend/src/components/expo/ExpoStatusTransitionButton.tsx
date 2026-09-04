@@ -3,7 +3,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { expoService } from '../../services/expoService';
 import CascadeConfirmDialog from './CascadeConfirmDialog';
 
-type TransitionAction = 'publish' | 'archive' | 'delete' | 'complete';
+type TransitionAction = 'publish' | 'ongoing' | 'archive' | 'delete' | 'complete';
 
 interface CascadePreview {
   activeTickets: number;
@@ -21,7 +21,7 @@ interface ExpoStatusTransitionButtonProps {
   children?: React.ReactNode;
 }
 
-type Variant = 'primary' | 'warning' | 'danger';
+type Variant = 'primary' | 'success' | 'warning' | 'danger';
 
 interface ActionConfig {
   label: string;
@@ -36,6 +36,12 @@ const ACTION_CONFIG: Record<TransitionAction, ActionConfig> = {
     statusTarget: 'published',
     needsCascadeCheck: false,
     variant: 'primary',
+  },
+  ongoing: {
+    label: 'Mark as Ongoing',
+    statusTarget: 'ongoing',
+    needsCascadeCheck: false,
+    variant: 'success',
   },
   complete: {
     label: 'Complete',
@@ -80,6 +86,9 @@ export default function ExpoStatusTransitionButton({
     primary: isDarkMode
       ? 'bg-brand-primary-dark text-text-on-primary-dark hover:bg-accent-hover-dark'
       : 'bg-brand-primary-light text-text-on-primary-light hover:bg-accent-hover-light',
+    success: isDarkMode
+      ? 'bg-bg-success-dark text-text-success-dark border border-text-success-dark hover:opacity-80'
+      : 'bg-bg-success-light text-text-success-light border border-text-success-light hover:opacity-80',
     warning: isDarkMode
       ? 'bg-bg-warning-dark text-text-warning-dark border border-text-warning-dark hover:opacity-80'
       : 'bg-bg-warning-light text-text-warning-light border border-text-warning-light hover:opacity-80',
