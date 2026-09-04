@@ -97,15 +97,12 @@ class ApplicationService {
     }
 
     // 3. Check for existing pending or approved application (REQ-3.6, Property 10)
-    const existingApplication = await ApplicationModel.findByExpoAndExhibitor(
+    const existingActiveApplication = await ApplicationModel.findActiveByExpoAndExhibitor(
       data.expoId,
       data.exhibitorId
     );
 
-    if (
-      existingApplication &&
-      (existingApplication.status === 'pending' || existingApplication.status === 'approved')
-    ) {
+    if (existingActiveApplication) {
       throw createError(
         'You already have an active or pending application for this expo',
         'DUPLICATE_APPLICATION',

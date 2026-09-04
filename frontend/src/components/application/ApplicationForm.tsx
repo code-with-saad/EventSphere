@@ -1,4 +1,4 @@
-﻿import { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { uploadService } from '../../services/uploadService';
 
@@ -64,6 +64,26 @@ export default function ApplicationForm({
   const [logoPreview, setLogoPreview] = useState(initialData?.logoUrl ?? '');
   const [uploading, setUploading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Sync initialData if loaded asynchronously (e.g. edit mode or previous application autofill)
+  const [syncedInitial, setSyncedInitial] = useState(initialData);
+  if (initialData !== syncedInitial) {
+    setSyncedInitial(initialData);
+    if (initialData) {
+      setForm((prev) => ({
+        companyName: initialData.companyName ?? prev.companyName,
+        companyDescription: initialData.companyDescription ?? prev.companyDescription,
+        category: initialData.category ?? prev.category,
+        phoneNumber: initialData.phoneNumber ?? prev.phoneNumber,
+        websiteUrl: initialData.websiteUrl ?? prev.websiteUrl,
+        logoUrl: initialData.logoUrl ?? prev.logoUrl,
+        organizerNote: initialData.organizerNote ?? prev.organizerNote,
+      }));
+      if (initialData.logoUrl) {
+        setLogoPreview(initialData.logoUrl);
+      }
+    }
+  }
 
 
 

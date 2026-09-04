@@ -171,11 +171,11 @@ describe('POST /api/expos/:expoId/applications — submit (17a)', () => {
     expect(res.body.data.application._id).toBeTruthy();
   });
 
-  it('17a-2: duplicate submission → 409 DUPLICATE_APPLICATION', async () => {
+  it('17a-2: duplicate submission while pending → 409 DUPLICATE_APPLICATION', async () => {
     const { expoId } = await createOrganizerAndPublishedExpo();
     const { exhibitorToken } = await createExhibitorAndSubmit(expoId);
 
-    // Second submission with same exhibitor
+    // Second submission with same exhibitor while first is pending
     const res = await request(app)
       .post(`/api/expos/${expoId}/applications`)
       .set('Authorization', `Bearer ${exhibitorToken}`)
@@ -189,6 +189,58 @@ describe('POST /api/expos/:expoId/applications — submit (17a)', () => {
     expect(res.status).toBe(409);
     expect(res.body.success).toBe(false);
     expect(res.body.code).toBe('DUPLICATE_APPLICATION');
+  });
+
+  it('17a-2b: duplicate submission while approved → 409 DUPLICATE_APPLICATION', async () => {
+    const { expoId, organizerToken } = await createOrganizerAndPublishedExpo();
+    const { exhibitorToken, applicationId } = await createExhibitorAndSubmit(expoId);
+
+    // Organizer approves first application
+    await request(app)
+      .patch(`/api/expos/${expoId}/applications/${applicationId}/review`)
+      .set('Authorization', `Bearer ${organizerToken}`)
+      .send({ action: 'approve', boothLabel: 'B-01' });
+
+    // Second submission attempt while approved
+    const res = await request(app)
+      .post(`/api/expos/${expoId}/applications`)
+      .set('Authorization', `Bearer ${exhibitorToken}`)
+      .send({
+        companyName: 'ACME Corp 2',
+        companyDescription: 'We make widgets again',
+        category: 'Technology',
+        phoneNumber: '+1234567890',
+      });
+
+    expect(res.status).toBe(409);
+    expect(res.body.success).toBe(false);
+    expect(res.body.code).toBe('DUPLICATE_APPLICATION');
+  });
+
+  it('17a-2c: re-submission allowed after rejection', async () => {
+    const { expoId, organizerToken } = await createOrganizerAndPublishedExpo();
+    const { exhibitorToken, applicationId } = await createExhibitorAndSubmit(expoId);
+
+    // Organizer rejects first application
+    await request(app)
+      .patch(`/api/expos/${expoId}/applications/${applicationId}/review`)
+      .set('Authorization', `Bearer ${organizerToken}`)
+      .send({ action: 'reject', reason: 'Booth full' });
+
+    // Exhibitor can submit a new application now that previous one is rejected
+    const res = await request(app)
+      .post(`/api/expos/${expoId}/applications`)
+      .set('Authorization', `Bearer ${exhibitorToken}`)
+      .send({
+        companyName: 'ACME Corp 2',
+        companyDescription: 'Updated pitch',
+        category: 'Technology',
+        phoneNumber: '+1234567890',
+      });
+
+    expect(res.status).toBe(201);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.application.status).toBe('pending');
   });
 
   it('17a-3: non-published expo → 400 EXPO_NOT_ACCEPTING_APPLICATIONS', async () => {

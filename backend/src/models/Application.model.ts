@@ -1,4 +1,4 @@
-﻿import { Collection, Db, ObjectId } from 'mongodb';
+import { Collection, Db, ObjectId } from 'mongodb';
 import { getDatabase } from '../config/database';
 
 /**
@@ -136,13 +136,34 @@ export class ApplicationModel {
   }
 
   /**
-   * Find an exhibitor's application for a specific expo
+   * Find an exhibitor's active (pending or approved) application for a specific expo.
+   * Deterministic duplicate check helper ensuring at most one active application exists.
+   *
+   * @param expoId Expo ID
+   * @param exhibitorId Exhibitor user ID
+   * @returns The active matching application or null if none
+   */
+  async findActiveByExpoAndExhibitor(
+    expoId: ObjectId | string,
+    exhibitorId: ObjectId | string
+  ): Promise<IApplication | null> {
+    const eid = typeof expoId === 'string' ? new ObjectId(expoId) : expoId;
+    const xid = typeof exhibitorId === 'string' ? new ObjectId(exhibitorId) : exhibitorId;
+    return this.collection.findOne({
+      expoId: eid,
+      exhibitorId: xid,
+      status: { $in: ['pending', 'approved'] },
+    });
+  }
+
+  /**
+   * Find an exhibitor's application for a specific expo (most recent first)
    *
    * Supports REQ-3.6: an exhibitor can check whether they have already applied.
    *
    * @param expoId Expo ID
    * @param exhibitorId Exhibitor user ID
-   * @returns The matching application or null if not found
+   * @returns The most recent matching application or null if not found
    */
   async findByExpoAndExhibitor(
     expoId: ObjectId | string,
@@ -150,7 +171,7 @@ export class ApplicationModel {
   ): Promise<IApplication | null> {
     const eid = typeof expoId === 'string' ? new ObjectId(expoId) : expoId;
     const xid = typeof exhibitorId === 'string' ? new ObjectId(exhibitorId) : exhibitorId;
-    return this.collection.findOne({ expoId: eid, exhibitorId: xid });
+    return this.collection.findOne({ expoId: eid, exhibitorId: xid }, { sort: { submittedAt: -1 } });
   }
 
   /**

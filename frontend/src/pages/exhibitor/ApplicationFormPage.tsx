@@ -41,10 +41,14 @@ export default function ApplicationFormPage() {
       return;
     }
 
-    // New application: block if pending/approved already exists for this expo
-    applicationService.getMine(expoId)
-      .then((data: any) => {
-        const app = data?.application ?? data;
+    // New application: block if pending/approved already exists for this expo,
+    // and pre-fill company info from most recent previous application if available
+    Promise.all([
+      applicationService.getMine(expoId).catch(() => null),
+      applicationService.listAllMine().catch(() => null),
+    ])
+      .then(([currentAppData, allAppsData]: [any, any]) => {
+        const app = currentAppData?.application ?? currentAppData;
         if (app && (app.status === 'pending' || app.status === 'approved')) {
           setAlreadyApplied(true);
           if (!toastFiredRef.current) {
@@ -52,9 +56,25 @@ export default function ApplicationFormPage() {
             toast.error('You already have an active application for this expo.');
           }
           navigate(`/expos/${expoId}`, { replace: true });
+          return;
+        }
+
+        const allApps: any[] = allAppsData?.applications ?? (Array.isArray(allAppsData) ? allAppsData : []);
+        if (allApps.length > 0) {
+          // listAllMine is sorted by submittedAt descending, so first item is the most recent
+          const mostRecent = allApps[0];
+          setExistingApplication({
+            companyName: mostRecent.companyName ?? '',
+            companyDescription: mostRecent.companyDescription ?? '',
+            category: mostRecent.category ?? '',
+            phoneNumber: mostRecent.phoneNumber ?? '',
+            websiteUrl: mostRecent.websiteUrl ?? '',
+            logoUrl: mostRecent.logoUrl ?? '',
+            organizerNote: '', // expo-specific, fresh per application
+          });
         }
       })
-      .catch(() => { /* no application found — show the form */ })
+      .catch(() => { /* show empty form as fallback */ })
       .finally(() => setChecking(false));
   }, [expoId, navigate, isEditing]);
 
@@ -93,14 +113,14 @@ export default function ApplicationFormPage() {
 
   if (checking || alreadyApplied) return null;
 
-  const initialData = isEditing && existingApplication ? {
+  const initialData = existingApplication ? {
     companyName: existingApplication.companyName ?? '',
     companyDescription: existingApplication.companyDescription ?? '',
     category: existingApplication.category ?? '',
     phoneNumber: existingApplication.phoneNumber ?? '',
     websiteUrl: existingApplication.websiteUrl ?? '',
     logoUrl: existingApplication.logoUrl ?? '',
-    organizerNote: existingApplication.organizerNote ?? '',
+    organizerNote: isEditing ? (existingApplication.organizerNote ?? '') : '',
   } : undefined;
 
   return (
