@@ -9,6 +9,7 @@ import BackButton from '../../components/layout/BackButton';
 import ApplicationCard from '../../components/application/ApplicationCard';
 import ReviewPanel from '../../components/application/ReviewPanel';
 import BoothAssignmentModal from '../../components/application/BoothAssignmentModal';
+import ApplicationMessageThread from '../../components/application/ApplicationMessageThread';
 import { BentoCard } from '../../components/common/BentoCard';
 import { Users, Clock, CheckCircle2, XCircle, Store } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -33,6 +34,7 @@ export default function ApplicationsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedApp, setSelectedApp] = useState<any | null>(null);
   const [showBoothModal, setShowBoothModal] = useState(false);
+  const [messageApp, setMessageApp] = useState<any | null>(null);
   const [isActing, setIsActing] = useState(false);
 
   const fetchApplications = useCallback(async () => {
@@ -289,11 +291,40 @@ export default function ApplicationsPage() {
       <BottomNav />
 
       {selectedApp && !showBoothModal && (
-        <ReviewPanel application={selectedApp} onClose={() => setSelectedApp(null)} onApprove={handleApprove} onReject={handleReject} onRevoke={handleRevoke} isActing={isActing} />
+        <ReviewPanel
+          application={selectedApp}
+          onClose={() => setSelectedApp(null)}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onRevoke={handleRevoke}
+          onOpenMessages={() => {
+            setMessageApp(selectedApp);
+          }}
+          isActing={isActing}
+        />
       )}
 
       {selectedApp && (
-        <BoothAssignmentModal isOpen={showBoothModal} applicationId={selectedApp._id} expoId={expoId ?? ''} totalBooths={totalBooths} assignedBooths={assignedBooths} onConfirm={handleBoothConfirm} onCancel={() => setShowBoothModal(false)} isLoading={isActing} />
+        <BoothAssignmentModal
+          isOpen={showBoothModal}
+          applicationId={selectedApp._id}
+          expoId={expoId ?? ''}
+          totalBooths={totalBooths}
+          assignedBooths={assignedBooths}
+          initialBooth={selectedApp.preferredBooth}
+          onConfirm={handleBoothConfirm}
+          onCancel={() => setShowBoothModal(false)}
+          isLoading={isActing}
+        />
+      )}
+
+      {messageApp && (
+        <ApplicationMessageThread
+          isOpen={!!messageApp}
+          applicationId={messageApp._id}
+          companyName={messageApp.companyName}
+          onClose={() => setMessageApp(null)}
+        />
       )}
     </div>
   );

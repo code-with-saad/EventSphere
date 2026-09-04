@@ -20,6 +20,8 @@ import bookmarkRoutes from './routes/bookmark.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import uploadRoutes from './routes/upload.routes';
 import userRoutes from './routes/user.routes';
+import messageRoutes from './routes/message.routes';
+import feedbackRoutes from './routes/feedback.routes';
 import errorHandler, { notFoundHandler } from './middleware/error.middleware';
 
 const app = express();
@@ -52,6 +54,9 @@ app.use('/api/expos', sessionRoutes);
 app.use('/api/expos', bookmarkRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/feedback', feedbackRoutes);
+app.use('/api', feedbackRoutes); // mounts /api/admin/feedback routes
 
 // ── Utility endpoints ─────────────────────────────────────────────────────────
 app.get('/health', (_req: Request, res: Response) => {

@@ -1,6 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { uploadService } from '../../services/uploadService';
+import { expoService } from '../../services/expoService';
+import { BoothSelectorGrid } from '../expo/BoothSelectorGrid';
 
 const CATEGORIES = [
   'Technology', 'Health & Wellness', 'Art & Culture', 'Business',
@@ -18,6 +20,7 @@ interface ApplicationFormData {
   websiteUrl: string;
   logoUrl: string;
   organizerNote: string;
+  preferredBooth?: string;
 }
 
 interface Step1Errors {
@@ -33,6 +36,7 @@ interface Step2Errors {
 }
 
 interface ApplicationFormProps {
+  expoId?: string;
   initialData?: Partial<ApplicationFormData>;
   onSubmit: (data: Record<string, unknown>) => Promise<void>;
   isLoading?: boolean;
@@ -40,6 +44,7 @@ interface ApplicationFormProps {
 }
 
 export default function ApplicationForm({
+  expoId,
   onSubmit,
   isLoading = false,
   submitLabel = 'Submit Application',
@@ -58,12 +63,33 @@ export default function ApplicationForm({
     websiteUrl: initialData?.websiteUrl ?? '',
     logoUrl: initialData?.logoUrl ?? '',
     organizerNote: initialData?.organizerNote ?? '',
+    preferredBooth: initialData?.preferredBooth ?? '',
   });
   const [step1Errors, setStep1Errors] = useState<Step1Errors>({});
   const [step2Errors, setStep2Errors] = useState<Step2Errors>({});
   const [logoPreview, setLogoPreview] = useState(initialData?.logoUrl ?? '');
   const [uploading, setUploading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Booth info state
+  const [boothData, setBoothData] = useState<{ totalBooths: number; occupiedBooths: string[] }>({
+    totalBooths: 20,
+    occupiedBooths: [],
+  });
+
+  useEffect(() => {
+    if (!expoId) return;
+    expoService.getBooths(expoId)
+      .then((data: any) => {
+        if (data) {
+          setBoothData({
+            totalBooths: data.totalBooths || 20,
+            occupiedBooths: data.occupiedBooths || [],
+          });
+        }
+      })
+      .catch(() => {});
+  }, [expoId]);
 
   // Sync initialData if loaded asynchronously (e.g. edit mode or previous application autofill)
   const [syncedInitial, setSyncedInitial] = useState(initialData);
@@ -78,6 +104,7 @@ export default function ApplicationForm({
         websiteUrl: initialData.websiteUrl ?? prev.websiteUrl,
         logoUrl: initialData.logoUrl ?? prev.logoUrl,
         organizerNote: initialData.organizerNote ?? prev.organizerNote,
+        preferredBooth: initialData.preferredBooth ?? prev.preferredBooth,
       }));
       if (initialData.logoUrl) {
         setLogoPreview(initialData.logoUrl);
@@ -197,6 +224,7 @@ export default function ApplicationForm({
       if (form.websiteUrl.trim()) payload.websiteUrl = form.websiteUrl.trim();
       if (form.logoUrl) payload.logoUrl = form.logoUrl;
       if (form.organizerNote.trim()) payload.organizerNote = form.organizerNote.trim();
+      if (form.preferredBooth?.trim()) payload.preferredBooth = form.preferredBooth.trim();
       await onSubmit(payload);
     } catch (err: unknown) {
       const message =
@@ -450,6 +478,19 @@ export default function ApplicationForm({
             {step2Errors.websiteUrl}
           </p>
         )}
+      </div>
+
+      {/* Booth selection grid */}
+      <div>
+        <label className={labelClass}>
+          Select Preferred Booth Space (Optional)
+        </label>
+        <BoothSelectorGrid
+          totalBooths={boothData.totalBooths}
+          occupiedBooths={boothData.occupiedBooths}
+          selectedBooth={form.preferredBooth}
+          onSelectBooth={(booth) => setForm((prev) => ({ ...prev, preferredBooth: booth }))}
+        />
       </div>
 
       {/* Note to organizer */}

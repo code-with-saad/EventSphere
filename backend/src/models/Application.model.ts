@@ -30,6 +30,7 @@ export interface IApplication {
   websiteUrl?: string;
   logoUrl?: string;               // Cloudinary URL (PNG/JPG/WebP, ≤2 MB)
   organizerNote?: string;         // max 500 chars
+  preferredBooth?: string;        // requested booth label during application
   boothLabel?: string;            // 1–20 chars, set on approval
   rejectionReason?: string;       // max 300 chars, set on rejection
   submittedAt: Date;
@@ -49,6 +50,7 @@ export interface IApplicationCreate {
   websiteUrl?: string;
   logoUrl?: string;
   organizerNote?: string;
+  preferredBooth?: string;
 }
 
 /**

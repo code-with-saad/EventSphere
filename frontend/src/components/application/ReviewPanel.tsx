@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import ApplicationStatusBadge from './ApplicationStatusBadge';
+import { MessageSquare } from 'lucide-react';
 
 interface ReviewPanelProps {
   application: {
@@ -21,6 +22,7 @@ interface ReviewPanelProps {
   onApprove: (applicationId: string) => void;
   onReject: (applicationId: string) => void;
   onRevoke: (applicationId: string) => void;
+  onOpenMessages?: () => void;
   isActing?: boolean;
 }
 
@@ -36,6 +38,7 @@ export default function ReviewPanel({
   onApprove,
   onReject,
   onRevoke,
+  onOpenMessages,
   isActing = false,
 }: ReviewPanelProps) {
   const { theme } = useTheme();
@@ -185,6 +188,21 @@ export default function ReviewPanel({
 
           {/* Action buttons */}
           <div className="flex flex-col gap-sm-token mt-auto pt-md-token">
+            {onOpenMessages && (
+              <button
+                type="button"
+                onClick={onOpenMessages}
+                className={`w-full px-md-token py-xs-token rounded-md-token text-sm-token font-semibold flex items-center justify-center gap-2 border transition-colors ${
+                  isDarkMode
+                    ? 'border-border-base-dark text-text-primary-dark hover:bg-bg-hover-dark'
+                    : 'border-border-base-light text-text-primary-light hover:bg-bg-hover-light'
+                }`}
+              >
+                <MessageSquare className="w-4 h-4 text-brand-primary-dark" />
+                <span>Message Exhibitor</span>
+              </button>
+            )}
+
             {application.status === 'pending' && !showRejectInput && (
               <div className="flex gap-sm-token">
                 <button

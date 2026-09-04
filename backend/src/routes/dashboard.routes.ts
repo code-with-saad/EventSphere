@@ -7,6 +7,31 @@ import { authorize } from '../middleware/authorize.middleware';
 const router = Router();
 
 /**
+ * GET /api/dashboard/organizer/:expoId/engagement
+ *
+ * Returns session bookmark popularity and exhibitor category distribution
+ * for a specific expo owned by the authenticated organizer.
+ *
+ * Access: Organizer only (must own the expo)
+ */
+router.get(
+  '/organizer/:expoId/engagement',
+  authenticate,
+  authorize('organizer'),
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const data = await StatsService.getEngagementDepth(
+      req.params.expoId as string,
+      req.user!.userId
+    );
+    return res.status(200).json({
+      success: true,
+      message: 'Engagement depth retrieved successfully',
+      data,
+    });
+  })
+);
+
+/**
  * GET /api/dashboard/organizer
  *
  * Returns aggregated dashboard stats for the authenticated organizer:

@@ -7,6 +7,7 @@ interface BoothAssignmentModalProps {
   expoId: string;
   totalBooths: number;
   assignedBooths: number;
+  initialBooth?: string;
   onConfirm: (boothLabel: string) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -16,6 +17,7 @@ export default function BoothAssignmentModal({
   isOpen,
   totalBooths,
   assignedBooths,
+  initialBooth = '',
   onConfirm,
   onCancel,
   isLoading = false,
@@ -24,7 +26,7 @@ export default function BoothAssignmentModal({
   const isDarkMode = theme === 'dark';
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [boothLabel, setBoothLabel] = useState('');
+  const [boothLabel, setBoothLabel] = useState(initialBooth);
   const [error, setError] = useState('');
 
   const fillRate = totalBooths > 0 ? Math.round((assignedBooths / totalBooths) * 100) : 0;
@@ -32,11 +34,11 @@ export default function BoothAssignmentModal({
 
   useEffect(() => {
     if (isOpen) {
-      setBoothLabel('');
+      setBoothLabel(initialBooth || '');
       setError('');
       setTimeout(() => inputRef.current?.focus(), 50);
     }
-  }, [isOpen]);
+  }, [isOpen, initialBooth]);
 
   useEffect(() => {
     if (!isOpen) return;

@@ -117,6 +117,31 @@ router.get(
 );
 
 /**
+ * GET /api/expos/:id/booths
+ *
+ * Returns total booths count and array of already assigned/approved booth labels.
+ * Access: Public (no auth)
+ */
+router.get(
+  '/:id/booths',
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const expo = await ExpoService.getPublicDetail(req.params.id as string);
+    const approved = expo.approvedApplications || [];
+    const occupiedBooths = approved
+      .map((app) => app.boothLabel)
+      .filter((label): label is string => Boolean(label));
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalBooths: expo.totalBooths,
+        occupiedBooths,
+      },
+    });
+  })
+);
+
+/**
  * POST /api/expos
  *
  * Create a new expo in draft status.

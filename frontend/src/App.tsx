@@ -13,6 +13,7 @@ import LandingPage from './pages/public/LandingPage';
 import SuperAdminDashboard from './pages/dashboard/SuperAdminDashboard';
 import AdminApprovalsPage from './pages/admin/AdminApprovalsPage';
 import AllOrganizersPage from './pages/admin/AllOrganizersPage';
+import AdminFeedbackPage from './pages/admin/AdminFeedbackPage';
 import OrganizerDashboard from './pages/dashboard/OrganizerDashboard';
 import ExhibitorDashboard from './pages/dashboard/ExhibitorDashboard';
 import AttendeeDashboard from './pages/dashboard/AttendeeDashboard';
@@ -105,6 +106,7 @@ function App() {
             <Route path="/dashboard/superadmin" element={<ProtectedRoute allowedRoles={['superadmin']}><SuperAdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/approvals" element={<ProtectedRoute allowedRoles={['superadmin']}><AdminApprovalsPage /></ProtectedRoute>} />
             <Route path="/admin/organizers" element={<ProtectedRoute allowedRoles={['superadmin']}><AllOrganizersPage /></ProtectedRoute>} />
+            <Route path="/admin/feedback" element={<ProtectedRoute allowedRoles={['superadmin']}><AdminFeedbackPage /></ProtectedRoute>} />
             <Route path="/dashboard/organizer" element={<ProtectedRoute allowedRoles={['organizer']}><OrganizerDashboard /></ProtectedRoute>} />
             <Route path="/dashboard/pending-approval" element={<ProtectedRoute allowedRoles={['organizer']}><PendingApprovalScreen /></ProtectedRoute>} />
             <Route path="/dashboard/rejected" element={<ProtectedRoute allowedRoles={['organizer']}><RejectedScreen /></ProtectedRoute>} />

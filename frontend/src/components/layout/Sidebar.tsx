@@ -16,6 +16,7 @@ import {
   Moon,
   LogOut,
   X,
+  MessageSquare,
 } from 'lucide-react';
 
 export interface NavLink {
@@ -29,6 +30,7 @@ export const ROLE_NAV_LINKS: Record<string, NavLink[]> = {
     { label: 'Dashboard',           path: '/dashboard/superadmin', icon: LayoutDashboard },
     { label: 'Organizer Approvals', path: '/admin/approvals',      icon: CheckCircle },
     { label: 'All Organizers',      path: '/admin/organizers',     icon: Users },
+    { label: 'Feedback & Issues',   path: '/admin/feedback',       icon: MessageSquare },
   ],
   organizer: [
     { label: 'Dashboard',           path: '/dashboard/organizer', icon: LayoutDashboard },

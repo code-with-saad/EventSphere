@@ -93,6 +93,7 @@ router.post(
       websiteUrl: req.body.websiteUrl,
       logoUrl: req.body.logoUrl,
       organizerNote: req.body.organizerNote,
+      preferredBooth: req.body.preferredBooth,
     };
 
     const application = await ApplicationService.submit(data);

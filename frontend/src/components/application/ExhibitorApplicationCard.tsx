@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Store, Edit3, XCircle } from 'lucide-react';
+import { Calendar, Store, Edit3, XCircle, MessageSquare } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import ApplicationStatusBadge from './ApplicationStatusBadge';
 
@@ -19,6 +19,7 @@ interface ExhibitorApplicationCardProps {
     venueMapUrl?: string;
   };
   onWithdraw?: (target: { expoId: string; appId: string }) => void;
+  onOpenMessages?: (application: any) => void;
 }
 
 function formatDate(iso: string): string {
@@ -33,6 +34,7 @@ function formatDate(iso: string): string {
 export default function ExhibitorApplicationCard({
   application,
   onWithdraw,
+  onOpenMessages,
 }: ExhibitorApplicationCardProps) {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
@@ -146,41 +148,55 @@ export default function ExhibitorApplicationCard({
         )}
 
         {/* Action strip at bottom */}
-        {isPending && (
-          <div className="mt-auto pt-sm-token border-t border-border-base-dark/30 flex items-center gap-2">
+        <div className="mt-auto pt-sm-token border-t border-border-base-dark/30 flex items-center gap-2">
+          {onOpenMessages && (
             <button
               type="button"
-              onClick={() =>
-                navigate(`/expos/${application.expoId}/apply`, {
-                  state: { editing: true, applicationId: application._id },
-                })
-              }
+              onClick={() => onOpenMessages(application)}
               className={actionBtnClass}
-              title="Edit Application"
+              title="Open Messages"
             >
-              <Edit3 className="w-3.5 h-3.5 shrink-0" />
-              <span>Edit</span>
+              <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+              <span>Discussion</span>
             </button>
-
-            {onWithdraw && (
+          )}
+          
+          {isPending && (
+            <>
               <button
                 type="button"
                 onClick={() =>
-                  onWithdraw({ expoId: application.expoId, appId: application._id })
+                  navigate(`/expos/${application.expoId}/apply`, {
+                    state: { editing: true, applicationId: application._id },
+                  })
                 }
-                className={`flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md-token text-xs-token font-medium border transition-colors ${
-                  isDarkMode
-                    ? 'border-text-danger-dark text-text-danger-dark hover:bg-bg-danger-dark'
-                    : 'border-text-danger-light text-text-danger-light hover:bg-bg-danger-light'
-                }`}
-                title="Withdraw Application"
+                className={actionBtnClass}
+                title="Edit Application"
               >
-                <XCircle className="w-3.5 h-3.5 shrink-0" />
-                <span>Withdraw</span>
+                <Edit3 className="w-3.5 h-3.5 shrink-0" />
+                <span>Edit</span>
               </button>
-            )}
-          </div>
-        )}
+
+              {onWithdraw && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    onWithdraw({ expoId: application.expoId, appId: application._id })
+                  }
+                  className={`flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md-token text-xs-token font-medium border transition-colors ${
+                    isDarkMode
+                      ? 'border-text-danger-dark text-text-danger-dark hover:bg-bg-danger-dark'
+                      : 'border-text-danger-light text-text-danger-light hover:bg-bg-danger-light'
+                  }`}
+                  title="Withdraw Application"
+                >
+                  <XCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>Withdraw</span>
+                </button>
+              )}
+            </>
+          )}
+        </div>
 
         {/* Approved auxiliary links (e.g. Venue Map) */}
         {isApproved && application.venueMapUrl && (

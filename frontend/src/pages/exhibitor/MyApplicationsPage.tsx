@@ -8,6 +8,7 @@ import { BottomNav } from '../../components/layout/BottomNav';
 import PageHeader from '../../components/layout/PageHeader';
 import ExhibitorApplicationCard from '../../components/application/ExhibitorApplicationCard';
 import WithdrawConfirmDialog from '../../components/application/WithdrawConfirmDialog';
+import ApplicationMessageThread from '../../components/application/ApplicationMessageThread';
 import toast from 'react-hot-toast';
 import { Search } from 'lucide-react';
 
@@ -37,6 +38,9 @@ export default function MyApplicationsPage() {
   // Withdraw dialog state
   const [withdrawTarget, setWithdrawTarget] = useState<{ expoId: string; appId: string } | null>(null);
   const [withdrawing, setWithdrawing] = useState(false);
+
+  // Messaging state
+  const [messageApp, setMessageApp] = useState<any | null>(null);
 
   const fetchApplications = useCallback(async () => {
     setLoading(true);
@@ -251,6 +255,7 @@ export default function MyApplicationsPage() {
                   key={app._id}
                   application={app}
                   onWithdraw={(target) => setWithdrawTarget(target)}
+                  onOpenMessages={(a) => setMessageApp(a)}
                 />
               ))}
             </div>
@@ -267,6 +272,16 @@ export default function MyApplicationsPage() {
         onCancel={() => setWithdrawTarget(null)}
         isLoading={withdrawing}
       />
+
+      {/* Application message thread */}
+      {messageApp && (
+        <ApplicationMessageThread
+          isOpen={!!messageApp}
+          applicationId={messageApp._id}
+          expoName={messageApp.expoName ?? 'Expo'}
+          onClose={() => setMessageApp(null)}
+        />
+      )}
     </div>
   );
 }

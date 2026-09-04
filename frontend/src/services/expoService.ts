@@ -8,6 +8,9 @@ export const expoService = {
   getById: (id: string) =>
     api.get(`/api/expos/${id}`).then(r => r.data.data),
 
+  getBooths: (id: string) =>
+    api.get<{ success: boolean; data: { totalBooths: number; occupiedBooths: string[] } }>(`/api/expos/${id}/booths`).then(r => r.data.data),
+
   // Organizer-scoped fetch — returns draft expos too (getById only returns published/ongoing/completed)
   getByIdForOrganizer: (id: string) =>
     api.get(`/api/organizer/expos/${id}`).then(r => r.data.data),

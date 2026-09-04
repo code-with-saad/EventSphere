@@ -1,82 +1,16 @@
-import express, { Request, Response } from 'express';
-import cors from 'cors';
 import env from './config/env';
-import { connectDatabase, isDatabaseConnected } from './config/database';
+import { connectDatabase } from './config/database';
 import UserModel from './models/User.model';
 import ExpoModel from './models/Expo.model';
 import ApplicationModel from './models/Application.model';
 import TicketModel from './models/Ticket.model';
 import SessionModel from './models/Session.model';
 import BookmarkModel from './models/Bookmark.model';
-import authRoutes from './routes/auth.routes';
-import adminRoutes from './routes/admin.routes';
-import expoRoutes from './routes/expo.routes';
-import applicationRoutes from './routes/application.routes';
-import ticketRoutes from './routes/ticket.routes';
-import sessionRoutes from './routes/session.routes';
-import bookmarkRoutes from './routes/bookmark.routes';
-import dashboardRoutes from './routes/dashboard.routes';
-import uploadRoutes from './routes/upload.routes';
-import errorHandler, { notFoundHandler } from './middleware/error.middleware';
+import MessageModel from './models/Message.model';
+import FeedbackModel from './models/Feedback.model';
+import app from './app';
 
-const app = express();
 const PORT = env.PORT;
-
-// CORS Configuration
-// Requirements: 23.1, 23.2, 23.3, 23.4, 23.5, 23.6
-const corsOptions = {
-  origin: env.FRONTEND_URL, // Allow requests from frontend origin (Req 23.1, 23.5)
-  credentials: true, // Allow credentials (cookies, authorization headers) (Req 23.2)
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed request headers (Req 23.3, 23.4)
-  optionsSuccessStatus: 200 // Legacy browser support
-};
-
-// Apply CORS middleware before routes (Req 23.6)
-app.use(cors(corsOptions));
-
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/expos', expoRoutes);
-app.use('/api/organizer', expoRoutes);
-app.use('/api/expos', applicationRoutes);
-app.use('/api/exhibitor', applicationRoutes);
-app.use('/api/tickets', ticketRoutes);
-app.use('/api/expos', ticketRoutes);
-app.use('/api/expos', sessionRoutes);
-app.use('/api/expos', bookmarkRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/upload', uploadRoutes);
-
-// Health check endpoint
-app.get('/health', (_req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'ok',
-    message: 'EventSphere Backend API is running',
-    database: isDatabaseConnected() ? 'connected' : 'disconnected',
-    timestamp: new Date().toISOString(),
-  });
-});
-
-// Root endpoint
-app.get('/', (_req: Request, res: Response) => {
-  res.status(200).json({
-    message: 'EventSphere Backend API',
-    version: '1.0.0',
-    documentation: '/health',
-  });
-});
-
-// 404 handler for undefined routes (must be after all route definitions)
-app.use(notFoundHandler);
-
-// Global error handler (must be the last middleware)
-app.use(errorHandler);
 
 /**
  * Initialize and start the server
@@ -101,6 +35,8 @@ async function startServer() {
     await TicketModel.createIndexes();
     await SessionModel.createIndexes();
     await BookmarkModel.createIndexes();
+    await MessageModel.createIndexes();
+    await FeedbackModel.createIndexes();
 
     // Only start accepting requests after successful database connection
     app.listen(PORT, () => {

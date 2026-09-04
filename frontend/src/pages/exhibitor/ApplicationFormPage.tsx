@@ -121,6 +121,7 @@ export default function ApplicationFormPage() {
     websiteUrl: existingApplication.websiteUrl ?? '',
     logoUrl: existingApplication.logoUrl ?? '',
     organizerNote: isEditing ? (existingApplication.organizerNote ?? '') : '',
+    preferredBooth: existingApplication.preferredBooth ?? existingApplication.boothLabel ?? '',
   } : undefined;
 
   return (
@@ -140,6 +141,7 @@ export default function ApplicationFormPage() {
               backLabel={isEditing ? 'My Applications' : 'Back'}
             />
             <ApplicationForm
+              expoId={expoId}
               onSubmit={handleSubmit}
               isLoading={isLoading}
               submitLabel={isEditing ? 'Save Changes' : 'Submit Application'}

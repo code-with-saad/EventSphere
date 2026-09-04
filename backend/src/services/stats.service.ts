@@ -2,6 +2,8 @@ import { ObjectId } from 'mongodb';
 import ExpoModel from '../models/Expo.model';
 import ApplicationModel from '../models/Application.model';
 import TicketModel from '../models/Ticket.model';
+import SessionModel from '../models/Session.model';
+import BookmarkModel from '../models/Bookmark.model';
 
 // ---------------------------------------------------------------------------
 // Types / DTOs
@@ -75,6 +77,32 @@ export interface OrganizerAnalyticsDTO {
     approvedBooths: number;
     fillRate: number;
   }[];
+}
+
+export interface SessionPopularityItem {
+  sessionId: string;
+  title: string;
+  speakerName: string;
+  room: string;
+  track?: string;
+  startTime: Date;
+  bookmarkCount: number;
+  capacityFillRate: number | null; // null = no attendee data
+}
+
+export interface CategoryDistributionItem {
+  category: string;
+  totalApplications: number;
+  approved: number;
+  pending: number;
+  rejected: number;
+}
+
+export interface EngagementDepthDTO {
+  expoId: string;
+  expoName: string;
+  sessionPopularity: SessionPopularityItem[];
+  categoryDistribution: CategoryDistributionItem[];
 }
 
 // ---------------------------------------------------------------------------
@@ -490,6 +518,106 @@ class StatsService {
       applicationsByDate,
       ticketsByExpo,
       boothsByExpo,
+    };
+  }
+
+  // -------------------------------------------------------------------------
+  // 29e — getEngagementDepth()
+  // -------------------------------------------------------------------------
+
+  /**
+   * Return session bookmark popularity and exhibitor category distribution
+   * for a single expo owned by the organizer.
+   */
+  async getEngagementDepth(expoId: string, organizerId: string): Promise<EngagementDepthDTO> {
+    if (!ObjectId.isValid(expoId)) {
+      throw createError('Expo not found', 'EXPO_NOT_FOUND', 404);
+    }
+
+    const expo = await ExpoModel.findById(expoId);
+    if (!expo) throw createError('Expo not found', 'EXPO_NOT_FOUND', 404);
+    if (expo.organizerId.toString() !== organizerId)
+      throw createError('Access denied', 'STATS_FORBIDDEN', 403);
+
+    const expoObjectId = expo._id;
+
+    // ── Session popularity: join sessions ← bookmarks ──────────────────────
+    const sessions = await SessionModel.getCollection()
+      .find({ expoId: expoObjectId })
+      .sort({ startTime: 1 })
+      .toArray();
+
+    const sessionIds = sessions.map((s) => s._id);
+
+    // Count bookmarks per session
+    const bookmarkAgg = await BookmarkModel.getCollection()
+      .aggregate<{ _id: ObjectId; count: number }>([
+        { $match: { sessionId: { $in: sessionIds } } },
+        { $group: { _id: '$sessionId', count: { $sum: 1 } } },
+      ])
+      .toArray();
+
+    const bookmarkMap = new Map<string, number>();
+    bookmarkAgg.forEach((b) => bookmarkMap.set(b._id.toString(), b.count));
+
+    // Total attendees for this expo (as a proxy for session capacity fill)
+    const totalAttendees = await TicketModel.getCollection().countDocuments({
+      expoId: expoObjectId,
+      status: { $ne: 'cancelled' },
+    });
+
+    const sessionPopularity: SessionPopularityItem[] = sessions.map((s) => {
+      const bookmarkCount = bookmarkMap.get(s._id.toString()) ?? 0;
+      const capacityFillRate =
+        totalAttendees > 0
+          ? Math.round((bookmarkCount / totalAttendees) * 10000) / 100
+          : null;
+      return {
+        sessionId: s._id.toString(),
+        title: s.title,
+        speakerName: s.speakerName,
+        room: s.room,
+        track: s.track,
+        startTime: s.startTime,
+        bookmarkCount,
+        capacityFillRate,
+      };
+    });
+
+    // ── Category distribution: group applications by category ────────────────
+    const categoryAgg = await ApplicationModel.getCollection()
+      .aggregate<{ _id: { category: string; status: string }; count: number }>([
+        { $match: { expoId: expoObjectId } },
+        { $group: { _id: { category: '$category', status: '$status' }, count: { $sum: 1 } } },
+      ])
+      .toArray();
+
+    const catMap = new Map<
+      string,
+      { totalApplications: number; approved: number; pending: number; rejected: number }
+    >();
+    categoryAgg.forEach(({ _id: { category, status }, count }) => {
+      if (!catMap.has(category)) {
+        catMap.set(category, { totalApplications: 0, approved: 0, pending: 0, rejected: 0 });
+      }
+      const entry = catMap.get(category)!;
+      entry.totalApplications += count;
+      if (status === 'approved') entry.approved += count;
+      else if (status === 'pending') entry.pending += count;
+      else if (status === 'rejected') entry.rejected += count;
+    });
+
+    const categoryDistribution: CategoryDistributionItem[] = Array.from(
+      catMap.entries()
+    )
+      .map(([category, stats]) => ({ category, ...stats }))
+      .sort((a, b) => b.totalApplications - a.totalApplications);
+
+    return {
+      expoId: expo._id.toString(),
+      expoName: expo.name,
+      sessionPopularity,
+      categoryDistribution,
     };
   }
 }

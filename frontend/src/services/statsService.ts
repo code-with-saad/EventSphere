@@ -10,6 +10,10 @@ export const statsService = {
   getOrganizerAnalytics: () =>
     api.get('/api/dashboard/organizer/analytics').then(r => r.data.data),
 
+  getEngagementDepth: (expoId: string) =>
+    api.get(`/api/dashboard/organizer/${expoId}/engagement`).then(r => r.data.data),
+
   getSuperAdminDashboard: () =>
     api.get('/api/dashboard/superadmin').then(r => r.data.data),
 };
+
