@@ -47,6 +47,36 @@ export interface SuperAdminDashboardDTO {
   }[];
 }
 
+export interface OrganizerAnalyticsDTO {
+  totalExpos: number;
+  totalApplications: number;
+  totalAttendees: number;
+  totalCheckIns: number;
+  boothFillRate: number;
+  applicationsByStatus: {
+    pending: number;
+    approved: number;
+    rejected: number;
+  };
+  applicationsByDate: {
+    date: string;
+    count: number;
+  }[];
+  ticketsByExpo: {
+    expoId: string;
+    expoName: string;
+    totalTickets: number;
+    checkedInTickets: number;
+  }[];
+  boothsByExpo: {
+    expoId: string;
+    expoName: string;
+    totalBooths: number;
+    approvedBooths: number;
+    fillRate: number;
+  }[];
+}
+
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
@@ -286,6 +316,180 @@ class StatsService {
         status: e.status,
         createdAt: e.createdAt,
       })),
+    };
+  }
+
+  // -------------------------------------------------------------------------
+  // 29d — getOrganizerAnalytics()
+  // -------------------------------------------------------------------------
+
+  /**
+   * Return comprehensive analytics aggregated across all expos owned by the organizer.
+   */
+  async getOrganizerAnalytics(organizerId: string): Promise<OrganizerAnalyticsDTO> {
+    const expos = await ExpoModel.getCollection()
+      .find({ organizerId: new ObjectId(organizerId) })
+      .toArray();
+
+    if (expos.length === 0) {
+      return {
+        totalExpos: 0,
+        totalApplications: 0,
+        totalAttendees: 0,
+        totalCheckIns: 0,
+        boothFillRate: 0,
+        applicationsByStatus: { pending: 0, approved: 0, rejected: 0 },
+        applicationsByDate: [],
+        ticketsByExpo: [],
+        boothsByExpo: [],
+      };
+    }
+
+    const expoIds = expos.map((e) => e._id);
+    const expoNameMap = new Map<string, string>();
+    const expoBoothsMap = new Map<string, number>();
+    expos.forEach((e) => {
+      expoNameMap.set(e._id.toString(), e.name);
+      expoBoothsMap.set(e._id.toString(), e.totalBooths || 0);
+    });
+
+    const [statusAgg, dateAgg, ticketsAgg, approvedAppsAgg, totalAttendees, totalCheckIns] =
+      await Promise.all([
+        // Applications by status
+        ApplicationModel.getCollection()
+          .aggregate<{ _id: string; count: number }>([
+            { $match: { expoId: { $in: expoIds } } },
+            { $group: { _id: '$status', count: { $sum: 1 } } },
+          ])
+          .toArray(),
+
+        // Applications by date
+        ApplicationModel.getCollection()
+          .aggregate<{ _id: string; count: number }>([
+            { $match: { expoId: { $in: expoIds } } },
+            {
+              $group: {
+                _id: { $dateToString: { format: '%Y-%m-%d', date: '$submittedAt' } },
+                count: { $sum: 1 },
+              },
+            },
+            { $sort: { _id: 1 } },
+          ])
+          .toArray(),
+
+        // Tickets & check-ins per expo
+        TicketModel.getCollection()
+          .aggregate<{ _id: ObjectId; totalTickets: number; checkedInTickets: number }>([
+            { $match: { expoId: { $in: expoIds }, status: { $ne: 'cancelled' } } },
+            {
+              $group: {
+                _id: '$expoId',
+                totalTickets: { $sum: 1 },
+                checkedInTickets: {
+                  $sum: { $cond: [{ $eq: ['$status', 'checked_in'] }, 1, 0] },
+                },
+              },
+            },
+          ])
+          .toArray(),
+
+        // Approved apps per expo (for booth fill rates)
+        ApplicationModel.getCollection()
+          .aggregate<{ _id: ObjectId; approvedCount: number }>([
+            { $match: { expoId: { $in: expoIds }, status: 'approved' } },
+            { $group: { _id: '$expoId', approvedCount: { $sum: 1 } } },
+          ])
+          .toArray(),
+
+        // Total non-cancelled tickets across all expos
+        TicketModel.getCollection().countDocuments({
+          expoId: { $in: expoIds },
+          status: { $ne: 'cancelled' },
+        }),
+
+        // Total check-ins
+        TicketModel.getCollection().countDocuments({
+          expoId: { $in: expoIds },
+          status: 'checked_in',
+        }),
+      ]);
+
+    const applicationsByStatus = {
+      pending: statusAgg.find((s) => s._id === 'pending')?.count ?? 0,
+      approved: statusAgg.find((s) => s._id === 'approved')?.count ?? 0,
+      rejected: statusAgg.find((s) => s._id === 'rejected')?.count ?? 0,
+    };
+    const totalApplications =
+      applicationsByStatus.pending +
+      applicationsByStatus.approved +
+      applicationsByStatus.rejected;
+
+    const applicationsByDate = dateAgg.map((d) => ({
+      date: d._id || 'Unknown',
+      count: d.count,
+    }));
+
+    const ticketMap = new Map<string, { totalTickets: number; checkedInTickets: number }>();
+    ticketsAgg.forEach((t) => {
+      ticketMap.set(t._id.toString(), {
+        totalTickets: t.totalTickets,
+        checkedInTickets: t.checkedInTickets,
+      });
+    });
+
+    const approvedAppMap = new Map<string, number>();
+    approvedAppsAgg.forEach((a) => {
+      approvedAppMap.set(a._id.toString(), a.approvedCount);
+    });
+
+    const ticketsByExpo = expos.map((e) => {
+      const eid = e._id.toString();
+      const stats = ticketMap.get(eid) || { totalTickets: 0, checkedInTickets: 0 };
+      return {
+        expoId: eid,
+        expoName: e.name,
+        totalTickets: stats.totalTickets,
+        checkedInTickets: stats.checkedInTickets,
+      };
+    });
+
+    let totalAllBooths = 0;
+    let totalAllApproved = 0;
+
+    const boothsByExpo = expos.map((e) => {
+      const eid = e._id.toString();
+      const totalBooths = e.totalBooths || 0;
+      const approvedBooths = approvedAppMap.get(eid) || 0;
+      const fillRate =
+        totalBooths > 0 ? Math.round((approvedBooths / totalBooths) * 10000) / 100 : 0;
+
+      totalAllBooths += totalBooths;
+      totalAllApproved += approvedBooths;
+
+      return {
+        expoId: eid,
+        expoName: e.name,
+        totalBooths,
+        approvedBooths,
+        fillRate,
+      };
+    });
+
+    const boothFillRate =
+      totalAllBooths > 0
+        ? Math.round((totalAllApproved / totalAllBooths) * 10000) / 100
+        : 0;
+
+    return {
+      totalExpos: expos.length,
+      totalApplications,
+      totalAttendees,
+      totalCheckIns,
+      boothFillRate,
+      applicationsByStatus,
+      applicationsByDate,
+      ticketsByExpo,
+      boothsByExpo,
     };
   }
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalendarDays, ScanLine } from 'lucide-react';
+import { CalendarDays, ScanLine, BarChart3 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOrganizerStats } from '../../hooks/useOrganizerStats';
@@ -9,6 +9,7 @@ import { Header } from '../../components/layout/Header';
 import { BottomNav } from '../../components/layout/BottomNav';
 import { OrganizerStatsPanel } from '../../components/dashboard/OrganizerStatsPanel';
 import { ExpoStatCard } from '../../components/dashboard/ExpoStatCard';
+import LiveEventBanner from '../../components/dashboard/LiveEventBanner';
 import PendingApprovalScreen from '../../components/dashboard/PendingApprovalScreen';
 
 type ExpoStatus = 'draft' | 'published' | 'ongoing' | 'completed' | 'archived';
@@ -52,6 +53,7 @@ export default function OrganizerDashboard() {
   }
 
   const recentExpos: RecentExpo[] = stats?.recentExpos ?? [];
+  const ongoingExpo = recentExpos.find((e) => e.status === 'ongoing');
 
   const selectedExpo = recentExpos.find((e) => e._id === selectedExpoId) ?? null;
 
@@ -78,6 +80,17 @@ export default function OrganizerDashboard() {
         <Header title="Dashboard" />
         <main className="flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token">
 
+          {/* Live Ongoing Expo Highlight */}
+          {ongoingExpo && (
+            <LiveEventBanner
+              expoId={ongoingExpo._id}
+              expoName={ongoingExpo.name}
+              startDate={ongoingExpo.startDate}
+              endDate={ongoingExpo.endDate}
+              role="organizer"
+            />
+          )}
+
           {/* 1. Welcome heading + Integrated quick actions */}
           <div className="flex flex-wrap items-center justify-between gap-md-token mb-lg-token">
             <div>
@@ -99,6 +112,14 @@ export default function OrganizerDashboard() {
 
             {/* Quick-action buttons */}
             <div className="flex flex-wrap items-center gap-sm-token">
+              <button
+                type="button"
+                onClick={() => navigate('/organizer/analytics')}
+                className={`${secondaryBtnBase} ${isDarkMode ? secondaryBtnDark : secondaryBtnLight}`}
+              >
+                <BarChart3 className="w-4 h-4" aria-hidden />
+                Reports & Analytics
+              </button>
               <button
                 type="button"
                 onClick={() => navigate('/organizer/expos')}

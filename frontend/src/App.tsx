@@ -32,6 +32,8 @@ import TicketDetailPage from './pages/attendee/TicketDetailPage';
 import ScheduleBrowsePage from './pages/attendee/ScheduleBrowsePage';
 import ScannerPage from './pages/organizer/ScannerPage';
 import BoothLayoutPage from './pages/organizer/BoothLayoutPage';
+import OrganizerAnalyticsPage from './pages/analytics/OrganizerAnalyticsPage';
+import ExhibitorAnalyticsPage from './pages/analytics/ExhibitorAnalyticsPage';
 
 /**
  * Single source of truth for where an authenticated user should land.
@@ -126,9 +128,11 @@ function App() {
             <Route path="/organizer/expos/:id/schedule" element={<ProtectedRoute allowedRoles={['organizer']}><ScheduleBuilderPage /></ProtectedRoute>} />
             <Route path="/organizer/expos/:id/booths" element={<ProtectedRoute allowedRoles={['organizer']}><BoothLayoutPage /></ProtectedRoute>} />
             <Route path="/organizer/scanner" element={<ProtectedRoute allowedRoles={['organizer']}><ScannerPage /></ProtectedRoute>} />
+            <Route path="/organizer/analytics" element={<ProtectedRoute allowedRoles={['organizer']}><OrganizerAnalyticsPage /></ProtectedRoute>} />
 
             {/* -- Phase 2: Exhibitor Routes -- */}
             <Route path="/exhibitor/applications" element={<ProtectedRoute allowedRoles={['exhibitor']}><MyApplicationsPage /></ProtectedRoute>} />
+            <Route path="/exhibitor/analytics" element={<ProtectedRoute allowedRoles={['exhibitor']}><ExhibitorAnalyticsPage /></ProtectedRoute>} />
             <Route path="/expos/:id/apply" element={<ProtectedRoute allowedRoles={['exhibitor']}><ApplicationFormPage /></ProtectedRoute>} />
 
             {/* -- Phase 2: Attendee Routes -- */}

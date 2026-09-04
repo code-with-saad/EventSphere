@@ -30,6 +30,27 @@ router.get(
 );
 
 /**
+ * GET /api/dashboard/organizer/analytics
+ *
+ * Returns cross-expo aggregated analytics for the authenticated organizer.
+ *
+ * Access: Organizer only
+ */
+router.get(
+  '/organizer/analytics',
+  authenticate,
+  authorize('organizer'),
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const data = await StatsService.getOrganizerAnalytics(req.user!.userId);
+    return res.status(200).json({
+      success: true,
+      message: 'Organizer analytics retrieved successfully',
+      data,
+    });
+  })
+);
+
+/**
  * GET /api/dashboard/organizer/:expoId
  *
  * Returns per-expo statistics for the given expo owned by the authenticated
