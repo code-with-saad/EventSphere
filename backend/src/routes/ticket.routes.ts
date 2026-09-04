@@ -4,6 +4,7 @@ import TicketService from '../services/ticket.service';
 import TicketModel from '../models/Ticket.model';
 import { authenticate, AuthRequest } from '../middleware/auth.middleware';
 import { authorize } from '../middleware/authorize.middleware';
+import { ticketRegistrationLimiter } from '../middleware/rateLimit.middleware';
 
 const router = Router();
 
@@ -22,6 +23,7 @@ const router = Router();
  */
 router.post(
   '/:expoId/tickets',
+  ticketRegistrationLimiter,
   authenticate,
   authorize('attendee'),
   asyncHandler(async (req: AuthRequest, res: Response) => {

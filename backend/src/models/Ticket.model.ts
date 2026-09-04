@@ -142,21 +142,44 @@ export class TicketModel {
   }
 
   /**
-   * Find a specific attendee's ticket for a given expo
+   * Find a specific attendee's ticket for a given expo.
    *
    * Supports REQ-5.6: duplicate registration guard.
+   * By default, finds active or checked_in tickets to prevent non-deterministic queries.
    *
    * @param expoId Expo ID
    * @param attendeeId Attendee user ID
+   * @param statuses Optional status array (defaults to ['active', 'checked_in'])
    * @returns The matching ticket or null if not found
    */
   async findByExpoAndAttendee(
+    expoId: ObjectId | string,
+    attendeeId: ObjectId | string,
+    statuses: TicketStatus[] = ['active', 'checked_in']
+  ): Promise<ITicket | null> {
+    const eid = typeof expoId === 'string' ? new ObjectId(expoId) : expoId;
+    const aid = typeof attendeeId === 'string' ? new ObjectId(attendeeId) : attendeeId;
+    return this.collection.findOne({
+      expoId: eid,
+      attendeeId: aid,
+      status: { $in: statuses },
+    });
+  }
+
+  /**
+   * Find the most recent ticket for a given attendee and expo (regardless of status).
+   * Used for registration cooldown checks (e.g. after cancellation).
+   */
+  async findLatestByExpoAndAttendee(
     expoId: ObjectId | string,
     attendeeId: ObjectId | string
   ): Promise<ITicket | null> {
     const eid = typeof expoId === 'string' ? new ObjectId(expoId) : expoId;
     const aid = typeof attendeeId === 'string' ? new ObjectId(attendeeId) : attendeeId;
-    return this.collection.findOne({ expoId: eid, attendeeId: aid });
+    return this.collection.findOne(
+      { expoId: eid, attendeeId: aid },
+      { sort: { updatedAt: -1, registeredAt: -1 } }
+    );
   }
 
   /**

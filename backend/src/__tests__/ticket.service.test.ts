@@ -185,11 +185,12 @@ describe('TicketService.register()', () => {
     // Register first time
     const first = await TicketService.register(expoId, attendee._id.toString());
 
-    // Mark existing ticket as cancelled directly in DB
+    // Mark existing ticket as cancelled directly in DB with updatedAt past the 2h cooldown
     const db = getTestDb();
+    const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000);
     await db.collection('tickets').updateOne(
       { _id: first.ticket._id },
-      { $set: { status: 'cancelled' } }
+      { $set: { status: 'cancelled', updatedAt: threeHoursAgo } }
     );
 
     // Re-register should succeed

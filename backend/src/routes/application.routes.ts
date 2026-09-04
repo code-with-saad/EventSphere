@@ -5,6 +5,7 @@ import ApplicationService from '../services/application.service';
 import ApplicationModel from '../models/Application.model';
 import { authenticate, AuthRequest } from '../middleware/auth.middleware';
 import { authorize } from '../middleware/authorize.middleware';
+import { applicationSubmissionLimiter } from '../middleware/rateLimit.middleware';
 import type { IApplicationCreate } from '../models/Application.model';
 
 const router = Router();
@@ -78,6 +79,7 @@ router.get(
  */
 router.post(
   '/:expoId/applications',
+  applicationSubmissionLimiter,
   authenticate,
   authorize('exhibitor'),
   asyncHandler(async (req: AuthRequest, res: Response) => {

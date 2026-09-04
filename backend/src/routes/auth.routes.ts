@@ -1,4 +1,4 @@
-﻿import { Router, Request, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
 import { ObjectId } from 'mongodb';
 import asyncHandler from '../utils/asyncHandler';
@@ -10,6 +10,7 @@ import { getDatabase } from '../config/database';
 import { generateAccessToken, generateRefreshToken, generateResetToken, verifyToken } from '../services/token.service';
 import { createRefreshToken, findRefreshTokenByHash, invalidateRefreshToken, invalidateAllUserRefreshTokens } from '../models/RefreshToken.model';
 import { authenticate, AuthRequest } from '../middleware/auth.middleware';
+import { authLimiter, otpResendLimiter } from '../middleware/rateLimit.middleware';
 
 const router = Router();
 
@@ -29,7 +30,7 @@ const router = Router();
  * - 5.8: Exhibitor/Attendee: status='active', isEmailVerified=false, send OTP
  * - 5.9: Return appropriate success message based on role
  */
-router.post('/register', asyncHandler(async (req: Request, res: Response) => {
+router.post('/register', authLimiter, asyncHandler(async (req: Request, res: Response) => {
   const { email, password, fullName, role } = req.body;
 
   // Validate required fields
@@ -177,7 +178,7 @@ router.post('/register', asyncHandler(async (req: Request, res: Response) => {
  * - 7.5: Return error for already verified account
  * - 7.6: Delete OTP record after successful verification
  */
-router.post('/verify-otp', asyncHandler(async (req: Request, res: Response) => {
+router.post('/verify-otp', authLimiter, asyncHandler(async (req: Request, res: Response) => {
   const { email, otp, purpose } = req.body;
 
   // Validate required fields
@@ -276,7 +277,7 @@ router.post('/verify-otp', asyncHandler(async (req: Request, res: Response) => {
  * - Send OTP email via Resend
  * - Return success with remaining attempts count
  */
-router.post('/resend-otp', asyncHandler(async (req: Request, res: Response) => {
+router.post('/resend-otp', otpResendLimiter, asyncHandler(async (req: Request, res: Response) => {
   const { email, purpose } = req.body;
 
   // Validate required fields
@@ -390,7 +391,7 @@ router.post('/resend-otp', asyncHandler(async (req: Request, res: Response) => {
  * can route accordingly (active → dashboard, pending → pending screen, etc.).
  * Only blocks login for unverified Exhibitor/Attendee email (403 EMAIL_NOT_VERIFIED).
  */
-router.post('/login', asyncHandler(async (req: Request, res: Response) => {
+router.post('/login', authLimiter, asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   // Validate required fields
@@ -771,7 +772,7 @@ router.get('/me', authenticate, asyncHandler(async (req: AuthRequest, res: Respo
  *
  * Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6, 12.7
  */
-router.post('/forgot-password/request', asyncHandler(async (req: Request, res: Response) => {
+router.post('/forgot-password/request', authLimiter, asyncHandler(async (req: Request, res: Response) => {
   const { email } = req.body;
 
   // Requirement 12.2: validate email is present
@@ -832,7 +833,7 @@ router.post('/forgot-password/request', asyncHandler(async (req: Request, res: R
  * Verify OTP for password reset
  * Requirements: 13.1-13.8
  */
-router.post('/forgot-password/verify-otp', asyncHandler(async (req: Request, res: Response) => {
+router.post('/forgot-password/verify-otp', authLimiter, asyncHandler(async (req: Request, res: Response) => {
   const { email, otp } = req.body;
 
   if (!email || !otp) {
@@ -899,7 +900,7 @@ router.post('/forgot-password/verify-otp', asyncHandler(async (req: Request, res
  * Reset password with reset token
  * Requirements: 14.1-14.8
  */
-router.post('/forgot-password/reset', asyncHandler(async (req: Request, res: Response) => {
+router.post('/forgot-password/reset', authLimiter, asyncHandler(async (req: Request, res: Response) => {
   const { resetToken, newPassword } = req.body;
 
   if (!resetToken || !newPassword) {

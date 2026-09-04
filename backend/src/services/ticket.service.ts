@@ -111,16 +111,34 @@ class TicketService {
     }
 
     // 4. Check for existing active or checked_in ticket (REQ-5.6, Property 13)
-    const existingTicket = await TicketModel.findByExpoAndAttendee(expoId, attendeeId);
-    if (
-      existingTicket &&
-      (existingTicket.status === 'active' || existingTicket.status === 'checked_in')
-    ) {
+    const existingActiveTicket = await TicketModel.findByExpoAndAttendee(expoId, attendeeId, [
+      'active',
+      'checked_in',
+    ]);
+    if (existingActiveTicket) {
       throw createError(
         'You are already registered for this expo',
         'DUPLICATE_REGISTRATION',
         409
       );
+    }
+
+    // 4b. Registration Cooldown: If the attendee cancelled a ticket within the last 2 hours, block re-registration
+    const latestTicket = await TicketModel.findLatestByExpoAndAttendee(expoId, attendeeId);
+    if (latestTicket && latestTicket.status === 'cancelled') {
+      const COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2 hours
+      const cancelTime = new Date(latestTicket.updatedAt).getTime();
+      const nowTime = Date.now();
+      const diffMs = nowTime - cancelTime;
+
+      if (diffMs < COOLDOWN_MS) {
+        const remainingMinutes = Math.ceil((COOLDOWN_MS - diffMs) / (60 * 1000));
+        throw createError(
+          `You recently cancelled a ticket for this expo. Please wait ${remainingMinutes} minute(s) before registering again.`,
+          'REGISTRATION_COOLDOWN',
+          429
+        );
+      }
     }
 
     // 5. Generate UUID v4 ticketId (REQ-12.22)

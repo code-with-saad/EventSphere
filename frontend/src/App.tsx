@@ -9,6 +9,7 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { RequestResetPage } from './pages/auth/ForgotPassword/RequestResetPage';
 import { VerifyResetOTPPage } from './pages/auth/ForgotPassword/VerifyResetOTPPage';
 import { ResetPasswordPage } from './pages/auth/ForgotPassword/ResetPasswordPage';
+import LandingPage from './pages/public/LandingPage';
 import SuperAdminDashboard from './pages/dashboard/SuperAdminDashboard';
 import AdminApprovalsPage from './pages/admin/AdminApprovalsPage';
 import AllOrganizersPage from './pages/admin/AllOrganizersPage';
@@ -65,19 +66,12 @@ function DashboardRedirect() {
   return <Navigate to={getHomeRoute(user)} replace />;
 }
 
-function RootRedirect() {
-  const { user, isAuthenticated, isLoading } = useAuth();
-  if (isLoading) return null;
-  if (isAuthenticated && user) {
-    return <Navigate to={getHomeRoute(user)} replace />;
-  }
-  return <Navigate to="/login" replace />;
-}
+
 
 /**
  * Wraps public-only pages (login, register).
  * If the user is already authenticated, redirect them to their correct home
- * using getHomeRoute � which handles the pending-organizer case too.
+ * using getHomeRoute  which handles the pending-organizer case too.
  * This is what makes the post-login redirect work without any navigate() call
  * inside LoginPage: as soon as login() sets auth state, this re-renders and
  * sends the user to the right place.
@@ -99,7 +93,7 @@ function App() {
           <PageBackground />
           <ToastContainer />
           <Routes>
-            <Route path="/" element={<RootRedirect />} />
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
             <Route path="/register" element={<PublicOnlyRoute><RegisterPage /></PublicOnlyRoute>} />
             <Route path="/verify-otp" element={<VerifyOTPPage />} />

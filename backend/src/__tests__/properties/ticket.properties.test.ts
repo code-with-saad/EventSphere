@@ -472,4 +472,36 @@ describe('Property 19: second check-in scan returns already_checked_in with unch
   );
 });
 
+describe('Ticket Cooldown and Duplicate Determinism Unit Tests', () => {
+  it('blocks duplicate active tickets and enforces 2h cooldown on cancelled tickets', async () => {
+    const organizer = await makeOrganizer();
+    const attendee = await makeAttendee();
+    const expoId = await insertPublishedExpo(organizer.user._id.toString());
+
+    // 1. Initial registration succeeds
+    const regRes1 = await TicketService.register(expoId, attendee.user._id.toString());
+    expect(regRes1.ticket.status).toBe('active');
+
+    // 2. Immediate duplicate registration fails with 409 DUPLICATE_REGISTRATION
+    await expect(
+      TicketService.register(expoId, attendee.user._id.toString())
+    ).rejects.toMatchObject({
+      code: 'DUPLICATE_REGISTRATION',
+      statusCode: 409,
+    });
+
+    // 3. Cancel the ticket
+    await TicketService.cancel(regRes1.ticket.ticketId, attendee.user._id.toString());
+
+    // 4. Re-registration immediately after cancellation fails with 429 REGISTRATION_COOLDOWN
+    await expect(
+      TicketService.register(expoId, attendee.user._id.toString())
+    ).rejects.toMatchObject({
+      code: 'REGISTRATION_COOLDOWN',
+      statusCode: 429,
+    });
+  });
+});
+
+
 

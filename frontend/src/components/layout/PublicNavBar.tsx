@@ -45,7 +45,7 @@ export default function PublicNavBar() {
             )}
 
             <Link
-              to={isAuthenticated ? '/' : '/expos'}
+              to="/"
               className={`text-base-token md:text-lg-token font-bold tracking-tight transition-colors ${
                 isDarkMode ? 'text-brand-primary-dark hover:opacity-90' : 'text-brand-primary-light hover:opacity-90'
               }`}
