@@ -162,6 +162,7 @@ export default function ExhibitorDashboard() {
               endDate={ongoingApp.endDate}
               venueName={ongoingApp.venueName}
               role="exhibitor"
+              hasActiveApplication={ongoingApp.status === 'pending' || ongoingApp.status === 'approved'}
             />
           )}
 

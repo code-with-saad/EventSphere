@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { applicationService } from '../../services/applicationService';
 import { expoService } from '../../services/expoService';
@@ -9,6 +9,7 @@ import PageHeader from '../../components/layout/PageHeader';
 import ExhibitorApplicationCard from '../../components/application/ExhibitorApplicationCard';
 import WithdrawConfirmDialog from '../../components/application/WithdrawConfirmDialog';
 import toast from 'react-hot-toast';
+import { Search } from 'lucide-react';
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -20,6 +21,7 @@ export default function MyApplicationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [withdrawnApps, setWithdrawnApps] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Withdraw dialog state
   const [withdrawTarget, setWithdrawTarget] = useState<{ expoId: string; appId: string } | null>(null);
@@ -98,6 +100,33 @@ export default function MyApplicationsPage() {
 
   const allApps = [...applications, ...withdrawnApps];
 
+  const filteredAndSortedApps = useMemo(() => {
+    const statusOrder: Record<string, number> = {
+      pending: 1,
+      approved: 2,
+      rejected: 3,
+      withdrawn: 4,
+    };
+
+    return [...allApps]
+      .filter((app) => {
+        if (!searchTerm.trim()) return true;
+        const query = searchTerm.toLowerCase().trim();
+        const expoName = (app.expoName || '').toLowerCase();
+        const companyName = (app.companyName || '').toLowerCase();
+        return expoName.includes(query) || companyName.includes(query);
+      })
+      .sort((a, b) => {
+        const orderA = statusOrder[a.status] ?? 99;
+        const orderB = statusOrder[b.status] ?? 99;
+        if (orderA !== orderB) return orderA - orderB;
+        // Secondary sort: most recent submittedAt first
+        const dateA = new Date(a.submittedAt || a.createdAt || 0).getTime();
+        const dateB = new Date(b.submittedAt || b.createdAt || 0).getTime();
+        return dateB - dateA;
+      });
+  }, [allApps, searchTerm]);
+
   return (
     <div className="dashboard-root">
       <Sidebar />
@@ -109,6 +138,26 @@ export default function MyApplicationsPage() {
             title="My Applications"
             subtitle="Track your exhibition applications, booth assignments, and review status."
           />
+
+          {/* Search bar */}
+          {!loading && !error && allApps.length > 0 && (
+            <div className="mb-lg-token relative max-w-md">
+              <Search className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${
+                isDarkMode ? 'text-text-tertiary-dark' : 'text-text-tertiary-light'
+              }`} />
+              <input
+                type="text"
+                placeholder="Search by expo or company name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={`w-full pl-9 pr-sm-token py-xs-token rounded-md-token border text-sm-token outline-none transition-colors ${
+                  isDarkMode
+                    ? 'bg-bg-glass-dark border-border-base-dark text-text-primary-dark placeholder-text-tertiary-dark focus:border-brand-primary-dark'
+                    : 'bg-bg-glass-light border-border-base-light text-text-primary-light placeholder-text-tertiary-light focus:border-brand-primary-light'
+                }`}
+              />
+            </div>
+          )}
 
           {/* Loading */}
           {loading && (
@@ -138,10 +187,20 @@ export default function MyApplicationsPage() {
             </div>
           )}
 
-          {/* Application Card Grid: 1 col mobile, 2 cols tablet, 3 cols desktop */}
-          {!loading && !error && allApps.length > 0 && (
+          {/* No search results */}
+          {!loading && !error && allApps.length > 0 && filteredAndSortedApps.length === 0 && (
+            <div className={`text-center py-xl-token ${
+              isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+            }`}>
+              <p className="text-base-token font-medium mb-xs-token">No matching applications</p>
+              <p className="text-sm-token">Try adjusting your search query.</p>
+            </div>
+          )}
+
+          {/* Application Card Grid */}
+          {!loading && !error && filteredAndSortedApps.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md-token md:gap-lg-token">
-              {allApps.map((app: any) => (
+              {filteredAndSortedApps.map((app: any) => (
                 <ExhibitorApplicationCard
                   key={app._id}
                   application={app}

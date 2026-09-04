@@ -166,7 +166,7 @@ export default function AttendeeDashboard() {
               startDate={ongoingTicket.startDate}
               endDate={ongoingTicket.endDate}
               venueName={ongoingTicket.venueName}
-              ticketId={ongoingTicket._id}
+              ticketId={ongoingTicket.ticketId}
               role="attendee"
             />
           )}

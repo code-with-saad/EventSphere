@@ -125,7 +125,15 @@ export function Sidebar({ pageTitle: _pageTitle, isDrawer = false, onClose }: Si
 
           {/* User Profile snippet in drawer */}
           {user && (
-            <div className="px-lg-token py-sm-token border-b border-border-base-dark/20 flex items-center gap-3">
+            <button
+              onClick={() => handleNavClick('/profile')}
+              className={[
+                'w-full text-left px-lg-token py-sm-token border-b flex items-center gap-3 transition-colors',
+                isDarkMode 
+                  ? 'border-border-base-dark/20 hover:bg-bg-hover-dark' 
+                  : 'border-border-base-light/20 hover:bg-bg-hover-light'
+              ].join(' ')}
+            >
               <span
                 className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs-token font-bold shrink-0 ${
                   isDarkMode
@@ -143,7 +151,7 @@ export function Sidebar({ pageTitle: _pageTitle, isDrawer = false, onClose }: Si
                   {user.role}
                 </span>
               </div>
-            </div>
+            </button>
           )}
 
           {/* Nav links */}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CalendarDays, ScanLine, BarChart3 } from 'lucide-react';
+import { RadialBarChart, RadialBar, ResponsiveContainer } from 'recharts';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOrganizerStats } from '../../hooks/useOrganizerStats';
@@ -11,6 +12,7 @@ import { OrganizerStatsPanel } from '../../components/dashboard/OrganizerStatsPa
 import { ExpoStatCard } from '../../components/dashboard/ExpoStatCard';
 import LiveEventBanner from '../../components/dashboard/LiveEventBanner';
 import PendingApprovalScreen from '../../components/dashboard/PendingApprovalScreen';
+import ChartWrapper from '../../components/analytics/ChartWrapper';
 
 type ExpoStatus = 'draft' | 'published' | 'ongoing' | 'completed' | 'archived';
 
@@ -140,9 +142,57 @@ export default function OrganizerDashboard() {
           </div>
 
           {/* 2. Stats panel */}
-          <div className="mb-xl-token">
+          <div className="mb-lg-token">
             <OrganizerStatsPanel />
           </div>
+
+          {/* 2b. Aggregate Booth Fill Rate Radial Gauge */}
+          {stats && (
+            <div className="mb-xl-token max-w-xl">
+              <ChartWrapper
+                title="Overall Booth Occupancy"
+                subtitle="Aggregate booth fill-rate across all active expos"
+                minHeight={220}
+              >
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-md-token h-full">
+                  <div className="w-full sm:w-1/2 h-[180px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadialBarChart
+                        cx="50%"
+                        cy="50%"
+                        innerRadius="65%"
+                        outerRadius="90%"
+                        barSize={14}
+                        data={[
+                          {
+                            name: 'Fill Rate',
+                            value: Math.min(100, Math.max(0, stats.aggregateBoothFillRate || 0)),
+                            fill: '#FF4D2E',
+                          },
+                        ]}
+                        startAngle={180}
+                        endAngle={0}
+                      >
+                        <RadialBar background dataKey="value" cornerRadius={10} />
+                      </RadialBarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="flex flex-col justify-center items-center sm:items-start sm:w-1/2 gap-xs-token text-center sm:text-left">
+                    <span className={`text-3xl-token font-bold ${
+                      isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+                    }`}>
+                      {stats.aggregateBoothFillRate.toFixed(1)}%
+                    </span>
+                    <span className={`text-xs-token ${
+                      isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                    }`}>
+                      Booths Occupied Across {stats.activeExpoCount} Active Expos
+                    </span>
+                  </div>
+                </div>
+              </ChartWrapper>
+            </div>
+          )}
 
           {/* 3. Recent expos section — compact interactive card grid */}
           {recentExpos.length > 0 && (

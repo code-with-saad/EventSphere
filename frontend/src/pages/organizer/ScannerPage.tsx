@@ -79,39 +79,13 @@ export default function ScannerPage() {
 
       try {
         const data = await ticketService.checkIn(ticketId, selectedExpoId);
-        // Success: data = { attendeeName, checkedInAt }
-        setAttendeeName(data?.attendeeName ?? undefined);
-        setCheckedInAt(data?.checkedInAt ?? undefined);
-        setScanResult('checked_in');
-      } catch (err: unknown) {
-        // Map API error codes to ScanResult values
-        const code: string =
-          (err as any)?.response?.data?.error ??
-          (err as any)?.response?.data?.code ??
-          '';
-
-        let result: ScanResult;
-        switch (code) {
-          case 'TICKET_ALREADY_CHECKED_IN':
-            result = 'already_checked_in';
-            setCheckedInAt(
-              (err as any)?.response?.data?.data?.checkedInAt ?? undefined
-            );
-            break;
-          case 'TICKET_NOT_FOUND':
-          case 'TICKET_INVALID':
-            result = 'invalid_ticket';
-            break;
-          case 'TICKET_CANCELLED':
-            result = 'cancelled_ticket';
-            break;
-          case 'TICKET_WRONG_EXPO':
-            result = 'wrong_event';
-            break;
-          default:
-            result = 'invalid_ticket';
-        }
+        // ticketService.checkIn returns data object directly: { result, attendeeName, checkedInAt, expoName }
+        const result: ScanResult = data?.result ?? 'invalid_ticket';
+        setAttendeeName(data?.attendeeName || undefined);
+        setCheckedInAt(data?.checkedInAt || undefined);
         setScanResult(result);
+      } catch (err: unknown) {
+        setScanResult('invalid_ticket');
       } finally {
         setIsChecking(false);
       }

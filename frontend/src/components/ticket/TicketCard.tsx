@@ -102,7 +102,7 @@ export default function TicketCard({ ticket }: TicketCardProps) {
           }`}
           title={ticket.ticketId}
         >
-          #{ticket.ticketId.length > 8 ? ticket.ticketId.slice(0, 8) : ticket.ticketId}
+          EVT-{ticket.ticketId.substring(0, 8).toUpperCase()}
         </span>
         <span
           className={`text-[11px] font-medium transition-colors ${

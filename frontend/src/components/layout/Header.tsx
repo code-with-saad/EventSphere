@@ -79,13 +79,14 @@ export function Header({ title }: HeaderProps) {
 
         {/* User badge */}
         {displayName && (
-          <div
+          <button
+            onClick={() => navigate('/profile')}
             className={[
               'flex items-center gap-sm-token px-sm-token py-xs-token',
-              'rounded-md-token border text-sm-token font-medium',
+              'rounded-md-token border text-sm-token font-medium transition-colors',
               isDarkMode
-                ? 'bg-bg-hover-dark border-border-base-dark text-text-secondary-dark'
-                : 'bg-bg-hover-light border-border-base-light text-text-secondary-light',
+                ? 'bg-bg-hover-dark border-border-base-dark text-text-secondary-dark hover:bg-white/5'
+                : 'bg-bg-hover-light border-border-base-light text-text-secondary-light hover:bg-black/5',
             ].join(' ')}
           >
             <span
@@ -100,7 +101,7 @@ export function Header({ title }: HeaderProps) {
               {displayName.charAt(0).toUpperCase()}
             </span>
             <span className="max-w-[120px] md:max-w-[200px] truncate">{displayName}</span>
-          </div>
+          </button>
         )}
       </div>
     </header>

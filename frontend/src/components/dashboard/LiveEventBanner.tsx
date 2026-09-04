@@ -11,6 +11,7 @@ interface LiveEventBannerProps {
   venueName?: string;
   role: 'organizer' | 'exhibitor' | 'attendee';
   ticketId?: string;
+  hasActiveApplication?: boolean;
 }
 
 export const LiveEventBanner: React.FC<LiveEventBannerProps> = ({
@@ -21,6 +22,7 @@ export const LiveEventBanner: React.FC<LiveEventBannerProps> = ({
   venueName,
   role,
   ticketId,
+  hasActiveApplication = true,
 }) => {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
@@ -30,7 +32,11 @@ export const LiveEventBanner: React.FC<LiveEventBannerProps> = ({
     if (role === 'organizer') {
       navigate('/organizer/scanner');
     } else if (role === 'exhibitor') {
-      navigate(`/expos/${expoId}`);
+      if (hasActiveApplication) {
+        navigate(`/expos/${expoId}`);
+      } else {
+        navigate(`/expos/${expoId}/apply`);
+      }
     } else {
       if (ticketId) {
         navigate(`/attendee/tickets/${ticketId}`);
@@ -44,13 +50,21 @@ export const LiveEventBanner: React.FC<LiveEventBannerProps> = ({
     role === 'organizer'
       ? 'Launch Scanner'
       : role === 'exhibitor'
-      ? 'View Live Expo'
+      ? hasActiveApplication
+        ? 'View Live Expo'
+        : 'Apply to Exhibit'
       : ticketId
       ? 'View Pass'
       : 'Explore Expo';
 
   const ActionIcon =
-    role === 'organizer' ? ScanLine : role === 'exhibitor' ? Store : Ticket;
+    role === 'organizer'
+      ? ScanLine
+      : role === 'exhibitor'
+      ? hasActiveApplication
+        ? Store
+        : ArrowRight
+      : Ticket;
 
   return (
     <div

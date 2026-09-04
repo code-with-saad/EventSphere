@@ -186,8 +186,8 @@ export default function TicketDetailPage() {
                     isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
                   }`}>
                     <span>Ticket Reference</span>
-                    <span className="font-mono opacity-80" title={ticket.ticketId}>
-                      {ticket.ticketId}
+                    <span className="font-mono font-medium tracking-wider" title={ticket.ticketId}>
+                      {`EVT-${ticket.ticketId.substring(0, 8).toUpperCase()}`}
                     </span>
                   </div>
                 </BentoCard>

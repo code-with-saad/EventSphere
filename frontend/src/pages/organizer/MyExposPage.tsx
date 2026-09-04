@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { expoService } from '../../services/expoService';
@@ -6,6 +6,7 @@ import { Sidebar } from '../../components/layout/Sidebar';
 import { Header } from '../../components/layout/Header';
 import { BottomNav } from '../../components/layout/BottomNav';
 import OrganizerExpoCard from '../../components/expo/OrganizerExpoCard';
+import { Search } from 'lucide-react';
 
 export default function MyExposPage() {
   const { theme } = useTheme();
@@ -15,6 +16,7 @@ export default function MyExposPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchExpos = useCallback(async () => {
     setLoading(true);
@@ -35,6 +37,31 @@ export default function MyExposPage() {
     fetchExpos();
   }, [fetchExpos]);
 
+  const filteredAndSortedExpos = useMemo(() => {
+    const statusOrder: Record<string, number> = {
+      ongoing: 1,
+      published: 2,
+      draft: 3,
+      archived: 4,
+    };
+
+    return [...expos]
+      .filter((expo) => {
+        if (!searchTerm.trim()) return true;
+        const name = (expo.name || '').toLowerCase();
+        return name.includes(searchTerm.toLowerCase().trim());
+      })
+      .sort((a, b) => {
+        const orderA = statusOrder[a.status] ?? 99;
+        const orderB = statusOrder[b.status] ?? 99;
+        if (orderA !== orderB) return orderA - orderB;
+        // Secondary sort: most recent createdAt/startDate first
+        const dateA = new Date(a.createdAt || a.startDate || 0).getTime();
+        const dateB = new Date(b.createdAt || b.startDate || 0).getTime();
+        return dateB - dateA;
+      });
+  }, [expos, searchTerm]);
+
   const primaryLinkBtn = `px-md-token py-xs-token rounded-md-token text-sm-token font-semibold transition-colors ${
     isDarkMode
       ? 'bg-brand-primary-dark text-text-on-primary-dark hover:bg-accent-hover-dark'
@@ -48,7 +75,7 @@ export default function MyExposPage() {
         <Header title="My Expos" />
         <main className="flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token">
           {/* Page header row */}
-          <div className="flex items-center justify-between mb-lg-token">
+          <div className="flex flex-wrap items-center justify-between gap-md-token mb-lg-token">
             <div>
               <h2
                 className={`text-xl-token font-semibold leading-tight-token ${
@@ -69,6 +96,26 @@ export default function MyExposPage() {
               + New Expo
             </Link>
           </div>
+
+          {/* Search bar */}
+          {!loading && !error && expos.length > 0 && (
+            <div className="mb-lg-token relative max-w-md">
+              <Search className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${
+                isDarkMode ? 'text-text-tertiary-dark' : 'text-text-tertiary-light'
+              }`} />
+              <input
+                type="text"
+                placeholder="Search expos by name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={`w-full pl-9 pr-sm-token py-xs-token rounded-md-token border text-sm-token outline-none transition-colors ${
+                  isDarkMode
+                    ? 'bg-bg-glass-dark border-border-base-dark text-text-primary-dark placeholder-text-tertiary-dark focus:border-brand-primary-dark'
+                    : 'bg-bg-glass-light border-border-base-light text-text-primary-light placeholder-text-tertiary-light focus:border-brand-primary-light'
+                }`}
+              />
+            </div>
+          )}
 
           {/* Action error banner */}
           {actionError && (
@@ -135,10 +182,22 @@ export default function MyExposPage() {
             </div>
           )}
 
-          {/* Expo card grid: 1 col mobile, 2 cols tablet, 3 cols desktop */}
-          {!loading && !error && expos.length > 0 && (
+          {/* No search results */}
+          {!loading && !error && expos.length > 0 && filteredAndSortedExpos.length === 0 && (
+            <div
+              className={`text-center py-xl-token ${
+                isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+              }`}
+            >
+              <p className="text-base-token font-medium mb-xs-token">No matching expos</p>
+              <p className="text-sm-token">Try adjusting your search query.</p>
+            </div>
+          )}
+
+          {/* Expo card grid */}
+          {!loading && !error && filteredAndSortedExpos.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md-token md:gap-lg-token">
-              {expos.map((expo: any) => (
+              {filteredAndSortedExpos.map((expo: any) => (
                 <OrganizerExpoCard
                   key={expo._id}
                   expo={expo}

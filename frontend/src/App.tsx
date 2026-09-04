@@ -35,6 +35,7 @@ import ScannerPage from './pages/organizer/ScannerPage';
 import BoothLayoutPage from './pages/organizer/BoothLayoutPage';
 import OrganizerAnalyticsPage from './pages/analytics/OrganizerAnalyticsPage';
 import ExhibitorAnalyticsPage from './pages/analytics/ExhibitorAnalyticsPage';
+import ProfilePage from './pages/auth/ProfilePage';
 
 /**
  * Single source of truth for where an authenticated user should land.
@@ -132,6 +133,8 @@ function App() {
             {/* -- Phase 2: Attendee Routes -- */}
             <Route path="/attendee/tickets" element={<ProtectedRoute allowedRoles={['attendee']}><MyTicketsPage /></ProtectedRoute>} />
             <Route path="/attendee/tickets/:ticketId" element={<ProtectedRoute allowedRoles={['attendee']}><TicketDetailPage /></ProtectedRoute>} />
+            
+            <Route path="/profile" element={<ProtectedRoute allowedRoles={['superadmin','organizer','exhibitor','attendee']}><ProfilePage /></ProtectedRoute>} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
