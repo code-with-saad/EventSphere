@@ -46,6 +46,7 @@ export default function ExhibitorDashboard() {
   const navigate = useNavigate();
 
   const [applications, setApplications] = useState<EnrichedApplication[]>([]);
+  const [ongoingExpos, setOngoingExpos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,8 +57,13 @@ export default function ExhibitorDashboard() {
       setLoading(true);
       setError(null);
       try {
-        const rawApps = await applicationService.listAllMine();
+        const [rawApps, ongoingExposData] = await Promise.all([
+          applicationService.listAllMine().catch(() => []),
+          expoService.list({ status: 'ongoing', limit: 10 }).catch(() => ({ expos: [] })),
+        ]);
+
         const appList: any[] = Array.isArray(rawApps) ? rawApps : (rawApps?.applications ?? []);
+        const ongoingList: any[] = ongoingExposData?.expos ?? (Array.isArray(ongoingExposData) ? ongoingExposData : []);
 
         // Fetch expos for names if not directly attached
         let exposMap: Record<string, any> = {};
@@ -70,6 +76,11 @@ export default function ExhibitorDashboard() {
         } catch {
           // Continue if expo lookup fails
         }
+
+        // Also put any ongoing expos into exposMap
+        ongoingList.forEach((e) => {
+          if (e._id) exposMap[e._id.toString()] = e;
+        });
 
         // Secondary individual fetch fallback for any expoIds missing from bulk list
         const missingExpoIds = new Set<string>();
@@ -119,6 +130,7 @@ export default function ExhibitorDashboard() {
 
         if (!cancelled) {
           setApplications(enriched);
+          setOngoingExpos(ongoingList);
         }
       } catch (err: any) {
         if (!cancelled) {
@@ -145,7 +157,34 @@ export default function ExhibitorDashboard() {
   const rejectedCount = applications.filter((a) => a.status === 'rejected').length;
   const withdrawnCount = applications.filter((a) => a.status === 'withdrawn').length;
 
-  const ongoingApp = applications.find((a) => a.expoStatus === 'ongoing');
+  // Determine banner to show:
+  // Case A: Exhibitor has an active application (approved or pending) for an ongoing expo
+  const activeOngoingApp = applications.find(
+    (a) => a.expoStatus === 'ongoing' && (a.status === 'approved' || a.status === 'pending')
+  );
+
+  // Case B: If no active application for an ongoing expo, find the first ongoing expo
+  const unappliedOngoingExpo = !activeOngoingApp && ongoingExpos.length > 0 ? ongoingExpos[0] : null;
+
+  const bannerExpo = activeOngoingApp
+    ? {
+        expoId: activeOngoingApp.expoId,
+        expoName: activeOngoingApp.expoName || 'Ongoing Expo',
+        startDate: activeOngoingApp.startDate,
+        endDate: activeOngoingApp.endDate,
+        venueName: activeOngoingApp.venueName,
+        hasActiveApplication: true,
+      }
+    : unappliedOngoingExpo
+    ? {
+        expoId: unappliedOngoingExpo._id?.toString() || unappliedOngoingExpo.id,
+        expoName: unappliedOngoingExpo.name || 'Ongoing Expo',
+        startDate: unappliedOngoingExpo.startDate,
+        endDate: unappliedOngoingExpo.endDate,
+        venueName: unappliedOngoingExpo.venueName,
+        hasActiveApplication: false,
+      }
+    : null;
 
   // Chart data
   const statusPieData = [
@@ -180,15 +219,15 @@ export default function ExhibitorDashboard() {
         <main className="flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token">
 
           {/* Live Ongoing Event Highlight */}
-          {ongoingApp && (
+          {bannerExpo && (
             <LiveEventBanner
-              expoId={ongoingApp.expoId}
-              expoName={ongoingApp.expoName || 'Ongoing Expo'}
-              startDate={ongoingApp.startDate}
-              endDate={ongoingApp.endDate}
-              venueName={ongoingApp.venueName}
+              expoId={bannerExpo.expoId}
+              expoName={bannerExpo.expoName}
+              startDate={bannerExpo.startDate}
+              endDate={bannerExpo.endDate}
+              venueName={bannerExpo.venueName}
               role="exhibitor"
-              hasActiveApplication={ongoingApp.status === 'pending' || ongoingApp.status === 'approved'}
+              hasActiveApplication={bannerExpo.hasActiveApplication}
             />
           )}
 
