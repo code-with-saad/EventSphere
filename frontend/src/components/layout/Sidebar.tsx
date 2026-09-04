@@ -134,15 +134,23 @@ export function Sidebar({ pageTitle: _pageTitle, isDrawer = false, onClose }: Si
                   : 'border-border-base-light/20 hover:bg-bg-hover-light'
               ].join(' ')}
             >
-              <span
-                className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs-token font-bold shrink-0 ${
-                  isDarkMode
-                    ? 'bg-brand-primary-dark text-text-on-primary-dark'
-                    : 'bg-brand-primary-light text-text-on-primary-light'
-                }`}
-              >
-                {(user.fullName || user.email || 'U').charAt(0).toUpperCase()}
-              </span>
+              {user.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt={user.fullName || user.email}
+                  className="w-8 h-8 rounded-full object-cover shrink-0 border border-border-base-dark/20"
+                />
+              ) : (
+                <span
+                  className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs-token font-bold shrink-0 ${
+                    isDarkMode
+                      ? 'bg-brand-primary-dark text-text-on-primary-dark'
+                      : 'bg-brand-primary-light text-text-on-primary-light'
+                  }`}
+                >
+                  {(user.fullName || user.email || 'U').charAt(0).toUpperCase()}
+                </span>
+              )}
               <div className="flex flex-col min-w-0">
                 <span className="text-sm-token font-semibold truncate">
                   {user.fullName || user.email}

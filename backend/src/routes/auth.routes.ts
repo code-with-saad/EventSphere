@@ -754,11 +754,76 @@ router.get('/me', authenticate, asyncHandler(async (req: AuthRequest, res: Respo
         id: user._id.toString(),
         email: user.email,
         fullName: user.fullName,
+        avatarUrl: user.avatarUrl,
         role: user.role,
         status: user.status,
         isEmailVerified: user.isEmailVerified
       }
     }
+  });
+}));
+
+/**
+ * POST /api/auth/change-password
+ *
+ * In-session password change for authenticated users.
+ * Requires: valid access token, currentPassword, newPassword.
+ */
+router.post('/change-password', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.userId;
+  const { currentPassword, newPassword } = req.body;
+
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: 'Not authenticated',
+      code: 'NOT_AUTHENTICATED'
+    });
+  }
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      message: 'Both current password and new password are required'
+    });
+  }
+
+  const user = await UserModel.findById(userId);
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found',
+      code: 'USER_NOT_FOUND'
+    });
+  }
+
+  // Verify current password
+  const isMatch = await comparePassword(currentPassword, user.passwordHash);
+  if (!isMatch) {
+    return res.status(400).json({
+      success: false,
+      message: 'Current password does not match'
+    });
+  }
+
+  // Validate new password strength
+  const passwordValidation = validatePassword(newPassword);
+  if (!passwordValidation.isValid) {
+    return res.status(400).json({
+      success: false,
+      message: passwordValidation.error || 'Invalid password'
+    });
+  }
+
+  // Hash new password and update
+  const newPasswordHash = await hashPassword(newPassword);
+  await UserModel.updateById(user._id, {
+    passwordHash: newPasswordHash
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: 'Password changed successfully'
   });
 }));
 

@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import axios from 'axios';
 import { setTokenManager } from '../services/api';
 
@@ -8,10 +8,11 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000
 // The access token always lives in memory only.
 const LS_REFRESH_TOKEN_KEY = 'es_refresh_token';
 
-interface User {
+export interface User {
   id: string;
   email: string;
   fullName: string;
+  avatarUrl?: string;
   role: 'superadmin' | 'organizer' | 'exhibitor' | 'attendee';
   status: 'pending' | 'active' | 'suspended';
   isEmailVerified: boolean;
@@ -68,6 +69,7 @@ interface AuthContextType {
   register: (data: RegisterData) => Promise<RegisterResponse>;
   refreshAccessToken: () => Promise<void>;
   checkAuthStatus: () => void;
+  updateUser: (patch: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -280,6 +282,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => clearInterval(refreshInterval);
   }, [accessToken, refreshToken, refreshAccessToken]);
 
+  // ── Local user state updater ─────────────────────────────────────────────
+  const updateUser = useCallback((patch: Partial<User>) => {
+    setUser((prev) => (prev ? { ...prev, ...patch } : null));
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -293,6 +300,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         register,
         refreshAccessToken,
         checkAuthStatus,
+        updateUser,
       }}
     >
       {children}

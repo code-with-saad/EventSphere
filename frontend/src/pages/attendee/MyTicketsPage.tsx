@@ -17,6 +17,7 @@ export default function MyTicketsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'checked_in' | 'cancelled'>('all');
 
   useEffect(() => {
     let cancelled = false;
@@ -34,14 +35,15 @@ export default function MyTicketsPage() {
           const exposData = await expoService.list({ limit: 100 });
           const exposList: any[] = exposData?.expos ?? [];
           exposList.forEach((e) => {
-            exposMap[e._id] = e;
+            if (e._id) exposMap[e._id.toString()] = e;
           });
         } catch {
           // Continue if expo lookup fails
         }
 
         const enriched = ticketList.map((t) => {
-          const eid = typeof t.expoId === 'object' ? t.expoId?._id : t.expoId;
+          const rawEid = typeof t.expoId === 'object' ? t.expoId?._id : t.expoId;
+          const eid = rawEid ? rawEid.toString() : '';
           const expoInfo = exposMap[eid];
           return {
             ...t,
@@ -74,6 +76,22 @@ export default function MyTicketsPage() {
     };
   }, []);
 
+  const statusCounts = useMemo(() => {
+    return {
+      all: tickets.length,
+      active: tickets.filter((t) => t.status === 'active').length,
+      checked_in: tickets.filter((t) => t.status === 'checked_in').length,
+      cancelled: tickets.filter((t) => t.status === 'cancelled').length,
+    };
+  }, [tickets]);
+
+  const STATUS_CHIPS = [
+    { key: 'all' as const, label: 'All' },
+    { key: 'active' as const, label: 'Active' },
+    { key: 'checked_in' as const, label: 'Checked In' },
+    { key: 'cancelled' as const, label: 'Cancelled' },
+  ];
+
   const filteredAndSortedTickets = useMemo(() => {
     const statusOrder: Record<string, number> = {
       active: 1,
@@ -83,6 +101,9 @@ export default function MyTicketsPage() {
 
     return [...tickets]
       .filter((ticket) => {
+        if (statusFilter !== 'all' && ticket.status !== statusFilter) {
+          return false;
+        }
         if (!searchTerm.trim()) return true;
         const name = (ticket.expoName || '').toLowerCase();
         return name.includes(searchTerm.toLowerCase().trim());
@@ -96,7 +117,7 @@ export default function MyTicketsPage() {
         const dateB = new Date(b.registeredAt || 0).getTime();
         return dateB - dateA;
       });
-  }, [tickets, searchTerm]);
+  }, [tickets, searchTerm, statusFilter]);
 
   return (
     <div className="dashboard-root">
@@ -110,23 +131,62 @@ export default function MyTicketsPage() {
             subtitle="Access your event passes, check-in QR codes, and admission status."
           />
 
-          {/* Search bar */}
+          {/* Filter Chips & Search Bar */}
           {!loading && !error && tickets.length > 0 && (
-            <div className="mb-lg-token relative max-w-md">
-              <Search className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${
-                isDarkMode ? 'text-text-tertiary-dark' : 'text-text-tertiary-light'
-              }`} />
-              <input
-                type="text"
-                placeholder="Search tickets by expo name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={`w-full pl-9 pr-sm-token py-xs-token rounded-md-token border text-sm-token outline-none transition-colors ${
-                  isDarkMode
-                    ? 'bg-bg-glass-dark border-border-base-dark text-text-primary-dark placeholder-text-tertiary-dark focus:border-brand-primary-dark'
-                    : 'bg-bg-glass-light border-border-base-light text-text-primary-light placeholder-text-tertiary-light focus:border-brand-primary-light'
-                }`}
-              />
+            <div className="mb-lg-token space-y-md-token">
+              {/* Status Filter Chips */}
+              <div className="flex flex-wrap items-center gap-xs-token">
+                {STATUS_CHIPS.map((chip) => {
+                  const isSelected = statusFilter === chip.key;
+                  const count = statusCounts[chip.key];
+                  return (
+                    <button
+                      key={chip.key}
+                      onClick={() => setStatusFilter(chip.key)}
+                      className={`px-sm-token py-1.5 rounded-full-token text-xs-token font-medium transition-all duration-150 cursor-pointer flex items-center gap-1.5 ${
+                        isSelected
+                          ? isDarkMode
+                            ? 'bg-brand-primary-dark text-white shadow-sm'
+                            : 'bg-brand-primary-light text-white shadow-sm'
+                          : isDarkMode
+                            ? 'bg-glass-dark text-text-secondary-dark border border-border-base-dark hover:text-text-primary-dark hover:border-border-highlight-dark'
+                            : 'bg-glass-light text-text-secondary-light border border-border-base-light hover:text-text-primary-light hover:border-border-highlight-light'
+                      }`}
+                    >
+                      <span>{chip.label}</span>
+                      <span
+                        className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                          isSelected
+                            ? 'bg-white/20 text-white'
+                            : isDarkMode
+                              ? 'bg-bg-glass-dark text-text-tertiary-dark'
+                              : 'bg-bg-glass-light text-text-tertiary-light'
+                        }`}
+                      >
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Search input */}
+              <div className="relative max-w-md">
+                <Search className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${
+                  isDarkMode ? 'text-text-tertiary-dark' : 'text-text-tertiary-light'
+                }`} />
+                <input
+                  type="text"
+                  placeholder="Search tickets by expo name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className={`w-full pl-9 pr-sm-token py-xs-token rounded-md-token border text-sm-token outline-none transition-colors ${
+                    isDarkMode
+                      ? 'bg-glass-dark border-border-base-dark text-text-primary-dark placeholder-text-tertiary-dark focus:border-brand-primary-dark'
+                      : 'bg-glass-light border-border-base-light text-text-primary-light placeholder-text-tertiary-light focus:border-brand-primary-light'
+                  }`}
+                />
+              </div>
             </div>
           )}
 

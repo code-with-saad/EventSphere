@@ -65,14 +65,40 @@ export default function ExhibitorDashboard() {
           const exposData = await expoService.list({ limit: 100 });
           const exposList: any[] = exposData?.expos ?? [];
           exposList.forEach((e) => {
-            exposMap[e._id] = e;
+            if (e._id) exposMap[e._id.toString()] = e;
           });
         } catch {
           // Continue if expo lookup fails
         }
 
+        // Secondary individual fetch fallback for any expoIds missing from bulk list
+        const missingExpoIds = new Set<string>();
+        appList.forEach((app) => {
+          const rawEid = typeof app.expoId === 'object' ? app.expoId?._id : app.expoId;
+          const eid = rawEid ? rawEid.toString() : '';
+          if (eid && !exposMap[eid]) {
+            missingExpoIds.add(eid);
+          }
+        });
+
+        if (missingExpoIds.size > 0) {
+          await Promise.all(
+            Array.from(missingExpoIds).map(async (eid) => {
+              try {
+                const singleExpo = await expoService.getById(eid);
+                if (singleExpo) {
+                  exposMap[eid] = singleExpo;
+                }
+              } catch {
+                // Ignore individual lookup failure
+              }
+            })
+          );
+        }
+
         const enriched: EnrichedApplication[] = appList.map((app) => {
-          const eid = typeof app.expoId === 'object' ? app.expoId?._id : app.expoId;
+          const rawEid = typeof app.expoId === 'object' ? app.expoId?._id : app.expoId;
+          const eid = rawEid ? rawEid.toString() : '';
           const expoInfo = exposMap[eid];
           return {
             _id: app._id,

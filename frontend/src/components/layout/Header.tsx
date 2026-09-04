@@ -89,17 +89,25 @@ export function Header({ title }: HeaderProps) {
                 : 'bg-bg-hover-light border-border-base-light text-text-secondary-light hover:bg-black/5',
             ].join(' ')}
           >
-            <span
-              className={[
-                'inline-flex items-center justify-center w-6 h-6 rounded-sm-token text-xs-token font-bold',
-                isDarkMode
-                  ? 'bg-brand-primary-dark text-text-on-primary-dark'
-                  : 'bg-brand-primary-light text-text-on-primary-light',
-              ].join(' ')}
-              aria-hidden="true"
-            >
-              {displayName.charAt(0).toUpperCase()}
-            </span>
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={displayName}
+                className="w-6 h-6 rounded-sm-token object-cover border border-border-base-dark/20"
+              />
+            ) : (
+              <span
+                className={[
+                  'inline-flex items-center justify-center w-6 h-6 rounded-sm-token text-xs-token font-bold',
+                  isDarkMode
+                    ? 'bg-brand-primary-dark text-text-on-primary-dark'
+                    : 'bg-brand-primary-light text-text-on-primary-light',
+                ].join(' ')}
+                aria-hidden="true"
+              >
+                {displayName.charAt(0).toUpperCase()}
+              </span>
+            )}
             <span className="max-w-[120px] md:max-w-[200px] truncate">{displayName}</span>
           </button>
         )}

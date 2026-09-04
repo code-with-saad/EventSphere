@@ -11,6 +11,16 @@ import WithdrawConfirmDialog from '../../components/application/WithdrawConfirmD
 import toast from 'react-hot-toast';
 import { Search } from 'lucide-react';
 
+type AppStatus = 'all' | 'pending' | 'approved' | 'rejected' | 'withdrawn';
+
+const STATUS_CHIPS: { label: string; value: AppStatus }[] = [
+  { label: 'All', value: 'all' },
+  { label: 'Pending', value: 'pending' },
+  { label: 'Approved', value: 'approved' },
+  { label: 'Rejected', value: 'rejected' },
+  { label: 'Withdrawn', value: 'withdrawn' },
+];
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function MyApplicationsPage() {
@@ -22,6 +32,7 @@ export default function MyApplicationsPage() {
   const [error, setError] = useState<string | null>(null);
   const [withdrawnApps, setWithdrawnApps] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<AppStatus>('all');
 
   // Withdraw dialog state
   const [withdrawTarget, setWithdrawTarget] = useState<{ expoId: string; appId: string } | null>(null);
@@ -40,7 +51,7 @@ export default function MyApplicationsPage() {
         const exposData = await expoService.list({ limit: 100 });
         const exposList: any[] = exposData?.expos ?? [];
         exposList.forEach((e) => {
-          exposMap[e._id] = e;
+          exposMap[e._id?.toString()] = e;
         });
       } catch {
         // Continue if expo lookup fails
@@ -48,7 +59,7 @@ export default function MyApplicationsPage() {
 
       const enriched = rawList.map((app) => {
         const eid = typeof app.expoId === 'object' ? app.expoId?._id : app.expoId;
-        const expoInfo = exposMap[eid];
+        const expoInfo = exposMap[eid?.toString()];
         return {
           ...app,
           expoId: eid,
@@ -100,6 +111,15 @@ export default function MyApplicationsPage() {
 
   const allApps = [...applications, ...withdrawnApps];
 
+  // Count per status for chip badges
+  const statusCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allApps.forEach((a) => {
+      counts[a.status] = (counts[a.status] ?? 0) + 1;
+    });
+    return counts;
+  }, [allApps]);
+
   const filteredAndSortedApps = useMemo(() => {
     const statusOrder: Record<string, number> = {
       pending: 1,
@@ -110,6 +130,7 @@ export default function MyApplicationsPage() {
 
     return [...allApps]
       .filter((app) => {
+        if (statusFilter !== 'all' && app.status !== statusFilter) return false;
         if (!searchTerm.trim()) return true;
         const query = searchTerm.toLowerCase().trim();
         const expoName = (app.expoName || '').toLowerCase();
@@ -120,12 +141,19 @@ export default function MyApplicationsPage() {
         const orderA = statusOrder[a.status] ?? 99;
         const orderB = statusOrder[b.status] ?? 99;
         if (orderA !== orderB) return orderA - orderB;
-        // Secondary sort: most recent submittedAt first
         const dateA = new Date(a.submittedAt || a.createdAt || 0).getTime();
         const dateB = new Date(b.submittedAt || b.createdAt || 0).getTime();
         return dateB - dateA;
       });
-  }, [allApps, searchTerm]);
+  }, [allApps, searchTerm, statusFilter]);
+
+  const chipBase = 'px-3 py-1 rounded-full text-xs-token font-medium transition-colors whitespace-nowrap border';
+  const chipActive = isDarkMode
+    ? 'bg-brand-primary-dark text-white border-brand-primary-dark'
+    : 'bg-brand-primary-light text-white border-brand-primary-light';
+  const chipInactive = isDarkMode
+    ? 'bg-transparent text-text-secondary-dark border-border-base-dark hover:border-brand-primary-dark hover:text-text-primary-dark'
+    : 'bg-transparent text-text-secondary-light border-border-base-light hover:border-brand-primary-light hover:text-text-primary-light';
 
   return (
     <div className="dashboard-root">
@@ -139,23 +167,41 @@ export default function MyApplicationsPage() {
             subtitle="Track your exhibition applications, booth assignments, and review status."
           />
 
-          {/* Search bar */}
+          {/* Status filter chips + Search bar */}
           {!loading && !error && allApps.length > 0 && (
-            <div className="mb-lg-token relative max-w-md">
-              <Search className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${
-                isDarkMode ? 'text-text-tertiary-dark' : 'text-text-tertiary-light'
-              }`} />
-              <input
-                type="text"
-                placeholder="Search by expo or company name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={`w-full pl-9 pr-sm-token py-xs-token rounded-md-token border text-sm-token outline-none transition-colors ${
-                  isDarkMode
-                    ? 'bg-bg-glass-dark border-border-base-dark text-text-primary-dark placeholder-text-tertiary-dark focus:border-brand-primary-dark'
-                    : 'bg-bg-glass-light border-border-base-light text-text-primary-light placeholder-text-tertiary-light focus:border-brand-primary-light'
-                }`}
-              />
+            <div className="mb-lg-token flex flex-col gap-sm-token">
+              {/* Filter chips */}
+              <div className="flex flex-wrap gap-2">
+                {STATUS_CHIPS.map((chip) => {
+                  const count = chip.value === 'all' ? allApps.length : (statusCounts[chip.value] ?? 0);
+                  return (
+                    <button
+                      key={chip.value}
+                      onClick={() => setStatusFilter(chip.value)}
+                      className={`${chipBase} ${statusFilter === chip.value ? chipActive : chipInactive}`}
+                    >
+                      {chip.label} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Search input */}
+              <div className="relative max-w-md">
+                <Search className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${
+                  isDarkMode ? 'text-text-tertiary-dark' : 'text-text-tertiary-light'
+                }`} />
+                <input
+                  type="text"
+                  placeholder="Search by expo or company name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className={`w-full pl-9 pr-sm-token py-xs-token rounded-md-token border text-sm-token outline-none transition-colors ${
+                    isDarkMode
+                      ? 'bg-glass-dark border-border-base-dark text-text-primary-dark placeholder-text-tertiary-dark focus:border-brand-primary-dark'
+                      : 'bg-glass-light border-border-base-light text-text-primary-light placeholder-text-tertiary-light focus:border-brand-primary-light'
+                  }`}
+                />
+              </div>
             </div>
           )}
 
@@ -187,13 +233,13 @@ export default function MyApplicationsPage() {
             </div>
           )}
 
-          {/* No search results */}
+          {/* No results */}
           {!loading && !error && allApps.length > 0 && filteredAndSortedApps.length === 0 && (
             <div className={`text-center py-xl-token ${
               isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
             }`}>
               <p className="text-base-token font-medium mb-xs-token">No matching applications</p>
-              <p className="text-sm-token">Try adjusting your search query.</p>
+              <p className="text-sm-token">Try adjusting your search or filter.</p>
             </div>
           )}
 

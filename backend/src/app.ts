@@ -19,6 +19,7 @@ import sessionRoutes from './routes/session.routes';
 import bookmarkRoutes from './routes/bookmark.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import uploadRoutes from './routes/upload.routes';
+import userRoutes from './routes/user.routes';
 import errorHandler, { notFoundHandler } from './middleware/error.middleware';
 
 const app = express();
@@ -39,6 +40,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // ── API Routes ────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/expos', expoRoutes);
 app.use('/api/organizer', expoRoutes);

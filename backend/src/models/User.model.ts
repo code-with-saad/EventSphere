@@ -28,6 +28,7 @@ export interface IUser {
   email: string;              // Unique, lowercase, validated
   passwordHash: string;       // bcrypt hash with salt rounds = 10
   fullName: string;
+  avatarUrl?: string;         // Optional profile picture URL
   role: UserRole;
   status: UserStatus;
   isEmailVerified: boolean;   // true for Exhibitor/Attendee after OTP, always false for Organizer
@@ -42,6 +43,7 @@ export interface IUserCreate {
   email: string;
   passwordHash: string;
   fullName: string;
+  avatarUrl?: string;
   role: UserRole;
   status?: UserStatus;        // Optional, defaults based on role
   isEmailVerified?: boolean;  // Optional, defaults to false

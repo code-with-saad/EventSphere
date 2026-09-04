@@ -16,7 +16,7 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB hard cap
 });
 
-const VALID_PURPOSES = ['expo_banner', 'company_logo'] as const;
+const VALID_PURPOSES = ['expo_banner', 'company_logo', 'avatar'] as const;
 type UploadPurpose = (typeof VALID_PURPOSES)[number];
 
 /**

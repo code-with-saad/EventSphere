@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode';
 
 interface QRScannerProps {
   /** Called with the decoded ticket ID string within 300ms of a successful scan */
@@ -56,44 +56,70 @@ export default function QRScanner({ onScan, isActive = true }: QRScannerProps) {
       /* intentionally silent */
     };
 
-    html5QrCode
-      .start(
-        { facingMode: 'environment' }, // prefer rear camera on mobile
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        onScanSuccess,
-        onScanFailure,
-      )
-      .then(() => {
+    const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+    // Try starting with facingMode: 'environment' (mobile rear camera), fallback to deviceId (desktop/webcam)
+    async function startScanner() {
+      try {
+        await html5QrCode.start(
+          { facingMode: 'environment' },
+          qrConfig,
+          onScanSuccess,
+          onScanFailure,
+        );
         setIsStarting(false);
-      })
-      .catch((err: unknown) => {
-        setIsStarting(false);
-        const message = err instanceof Error ? err.message : String(err);
-        // Detect camera permission denial (REQ-8.2)
-        if (
-          message.includes('NotAllowedError') ||
-          message.includes('Permission denied') ||
-          message.includes('PermissionDeniedError')
-        ) {
-          setCameraError('permission_denied');
-        } else {
-          setCameraError(message || 'Unable to start camera');
+      } catch (firstErr: unknown) {
+        // Fallback for desktops/laptops or devices without facingMode environment support
+        try {
+          const devices = await Html5Qrcode.getCameras();
+          if (devices && devices.length > 0) {
+            await html5QrCode.start(
+              devices[0].id,
+              qrConfig,
+              onScanSuccess,
+              onScanFailure,
+            );
+            setIsStarting(false);
+            return;
+          }
+          throw firstErr;
+        } catch (err: unknown) {
+          setIsStarting(false);
+          const message = err instanceof Error ? err.message : String(err);
+          // Detect camera permission denial (REQ-8.2)
+          if (
+            message.includes('NotAllowedError') ||
+            message.includes('Permission denied') ||
+            message.includes('PermissionDeniedError')
+          ) {
+            setCameraError('permission_denied');
+          } else {
+            setCameraError(message || 'Unable to start camera');
+          }
         }
-      });
+      }
+    }
+
+    startScanner();
 
     // Cleanup: stop camera stream and release resources on unmount (REQ-8.15)
     return () => {
-      html5QrCode
-        .stop()
-        .then(() => html5QrCode.clear())
-        .catch(() => {
-          // Best-effort — clear even if stop fails
-          try {
-            html5QrCode.clear();
-          } catch {
-            /* ignore */
+      const cleanup = async () => {
+        try {
+          const state = html5QrCode.getState();
+          if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
+            await html5QrCode.stop();
           }
-        });
+        } catch {
+          // ignore — scanner may already be stopped/not started
+        }
+        try {
+          html5QrCode.clear();
+        } catch {
+          // ignore
+        }
+      };
+      cleanup();
       html5QrCodeRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
