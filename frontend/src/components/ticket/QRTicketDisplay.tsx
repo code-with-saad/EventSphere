@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { Download } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface QRTicketDisplayProps {
@@ -19,36 +20,35 @@ export default function QRTicketDisplay({ ticketId, qrCodeDataUrl }: QRTicketDis
   };
 
   return (
-    <div className={`rounded-lg-token border p-md-token flex flex-col items-center gap-md-token ${
-      isDarkMode ? 'bg-bg-surface-dark border-border-base-dark' : 'bg-bg-surface-light border-border-base-light'
-    }`}>
-      {/* QR image — always white bg, black QR regardless of theme (REQ-5.11) */}
-      <div className="bg-white p-sm-token rounded-md-token">
+    <div className="flex flex-col items-center gap-md-token">
+      {/* QR image container — elevated white card with subtle glow */}
+      <div className="p-3 bg-white rounded-xl-token shadow-elevation-2-dark border border-white/20">
         <img
           src={qrCodeDataUrl}
           alt={`QR code for ticket ${ticketId}`}
-          className="w-48 h-48 object-contain"
+          className="w-48 h-48 md:w-52 md:h-52 object-contain"
           style={{ imageRendering: 'pixelated' }}
         />
       </div>
 
-      {/* Ticket ID */}
-      <p className={`text-xs-token font-mono text-center break-all ${
+      <p className={`text-xs-token text-center ${
         isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
       }`}>
-        {ticketId}
+        Scan this QR code at the event entrance for quick check-in.
       </p>
 
       {/* Download PNG button */}
       <button
+        type="button"
         onClick={handleDownload}
-        className={`px-md-token py-xs-token rounded-md-token text-sm-token font-medium border transition-colors ${
+        className={`w-full flex items-center justify-center gap-1.5 px-md-token py-xs-token rounded-md-token text-sm-token font-medium border transition-colors ${
           isDarkMode
             ? 'border-border-base-dark text-text-primary-dark hover:bg-bg-hover-dark'
             : 'border-border-base-light text-text-primary-light hover:bg-bg-hover-light'
         }`}
       >
-        Download PNG
+        <Download className="w-3.5 h-3.5" />
+        Download QR Image
       </button>
 
       {/* Hidden anchor for programmatic download */}

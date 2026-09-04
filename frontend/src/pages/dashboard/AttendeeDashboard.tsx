@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ticket, CalendarDays, Compass } from 'lucide-react';
+import { Ticket, CalendarDays, Compass, MapPin } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { ticketService } from '../../services/ticketService';
@@ -110,7 +110,7 @@ export default function AttendeeDashboard() {
     return new Date(t.startDate) >= now || new Date(t.endDate ?? t.startDate) >= now;
   });
 
-  // Next upcoming events preview (up to 3)
+  // Next upcoming events preview (up to 6)
   const upcomingPreview = [...tickets]
     .filter((t) => t.status !== 'cancelled')
     .sort((a, b) => {
@@ -118,7 +118,7 @@ export default function AttendeeDashboard() {
       const dateB = b.startDate ? new Date(b.startDate).getTime() : new Date(b.registeredAt).getTime();
       return dateA - dateB;
     })
-    .slice(0, 3);
+    .slice(0, 6);
 
   // ── Shared button styles matching OrganizerDashboard ─────────────────────
   const secondaryBtnBase = [
@@ -131,7 +131,6 @@ export default function AttendeeDashboard() {
 
   const secondaryBtnDark = 'border-border-strong-dark text-text-primary-dark hover:bg-bg-hover-dark';
   const secondaryBtnLight = 'border-border-strong-light text-text-primary-light hover:bg-bg-hover-light';
-  const dividerClass = isDarkMode ? 'border-border-base-dark' : 'border-border-base-light';
 
   return (
     <div className="dashboard-root">
@@ -140,37 +139,48 @@ export default function AttendeeDashboard() {
         <Header title="Dashboard" />
         <main className="flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token">
 
-          {/* 1. Welcome heading */}
-          <h2
-            className={`text-xl-token font-semibold mb-lg-token leading-tight-token ${
-              isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
-            }`}
-          >
-            Welcome, {user?.fullName ?? 'Attendee'}!
-          </h2>
+          {/* 1. Welcome heading + Integrated quick actions */}
+          <div className="flex flex-wrap items-center justify-between gap-md-token mb-lg-token">
+            <div>
+              <h2
+                className={`text-xl-token font-semibold leading-tight-token ${
+                  isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+                }`}
+              >
+                Welcome, {user?.fullName ?? 'Attendee'}!
+              </h2>
+              <p
+                className={`text-sm-token mt-xs-token ${
+                  isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                }`}
+              >
+                Overview of your tickets and registered upcoming expo events
+              </p>
+            </div>
 
-          {/* 2. Quick-action buttons */}
-          <div className="flex flex-wrap gap-sm-token mb-lg-token">
-            <button
-              type="button"
-              onClick={() => navigate('/expos')}
-              className={`${secondaryBtnBase} ${isDarkMode ? secondaryBtnDark : secondaryBtnLight}`}
-            >
-              <Compass className="w-4 h-4" aria-hidden="true" />
-              Browse Expos
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/attendee/tickets')}
-              className={`${secondaryBtnBase} ${isDarkMode ? secondaryBtnDark : secondaryBtnLight}`}
-            >
-              <Ticket className="w-4 h-4" aria-hidden="true" />
-              My Tickets
-            </button>
+            {/* Quick-action buttons */}
+            <div className="flex flex-wrap items-center gap-sm-token">
+              <button
+                type="button"
+                onClick={() => navigate('/expos')}
+                className={`${secondaryBtnBase} ${isDarkMode ? secondaryBtnDark : secondaryBtnLight}`}
+              >
+                <Compass className="w-4 h-4" aria-hidden="true" />
+                Browse Expos
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/attendee/tickets')}
+                className={`${secondaryBtnBase} ${isDarkMode ? secondaryBtnDark : secondaryBtnLight}`}
+              >
+                <Ticket className="w-4 h-4" aria-hidden="true" />
+                My Tickets
+              </button>
+            </div>
           </div>
 
-          {/* 3. Stats row */}
-          <div className="mb-lg-token">
+          {/* 2. Stats row */}
+          <div className="mb-xl-token">
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-md-token">
                 {[0, 1].map((i) => (
@@ -238,23 +248,40 @@ export default function AttendeeDashboard() {
             )}
           </div>
 
-          {/* 4. Upcoming events preview list */}
+          {/* 3. Upcoming events section — compact interactive card grid */}
           <section aria-label="Upcoming Events">
-            <h3
-              className={`text-base-token font-semibold mb-sm-token ${
-                isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
-              }`}
-            >
-              Upcoming Events
-            </h3>
+            <div className="flex items-center justify-between mb-md-token">
+              <h3
+                className={`text-base-token font-semibold ${
+                  isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+                }`}
+              >
+                Upcoming Events
+              </h3>
+              {upcomingPreview.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => navigate('/attendee/tickets')}
+                  className={`text-xs-token font-medium underline hover:opacity-80 transition-opacity ${
+                    isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'
+                  }`}
+                >
+                  View All ({tickets.length})
+                </button>
+              )}
+            </div>
 
             {loading ? (
-              <BentoCard>
-                <div className="flex flex-col gap-sm-token animate-pulse py-sm-token">
-                  <div className={`h-4 w-48 rounded-sm-token ${isDarkMode ? 'bg-bg-hover-dark' : 'bg-bg-hover-light'}`} />
-                  <div className={`h-3 w-32 rounded-sm-token ${isDarkMode ? 'bg-bg-hover-dark' : 'bg-bg-hover-light'}`} />
-                </div>
-              </BentoCard>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md-token">
+                {[0, 1, 2].map((i) => (
+                  <BentoCard key={i}>
+                    <div className="flex flex-col gap-sm-token animate-pulse py-sm-token">
+                      <div className={`h-4 w-48 rounded-sm-token ${isDarkMode ? 'bg-bg-hover-dark' : 'bg-bg-hover-light'}`} />
+                      <div className={`h-3 w-32 rounded-sm-token ${isDarkMode ? 'bg-bg-hover-dark' : 'bg-bg-hover-light'}`} />
+                    </div>
+                  </BentoCard>
+                ))}
+              </div>
             ) : upcomingPreview.length === 0 ? (
               <BentoCard>
                 <div className="flex flex-col items-center text-center py-xl-token gap-md-token">
@@ -298,51 +325,77 @@ export default function AttendeeDashboard() {
                 </div>
               </BentoCard>
             ) : (
-              <BentoCard>
-                <ul role="list">
-                  {upcomingPreview.map((ticket, index) => {
-                    const isLast = index === upcomingPreview.length - 1;
-                    return (
-                      <li
-                        key={ticket._id}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => navigate(`/attendee/tickets/${ticket.ticketId}`)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            navigate(`/attendee/tickets/${ticket.ticketId}`);
-                          }
-                        }}
-                        className={[
-                          'flex justify-between items-center py-sm-token cursor-pointer',
-                          'transition-colors duration-[120ms] rounded-sm-token px-xs-token -mx-xs-token',
-                          isDarkMode ? 'hover:bg-bg-hover-dark' : 'hover:bg-bg-hover-light',
-                          !isLast ? `border-b ${dividerClass}` : '',
-                        ].filter(Boolean).join(' ')}
-                      >
-                        <div className="flex flex-col gap-xs-token">
-                          <span
-                            className={`text-sm-token font-medium leading-normal-token ${
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md-token">
+                {upcomingPreview.map((ticket) => {
+                  const isCheckedIn = ticket.status === 'checked_in';
+
+                  return (
+                    <div
+                      key={ticket._id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => navigate(`/attendee/tickets/${ticket.ticketId}`)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          navigate(`/attendee/tickets/${ticket.ticketId}`);
+                        }
+                      }}
+                      className={`text-left p-md-token rounded-lg-token border transition-all duration-150 backdrop-blur-md cursor-pointer flex flex-col justify-between ${
+                        isDarkMode
+                          ? 'bg-glass-dark border-glass-border-dark hover:border-brand-primary-dark hover:shadow-elevation-1-dark'
+                          : 'bg-glass-light border-glass-border-light hover:border-brand-primary-light hover:shadow-elevation-1-light'
+                      } ${
+                        isCheckedIn
+                          ? isDarkMode
+                            ? 'border-l-4 border-l-text-success-dark'
+                            : 'border-l-4 border-l-text-success-light'
+                          : isDarkMode
+                            ? 'border-l-4 border-l-brand-primary-dark'
+                            : 'border-l-4 border-l-brand-primary-light'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-sm-token mb-sm-token">
+                          <h4
+                            className={`text-sm-token font-semibold line-clamp-1 ${
                               isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
                             }`}
+                            title={ticket.expoName}
                           >
                             {ticket.expoName}
-                          </span>
-                          <span className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
-                            {ticket.startDate ? `${formatDate(ticket.startDate)}${ticket.endDate ? ` – ${formatDate(ticket.endDate)}` : ''}` : `Registered ${formatDate(ticket.registeredAt)}`}
-                            {ticket.venueName ? ` · ${ticket.venueName}` : ''}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-sm-token">
+                          </h4>
                           <TicketStatusBadge status={ticket.status} />
                         </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </BentoCard>
+
+                        <div className={`flex flex-col gap-1 text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                          <div className="flex items-center gap-1.5">
+                            <CalendarDays className="w-3.5 h-3.5 shrink-0" />
+                            <span>
+                              {ticket.startDate
+                                ? `${formatDate(ticket.startDate)}${ticket.endDate ? ` – ${formatDate(ticket.endDate)}` : ''}`
+                                : `Registered ${formatDate(ticket.registeredAt)}`}
+                            </span>
+                          </div>
+
+                          {ticket.venueName && (
+                            <div className="flex items-center gap-1.5">
+                              <MapPin className="w-3.5 h-3.5 shrink-0" />
+                              <span className="truncate">{ticket.venueName}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="mt-md-token pt-xs-token border-t border-border-base-dark/20 flex items-center justify-between">
+                        <span className={`text-[11px] font-medium ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`}>
+                          View Ticket & QR →
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </section>
 

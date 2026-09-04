@@ -111,7 +111,7 @@ export default function ExhibitorDashboard() {
   // Recent applications preview (up to 3, sorted by submission date descending)
   const recentApplications = [...applications]
     .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())
-    .slice(0, 3);
+    .slice(0, 6);
 
   // ── Shared button styles matching OrganizerDashboard ─────────────────────
   const secondaryBtnBase = [
@@ -124,7 +124,6 @@ export default function ExhibitorDashboard() {
 
   const secondaryBtnDark = 'border-border-strong-dark text-text-primary-dark hover:bg-bg-hover-dark';
   const secondaryBtnLight = 'border-border-strong-light text-text-primary-light hover:bg-bg-hover-light';
-  const dividerClass = isDarkMode ? 'border-border-base-dark' : 'border-border-base-light';
 
   return (
     <div className="dashboard-root">
@@ -133,37 +132,48 @@ export default function ExhibitorDashboard() {
         <Header title="Dashboard" />
         <main className="flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token">
 
-          {/* 1. Welcome heading */}
-          <h2
-            className={`text-xl-token font-semibold mb-lg-token leading-tight-token ${
-              isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
-            }`}
-          >
-            Welcome, {user?.fullName ?? 'Exhibitor'}!
-          </h2>
+          {/* 1. Welcome heading + Integrated quick actions */}
+          <div className="flex flex-wrap items-center justify-between gap-md-token mb-lg-token">
+            <div>
+              <h2
+                className={`text-xl-token font-semibold leading-tight-token ${
+                  isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+                }`}
+              >
+                Welcome, {user?.fullName ?? 'Exhibitor'}!
+              </h2>
+              <p
+                className={`text-sm-token mt-xs-token ${
+                  isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                }`}
+              >
+                Overview of your booth applications and exhibition status
+              </p>
+            </div>
 
-          {/* 2. Quick-action buttons */}
-          <div className="flex flex-wrap gap-sm-token mb-lg-token">
-            <button
-              type="button"
-              onClick={() => navigate('/expos')}
-              className={`${secondaryBtnBase} ${isDarkMode ? secondaryBtnDark : secondaryBtnLight}`}
-            >
-              <Compass className="w-4 h-4" aria-hidden="true" />
-              Browse Expos
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/exhibitor/applications')}
-              className={`${secondaryBtnBase} ${isDarkMode ? secondaryBtnDark : secondaryBtnLight}`}
-            >
-              <FileText className="w-4 h-4" aria-hidden="true" />
-              My Applications
-            </button>
+            {/* Quick-action buttons */}
+            <div className="flex flex-wrap items-center gap-sm-token">
+              <button
+                type="button"
+                onClick={() => navigate('/expos')}
+                className={`${secondaryBtnBase} ${isDarkMode ? secondaryBtnDark : secondaryBtnLight}`}
+              >
+                <Compass className="w-4 h-4" aria-hidden="true" />
+                Browse Expos
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/exhibitor/applications')}
+                className={`${secondaryBtnBase} ${isDarkMode ? secondaryBtnDark : secondaryBtnLight}`}
+              >
+                <FileText className="w-4 h-4" aria-hidden="true" />
+                My Applications
+              </button>
+            </div>
           </div>
 
-          {/* 3. Stats row */}
-          <div className="mb-lg-token">
+          {/* 2. Stats row */}
+          <div className="mb-xl-token">
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-md-token">
                 {[0, 1, 2].map((i) => (
@@ -252,23 +262,40 @@ export default function ExhibitorDashboard() {
             )}
           </div>
 
-          {/* 4. Recent applications preview list */}
+          {/* 3. Recent applications section — compact interactive card grid */}
           <section aria-label="Recent Applications">
-            <h3
-              className={`text-base-token font-semibold mb-sm-token ${
-                isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
-              }`}
-            >
-              Recent Applications
-            </h3>
+            <div className="flex items-center justify-between mb-md-token">
+              <h3
+                className={`text-base-token font-semibold ${
+                  isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+                }`}
+              >
+                Recent Applications
+              </h3>
+              {recentApplications.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => navigate('/exhibitor/applications')}
+                  className={`text-xs-token font-medium underline hover:opacity-80 transition-opacity ${
+                    isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'
+                  }`}
+                >
+                  View All ({totalCount})
+                </button>
+              )}
+            </div>
 
             {loading ? (
-              <BentoCard>
-                <div className="flex flex-col gap-sm-token animate-pulse py-sm-token">
-                  <div className={`h-4 w-48 rounded-sm-token ${isDarkMode ? 'bg-bg-hover-dark' : 'bg-bg-hover-light'}`} />
-                  <div className={`h-3 w-32 rounded-sm-token ${isDarkMode ? 'bg-bg-hover-dark' : 'bg-bg-hover-light'}`} />
-                </div>
-              </BentoCard>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md-token">
+                {[0, 1, 2].map((i) => (
+                  <BentoCard key={i}>
+                    <div className="flex flex-col gap-sm-token animate-pulse py-sm-token">
+                      <div className={`h-4 w-48 rounded-sm-token ${isDarkMode ? 'bg-bg-hover-dark' : 'bg-bg-hover-light'}`} />
+                      <div className={`h-3 w-32 rounded-sm-token ${isDarkMode ? 'bg-bg-hover-dark' : 'bg-bg-hover-light'}`} />
+                    </div>
+                  </BentoCard>
+                ))}
+              </div>
             ) : recentApplications.length === 0 ? (
               <BentoCard>
                 <div className="flex flex-col items-center text-center py-xl-token gap-md-token">
@@ -312,51 +339,86 @@ export default function ExhibitorDashboard() {
                 </div>
               </BentoCard>
             ) : (
-              <BentoCard>
-                <ul role="list">
-                  {recentApplications.map((app, index) => {
-                    const isLast = index === recentApplications.length - 1;
-                    return (
-                      <li
-                        key={app._id}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => navigate('/exhibitor/applications')}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            navigate('/exhibitor/applications');
-                          }
-                        }}
-                        className={[
-                          'flex justify-between items-center py-sm-token cursor-pointer',
-                          'transition-colors duration-[120ms] rounded-sm-token px-xs-token -mx-xs-token',
-                          isDarkMode ? 'hover:bg-bg-hover-dark' : 'hover:bg-bg-hover-light',
-                          !isLast ? `border-b ${dividerClass}` : '',
-                        ].filter(Boolean).join(' ')}
-                      >
-                        <div className="flex flex-col gap-xs-token">
-                          <span
-                            className={`text-sm-token font-medium leading-normal-token ${
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md-token">
+                {recentApplications.map((app) => {
+                  const isApproved = app.status === 'approved';
+                  const isPending = app.status === 'pending';
+                  const isRejected = app.status === 'rejected';
+
+                  return (
+                    <div
+                      key={app._id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => navigate('/exhibitor/applications')}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          navigate('/exhibitor/applications');
+                        }
+                      }}
+                      className={`text-left p-md-token rounded-lg-token border transition-all duration-150 backdrop-blur-md cursor-pointer flex flex-col justify-between ${
+                        isDarkMode
+                          ? 'bg-glass-dark border-glass-border-dark hover:border-brand-primary-dark hover:shadow-elevation-1-dark'
+                          : 'bg-glass-light border-glass-border-light hover:border-brand-primary-light hover:shadow-elevation-1-light'
+                      } ${
+                        isApproved
+                          ? isDarkMode
+                            ? 'border-l-4 border-l-text-success-dark'
+                            : 'border-l-4 border-l-text-success-light'
+                          : isPending
+                          ? isDarkMode
+                            ? 'border-l-4 border-l-text-warning-dark'
+                            : 'border-l-4 border-l-text-warning-light'
+                          : isRejected
+                          ? isDarkMode
+                            ? 'border-l-4 border-l-text-danger-dark'
+                            : 'border-l-4 border-l-text-danger-light'
+                          : ''
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-sm-token mb-sm-token">
+                          <h4
+                            className={`text-sm-token font-semibold line-clamp-1 ${
                               isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
                             }`}
+                            title={app.expoName}
                           >
                             {app.expoName}
-                          </span>
-                          <span className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
-                            {app.companyName} · Submitted {formatDate(app.submittedAt)}
-                            {app.boothLabel ? ` · Booth ${app.boothLabel}` : ''}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-sm-token">
+                          </h4>
                           <ApplicationStatusBadge status={app.status} />
                         </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </BentoCard>
+
+                        <div className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                          {app.companyName} · Submitted {formatDate(app.submittedAt)}
+                        </div>
+
+                        {app.boothLabel && (
+                          <div className="mt-2">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
+                                isDarkMode
+                                  ? 'bg-bg-success-dark/30 text-text-success-dark border-text-success-dark/40'
+                                  : 'bg-bg-success-light text-text-success-light border-text-success-light/40'
+                              }`}
+                            >
+                              <Store className="w-3 h-3" />
+                              Booth {app.boothLabel}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-md-token pt-xs-token border-t border-border-base-dark/20 flex items-center justify-between">
+                        <span className={`text-[11px] font-medium ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`}>
+                          View Details →
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </section>
 

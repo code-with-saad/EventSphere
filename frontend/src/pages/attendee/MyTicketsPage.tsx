@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ticketService } from '../../services/ticketService';
+import { expoService } from '../../services/expoService';
 import { Sidebar } from '../../components/layout/Sidebar';
 import { Header } from '../../components/layout/Header';
 import { BottomNav } from '../../components/layout/BottomNav';
+import PageHeader from '../../components/layout/PageHeader';
 import TicketCard from '../../components/ticket/TicketCard';
 
 export default function MyTicketsPage() {
@@ -19,18 +21,55 @@ export default function MyTicketsPage() {
     setLoading(true);
     setError(null);
 
-    ticketService.getMine()
-      .then((data: any) => {
-        if (!cancelled)
-          setTickets(data?.tickets ?? (Array.isArray(data) ? data : []));
-      })
-      .catch((err: any) => {
-        if (!cancelled)
-          setError(err?.response?.data?.message || err?.message || 'Failed to load tickets');
-      })
-      .finally(() => { if (!cancelled) setLoading(false); });
+    async function loadTickets() {
+      try {
+        const rawTickets = await ticketService.getMine();
+        const ticketList: any[] = rawTickets?.tickets ?? (Array.isArray(rawTickets) ? rawTickets : []);
 
-    return () => { cancelled = true; };
+        // Load expos map for date & venue metadata
+        let exposMap: Record<string, any> = {};
+        try {
+          const exposData = await expoService.list({ limit: 100 });
+          const exposList: any[] = exposData?.expos ?? [];
+          exposList.forEach((e) => {
+            exposMap[e._id] = e;
+          });
+        } catch {
+          // Continue if expo lookup fails
+        }
+
+        const enriched = ticketList.map((t) => {
+          const eid = typeof t.expoId === 'object' ? t.expoId?._id : t.expoId;
+          const expoInfo = exposMap[eid];
+          return {
+            ...t,
+            expoId: eid,
+            expoName: t.expoName || expoInfo?.name,
+            startDate: t.startDate || expoInfo?.startDate,
+            endDate: t.endDate || expoInfo?.endDate,
+            venueName: t.venueName || expoInfo?.venueName,
+          };
+        });
+
+        if (!cancelled) {
+          setTickets(enriched);
+        }
+      } catch (err: any) {
+        if (!cancelled) {
+          setError(err?.response?.data?.message || err?.message || 'Failed to load tickets');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadTickets();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -40,11 +79,10 @@ export default function MyTicketsPage() {
         <Header title="My Tickets" />
         <main className="flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token">
 
-          <h2 className={`text-xl-token font-semibold mb-lg-token leading-tight-token ${
-            isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
-          }`}>
-            My Tickets
-          </h2>
+          <PageHeader
+            title="My Tickets"
+            subtitle="Access your event passes, check-in QR codes, and admission status."
+          />
 
           {/* Loading */}
           {loading && (
@@ -70,20 +108,16 @@ export default function MyTicketsPage() {
               isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
             }`}>
               <p className="text-base-token font-medium mb-xs-token">No tickets yet</p>
-              <p className="text-sm-token">Register for an expo to get your ticket.</p>
+              <p className="text-sm-token">Register for an expo to get your ticket pass.</p>
             </div>
           )}
 
-          {/* Ticket list */}
+          {/* Responsive Ticket Grid: 1 col mobile, 2 cols tablet, 3 cols desktop */}
           {!loading && !error && tickets.length > 0 && (
-            <div className={`rounded-xl-token border backdrop-blur-md p-md-token md:p-lg-token ${
-              isDarkMode ? 'bg-glass-dark border-glass-border-dark' : 'bg-glass-light border-glass-border-light'
-            }`}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md-token">
-                {tickets.map((ticket: any) => (
-                  <TicketCard key={ticket._id} ticket={ticket} />
-                ))}
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md-token md:gap-lg-token">
+              {tickets.map((ticket: any) => (
+                <TicketCard key={ticket._id} ticket={ticket} />
+              ))}
             </div>
           )}
 
