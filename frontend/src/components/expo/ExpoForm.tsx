@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { uploadService } from '../../services/uploadService';
+import { BentoCard } from '../common/BentoCard';
+import { FileText, Image, Calendar, Sparkles } from 'lucide-react';
 
 interface ExpoFormData {
   name: string;
@@ -83,8 +85,6 @@ export default function ExpoForm({
   const [uploading, setUploading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // ── Shared style helpers ──────────────────────────────────────────────────
-
   const labelClass = `block text-sm-token font-medium mb-xs-token ${
     isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
   }`;
@@ -108,86 +108,94 @@ export default function ExpoForm({
     isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'
   }`;
 
-  // ── Validation ────────────────────────────────────────────────────────────
-
   const validate = (): ExpoFormErrors => {
-    const e: ExpoFormErrors = {};
+    const errs: ExpoFormErrors = {};
 
     if (!form.name.trim()) {
-      e.name = 'Name is required';
-    } else if (form.name.length > 120) {
-      e.name = 'Name must be 120 characters or fewer';
+      errs.name = 'Expo name is required.';
+    } else if (form.name.trim().length > 120) {
+      errs.name = 'Expo name must not exceed 120 characters.';
     }
 
     if (!form.description.trim()) {
-      e.description = 'Description is required';
-    } else if (form.description.length > 2000) {
-      e.description = 'Description must be 2000 characters or fewer';
+      errs.description = 'Description is required.';
+    } else if (form.description.trim().length > 2000) {
+      errs.description = 'Description must not exceed 2000 characters.';
     }
 
     if (!form.startDate) {
-      e.startDate = 'Start date is required';
-    } else if (new Date(form.startDate) <= new Date()) {
-      e.startDate = 'Start date must be in the future';
+      errs.startDate = 'Start date is required.';
     }
 
     if (!form.endDate) {
-      e.endDate = 'End date is required';
-    } else if (form.startDate && new Date(form.endDate) <= new Date(form.startDate)) {
-      e.endDate = 'End date must be after start date';
+      errs.endDate = 'End date is required.';
+    } else if (
+      form.startDate &&
+      new Date(form.endDate) <= new Date(form.startDate)
+    ) {
+      errs.endDate = 'End date must be strictly after start date.';
     }
 
-    if (!form.venueName.trim()) e.venueName = 'Venue name is required';
-    if (!form.venueAddress.trim()) e.venueAddress = 'Venue address is required';
+    if (!form.venueName.trim()) {
+      errs.venueName = 'Venue name is required.';
+    } else if (form.venueName.trim().length > 100) {
+      errs.venueName = 'Venue name must not exceed 100 characters.';
+    }
+
+    if (!form.venueAddress.trim()) {
+      errs.venueAddress = 'Venue address is required.';
+    } else if (form.venueAddress.trim().length > 200) {
+      errs.venueAddress = 'Venue address must not exceed 200 characters.';
+    }
 
     if (form.totalBooths === '' || Number(form.totalBooths) < 1) {
-      e.totalBooths = 'Total booths must be at least 1';
+      errs.totalBooths = 'Total booths must be an integer ≥ 1.';
+    } else if (!Number.isInteger(Number(form.totalBooths))) {
+      errs.totalBooths = 'Total booths must be a whole integer.';
     }
 
-    return e;
+    return errs;
   };
-
-  // ── Banner upload ─────────────────────────────────────────────────────────
 
   const handleBannerChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!ALLOWED_MIME.includes(file.type)) {
-      setErrors((prev) => ({
-        ...prev,
-        banner: 'Only PNG, JPG, or WebP images are allowed',
+      setErrors((p) => ({
+        ...p,
+        banner: 'Only PNG, JPG, and WebP images are allowed.',
       }));
       return;
     }
+
     if (file.size > MAX_BANNER_BYTES) {
-      setErrors((prev) => ({
-        ...prev,
-        banner: 'Banner image must be 5 MB or smaller',
+      setErrors((p) => ({
+        ...p,
+        banner: 'Banner image must not exceed 5 MB.',
       }));
       return;
     }
 
-    setErrors((prev) => ({ ...prev, banner: undefined }));
-    setBannerPreview(URL.createObjectURL(file));
-    setUploading(true);
+    setErrors((p) => ({ ...p, banner: undefined }));
+    const localUrl = URL.createObjectURL(file);
+    setBannerPreview(localUrl);
 
+    setUploading(true);
     try {
       const { url } = await uploadService.uploadImage(file, 'expo_banner');
-      setForm((prev) => ({ ...prev, bannerUrl: url }));
+      setForm((p) => ({ ...p, bannerUrl: url }));
       setBannerPreview(url);
     } catch {
-      setErrors((prev) => ({
-        ...prev,
-        banner: 'Upload failed. Please try again.',
+      setErrors((p) => ({
+        ...p,
+        banner: 'Banner upload failed. Please try again.',
       }));
-      setBannerPreview('');
+      setBannerPreview(form.bannerUrl ?? '');
     } finally {
       setUploading(false);
     }
   };
-
-  // ── Submit ────────────────────────────────────────────────────────────────
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -227,8 +235,6 @@ export default function ExpoForm({
     }
   };
 
-  // ── Field helper (text / url / datetime-local) ───────────────────────────
-
   type SimpleFieldKey = Exclude<keyof ExpoFormData, 'totalBooths' | 'description'>;
 
   const field = (
@@ -267,86 +273,87 @@ export default function ExpoForm({
     </div>
   );
 
-  // ── Render ────────────────────────────────────────────────────────────────
-
-  const sectionHeadClass = `text-xs-token font-semibold ${
-    isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
-  }`;
-
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-md-token">
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-lg-token">
 
-      {/* ── Group 1: Basic Information ──────────────────────────────────────── */}
-      <div className="flex flex-col gap-md-token">
-        <h3 className={sectionHeadClass}>Basic Information</h3>
-
-        {/* Expo Name */}
-        {field('name', 'Expo Name', 'text', 'e.g. TechFest 2025', true)}
-
-        {/* Description */}
-        <div>
-          <label htmlFor="description" className={labelClass}>
-            Description{' '}
-            <span aria-hidden="true" className="ml-xs-token text-text-danger-dark">
-              *
-            </span>
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            rows={4}
-            value={form.description}
-            onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-            placeholder="Describe your expo…"
-            className={`${inputClass(errors.description)} resize-y`}
-            aria-describedby={errors.description ? 'description-error' : undefined}
-          />
-          {errors.description && (
-            <p id="description-error" role="alert" className={errorClass}>
-              {errors.description}
-            </p>
-          )}
+      <BentoCard className="p-md-token md:p-lg-token">
+        <div className="flex items-center gap-2 mb-md-token pb-sm-token border-b border-border-base-dark/30">
+          <FileText className={`w-4 h-4 ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`} />
+          <h3 className={`text-base-token font-semibold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+            Basic Information
+          </h3>
         </div>
 
-        {/* Category */}
-        <div>
-          <label htmlFor="category" className={labelClass}>
-            Category
-          </label>
-          <select
-            id="category"
-            name="category"
-            value={form.category}
-            onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
-            className={inputClass()}
-          >
-            <option value="">Select a category</option>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
+        <div className="flex flex-col gap-md-token">
+          {field('name', 'Expo Name', 'text', 'e.g. TechFest 2025', true)}
 
-        {/* Banner upload */}
-        <div>
-          <label htmlFor="banner-upload" className={labelClass}>
-            Banner Image (PNG/JPG/WebP, max 5 MB)
-          </label>
-          <div className="flex flex-col gap-sm-token">
-            {bannerPreview && (
-              <img
-                src={bannerPreview}
-                alt="Banner preview"
-                className="w-full h-40 object-cover rounded-md-token"
-              />
+          <div>
+            <label htmlFor="description" className={labelClass}>
+              Description{' '}
+              <span aria-hidden="true" className="ml-xs-token text-text-danger-dark">
+                *
+              </span>
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              rows={4}
+              value={form.description}
+              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+              placeholder="Describe your expo…"
+              className={`${inputClass(errors.description)} resize-y`}
+              aria-describedby={errors.description ? 'description-error' : undefined}
+            />
+            {errors.description && (
+              <p id="description-error" role="alert" className={errorClass}>
+                {errors.description}
+              </p>
             )}
+          </div>
+
+          <div>
+            <label htmlFor="category" className={labelClass}>
+              Category
+            </label>
+            <select
+              id="category"
+              name="category"
+              value={form.category}
+              onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
+              className={inputClass()}
+            >
+              <option value="">Select a category</option>
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </BentoCard>
+
+      <BentoCard className="p-md-token md:p-lg-token">
+        <div className="flex items-center gap-2 mb-md-token pb-sm-token border-b border-border-base-dark/30">
+          <Image className={`w-4 h-4 ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`} />
+          <h3 className={`text-base-token font-semibold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+            Banner Image
+          </h3>
+        </div>
+
+        <div className="flex flex-col md:flex-row items-center gap-lg-token">
+          <div className="w-full md:w-1/2">
+            <label htmlFor="banner-upload" className={labelClass}>
+              Banner Image (PNG/JPG/WebP, max 5 MB)
+            </label>
+            <p className={`text-xs-token mb-md-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+              Upload a high-resolution banner for the public expo page and search listings.
+            </p>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className={`px-sm-token py-xs-token rounded-md-token text-sm-token font-medium border transition-colors disabled:opacity-60 ${
+              className={`px-md-token py-sm-token rounded-md-token text-sm-token font-medium border transition-colors disabled:opacity-60 ${
                 isDarkMode
                   ? 'border-border-base-dark text-text-primary-dark hover:bg-bg-hover-dark'
                   : 'border-border-base-light text-text-primary-light hover:bg-bg-hover-light'
@@ -369,74 +376,103 @@ export default function ExpoForm({
               </p>
             )}
           </div>
+
+          <div className="w-full md:w-1/2 flex items-center justify-center">
+            {bannerPreview ? (
+              <div className="w-full h-44 rounded-lg-token overflow-hidden border border-border-base-dark/40 shadow-sm">
+                <img
+                  src={bannerPreview}
+                  alt="Banner preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className={`w-full h-44 rounded-lg-token border border-dashed flex flex-col items-center justify-center gap-2 ${
+                isDarkMode ? 'border-border-base-dark bg-bg-hover-dark/40 text-text-secondary-dark' : 'border-border-base-light bg-bg-hover-light/40 text-text-secondary-light'
+              }`}>
+                <Image className="w-8 h-8 opacity-40" />
+                <span className="text-xs-token">No banner image uploaded</span>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </BentoCard>
 
-      {/* ── Group 2: Schedule & Venue ───────────────────────────────────────── */}
-      <div className={`flex flex-col gap-md-token pt-lg-token border-t ${isDarkMode ? 'border-border-base-dark' : 'border-border-base-light'}`}>
-        <h3 className={sectionHeadClass}>Schedule &amp; Venue</h3>
-
-        {/* Date range */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-md-token">
-          {field('startDate', 'Start Date', 'datetime-local', '', true)}
-          {field('endDate', 'End Date', 'datetime-local', '', true)}
+      <BentoCard className="p-md-token md:p-lg-token">
+        <div className="flex items-center gap-2 mb-md-token pb-sm-token border-b border-border-base-dark/30">
+          <Calendar className={`w-4 h-4 ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`} />
+          <h3 className={`text-base-token font-semibold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+            Schedule &amp; Venue
+          </h3>
         </div>
 
-        {/* Venue */}
-        {field('venueName', 'Venue Name', 'text', 'e.g. Convention Centre', true)}
-        {field('venueAddress', 'Venue Address', 'text', 'e.g. 123 Main St, City', true)}
+        <div className="flex flex-col gap-md-token">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-md-token">
+            {field('startDate', 'Start Date', 'datetime-local', '', true)}
+            {field('endDate', 'End Date', 'datetime-local', '', true)}
+          </div>
 
-        {/* Total Booths */}
-        <div>
-          <label htmlFor="totalBooths" className={labelClass}>
-            Total Booths{' '}
-            <span aria-hidden="true" className="ml-xs-token text-text-danger-dark">
-              *
-            </span>
-          </label>
-          <input
-            id="totalBooths"
-            name="totalBooths"
-            type="number"
-            min={1}
-            value={form.totalBooths}
-            onChange={(e) =>
-              setForm((p) => ({
-                ...p,
-                totalBooths:
-                  e.target.value === '' ? '' : Number(e.target.value),
-              }))
-            }
-            className={inputClass(errors.totalBooths)}
-            aria-describedby={errors.totalBooths ? 'totalBooths-error' : undefined}
-          />
-          {errors.totalBooths && (
-            <p id="totalBooths-error" role="alert" className={errorClass}>
-              {errors.totalBooths}
-            </p>
-          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-md-token">
+            {field('venueName', 'Venue Name', 'text', 'e.g. Convention Centre', true)}
+            {field('venueAddress', 'Venue Address', 'text', 'e.g. 123 Main St, City', true)}
+          </div>
+
+          <div>
+            <label htmlFor="totalBooths" className={labelClass}>
+              Total Booths{' '}
+              <span aria-hidden="true" className="ml-xs-token text-text-danger-dark">
+                *
+              </span>
+            </label>
+            <input
+              id="totalBooths"
+              name="totalBooths"
+              type="number"
+              min={1}
+              value={form.totalBooths}
+              onChange={(e) =>
+                setForm((p) => ({
+                  ...p,
+                  totalBooths:
+                    e.target.value === '' ? '' : Number(e.target.value),
+                }))
+              }
+              className={inputClass(errors.totalBooths)}
+              aria-describedby={errors.totalBooths ? 'totalBooths-error' : undefined}
+            />
+            {errors.totalBooths && (
+              <p id="totalBooths-error" role="alert" className={errorClass}>
+                {errors.totalBooths}
+              </p>
+            )}
+          </div>
         </div>
-      </div>
+      </BentoCard>
 
-      {/* ── Group 3: Optional Details ───────────────────────────────────────── */}
-      <div className={`flex flex-col gap-md-token pt-lg-token border-t ${isDarkMode ? 'border-border-base-dark' : 'border-border-base-light'}`}>
-        <h3 className={sectionHeadClass}>Optional Details</h3>
+      <BentoCard className="p-md-token md:p-lg-token">
+        <div className="flex items-center gap-2 mb-md-token pb-sm-token border-b border-border-base-dark/30">
+          <Sparkles className={`w-4 h-4 ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`} />
+          <h3 className={`text-base-token font-semibold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+            Additional Details
+          </h3>
+        </div>
 
-        {field('websiteUrl', 'Website URL', 'url', 'https://…')}
-        {field('tags', 'Tags (comma-separated)', 'text', 'e.g. tech, innovation, AI')}
-        {field('venueMapUrl', 'Venue Map URL', 'url', 'https://maps.google.com/…')}
-      </div>
+        <div className="flex flex-col gap-md-token">
+          {field('websiteUrl', 'Website URL', 'url', 'https://…')}
+          {field('tags', 'Tags (comma-separated)', 'text', 'e.g. tech, innovation, AI')}
+          {field('venueMapUrl', 'Venue Map URL', 'url', 'https://maps.google.com/…')}
+        </div>
+      </BentoCard>
 
-      {/* Submit error */}
       {submitError && (
-        <p
+        <div
           role="alert"
           className={`text-sm-token ${
             isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'
           }`}
         >
           {submitError}
-        </p>
+        </div>
       )}
 
       {/* Submit button */}

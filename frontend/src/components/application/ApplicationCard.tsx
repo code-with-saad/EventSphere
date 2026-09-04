@@ -89,12 +89,17 @@ export default function ApplicationCard({ application, onClick }: ApplicationCar
 
       {/* Booth label (approved) */}
       {application.boothLabel && (
-        <div
-          className={`mt-xs-token text-xs-token font-medium ${
-            isDarkMode ? 'text-text-success-dark' : 'text-text-success-light'
-          }`}
-        >
-          Booth: {application.boothLabel}
+        <div className="mt-sm-token">
+          <span
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs-token font-semibold border ${
+              isDarkMode
+                ? 'bg-bg-success-dark/40 text-text-success-dark border-text-success-dark/40'
+                : 'bg-bg-success-light text-text-success-light border-text-success-light/40'
+            }`}
+          >
+            <span className="opacity-70 font-normal">Booth</span>
+            {application.boothLabel}
+          </span>
         </div>
       )}
 

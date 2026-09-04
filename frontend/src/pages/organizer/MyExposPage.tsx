@@ -1,25 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { expoService } from '../../services/expoService';
 import { Sidebar } from '../../components/layout/Sidebar';
 import { Header } from '../../components/layout/Header';
 import { BottomNav } from '../../components/layout/BottomNav';
-import ExpoStatusBadge from '../../components/expo/ExpoStatusBadge';
-import ExpoStatusTransitionButton from '../../components/expo/ExpoStatusTransitionButton';
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
+import OrganizerExpoCard from '../../components/expo/OrganizerExpoCard';
 
 export default function MyExposPage() {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
-  const navigate = useNavigate();
 
   const [expos, setExpos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,14 +35,6 @@ export default function MyExposPage() {
     fetchExpos();
   }, [fetchExpos]);
 
-  // ── Shared button styles ───────────────────────────────────────────────────
-  const actionBtnBase =
-    'px-sm-token py-xs-token rounded-md-token text-xs-token font-medium transition-colors';
-  const secondaryBtn = `${actionBtnBase} border ${
-    isDarkMode
-      ? 'border-border-base-dark text-text-secondary-dark hover:bg-bg-hover-dark hover:text-text-primary-dark'
-      : 'border-border-base-light text-text-secondary-light hover:bg-bg-hover-light hover:text-text-primary-light'
-  }`;
   const primaryLinkBtn = `px-md-token py-xs-token rounded-md-token text-sm-token font-semibold transition-colors ${
     isDarkMode
       ? 'bg-brand-primary-dark text-text-on-primary-dark hover:bg-accent-hover-dark'
@@ -67,13 +49,22 @@ export default function MyExposPage() {
         <main className="flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token">
           {/* Page header row */}
           <div className="flex items-center justify-between mb-lg-token">
-            <h2
-              className={`text-xl-token font-semibold leading-tight-token ${
-                isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
-              }`}
-            >
-              My Expos
-            </h2>
+            <div>
+              <h2
+                className={`text-xl-token font-semibold leading-tight-token ${
+                  isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+                }`}
+              >
+                My Expos
+              </h2>
+              <p
+                className={`text-sm-token mt-xs-token ${
+                  isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                }`}
+              >
+                Manage your active and upcoming expo events
+              </p>
+            </div>
             <Link to="/organizer/expos/new" className={primaryLinkBtn}>
               + New Expo
             </Link>
@@ -144,77 +135,19 @@ export default function MyExposPage() {
             </div>
           )}
 
-          {/* Expo list */}
+          {/* Expo card grid: 1 col mobile, 2 cols tablet, 3 cols desktop */}
           {!loading && !error && expos.length > 0 && (
-            <div className="flex flex-col gap-md-token">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md-token md:gap-lg-token">
               {expos.map((expo: any) => (
-                <div
+                <OrganizerExpoCard
                   key={expo._id}
-                  className={`rounded-lg-token border p-md-token ${
-                    isDarkMode
-                      ? 'bg-bg-surface-dark border-border-base-dark'
-                      : 'bg-bg-surface-light border-border-base-light'
-                  }`}
-                >
-                  {/* Top row: name + status badge */}
-                  <div className="flex flex-wrap items-start justify-between gap-sm-token mb-xs-token">
-                    <h3
-                      className={`text-base-token font-semibold ${
-                        isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
-                      }`}
-                    >
-                      {expo.name}
-                    </h3>
-                    <ExpoStatusBadge status={expo.status} />
-                  </div>
-
-                  {/* Dates + venue */}
-                  <p
-                    className={`text-xs-token mb-sm-token ${
-                      isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
-                    }`}
-                  >
-                    {expo.startDate && expo.endDate
-                      ? `${formatDate(expo.startDate)} – ${formatDate(expo.endDate)}`
-                      : 'Dates TBD'}
-                    {expo.venueName && ` — ${expo.venueName}`}
-                  </p>
-
-                  {/* Quick-action buttons */}
-                  <div className="flex flex-wrap gap-xs-token items-center">
-                    <button
-                      onClick={() => navigate(`/organizer/expos/${expo._id}/edit`)}
-                      className={secondaryBtn}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() =>
-                        navigate(`/organizer/expos/${expo._id}/applications`)
-                      }
-                      className={secondaryBtn}
-                    >
-                      Manage Applications
-                    </button>
-                    <button
-                      onClick={() =>
-                        navigate(`/organizer/expos/${expo._id}/schedule`)
-                      }
-                      className={secondaryBtn}
-                    >
-                      Manage Schedule
-                    </button>
-                    <ExpoStatusTransitionButton
-                      expoId={expo._id}
-                      action="delete"
-                      onSuccess={() => {
-                        setActionError(null);
-                        fetchExpos();
-                      }}
-                      onError={(msg) => setActionError(msg)}
-                    />
-                  </div>
-                </div>
+                  expo={expo}
+                  onDeleteSuccess={() => {
+                    setActionError(null);
+                    fetchExpos();
+                  }}
+                  onError={(msg) => setActionError(msg)}
+                />
               ))}
             </div>
           )}

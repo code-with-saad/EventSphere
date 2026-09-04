@@ -113,50 +113,67 @@ export default function EditExpoPage() {
               actions={<ExpoStatusBadge status={expo.status} />}
             />
 
-            {/* Status transition actions — minimal, no card wrapper */}
+            {/* Status transition actions bar — distinct background treatment */}
             {(expo.status === 'draft' || expo.status === 'published' || expo.status === 'ongoing') && (
-              <div className="flex flex-wrap gap-sm-token mb-lg-token">
-                {expo.status === 'draft' && (
-                  <ExpoStatusTransitionButton
-                    expoId={expo._id}
-                    action="publish"
-                    onSuccess={() => {
-                      toast.success('Expo published!');
-                      expoService.getByIdForOrganizer(id!).then((d: any) => setExpo(d?.expo ?? d));
-                    }}
-                    onError={(msg) => toast.error(msg)}
-                  />
-                )}
-                {expo.status === 'published' && (
-                  <ExpoStatusTransitionButton
-                    expoId={expo._id}
-                    action="ongoing"
-                    onSuccess={() => {
-                      toast.success('Expo is now ongoing!');
-                      expoService.getByIdForOrganizer(id!).then((d: any) => setExpo(d?.expo ?? d));
-                    }}
-                    onError={(msg) => toast.error(msg)}
-                  />
-                )}
-                {expo.status === 'ongoing' && (
-                  <ExpoStatusTransitionButton
-                    expoId={expo._id}
-                    action="complete"
-                    onSuccess={() => {
-                      toast.success('Expo completed!');
-                      expoService.getByIdForOrganizer(id!).then((d: any) => setExpo(d?.expo ?? d));
-                    }}
-                    onError={(msg) => toast.error(msg)}
-                  />
-                )}
-                {(expo.status === 'published' || expo.status === 'ongoing') && (
-                  <ExpoStatusTransitionButton
-                    expoId={expo._id}
-                    action="archive"
-                    onSuccess={() => { toast.success('Expo archived.'); navigate('/organizer/expos'); }}
-                    onError={(msg) => toast.error(msg)}
-                  />
-                )}
+              <div
+                className={`mb-lg-token p-md-token rounded-lg-token border backdrop-blur-md flex flex-wrap items-center justify-between gap-md-token ${
+                  isDarkMode
+                    ? 'bg-glass-dark border-glass-border-dark shadow-elevation-1-dark'
+                    : 'bg-glass-light border-glass-border-light shadow-elevation-1-light'
+                }`}
+              >
+                <div>
+                  <h4 className={`text-sm-token font-semibold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                    Lifecycle Actions
+                  </h4>
+                  <p className={`text-xs-token mt-0.5 ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                    Current status: <span className="font-semibold capitalize">{expo.status}</span>
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-sm-token">
+                  {expo.status === 'draft' && (
+                    <ExpoStatusTransitionButton
+                      expoId={expo._id}
+                      action="publish"
+                      onSuccess={() => {
+                        toast.success('Expo published!');
+                        expoService.getByIdForOrganizer(id!).then((d: any) => setExpo(d?.expo ?? d));
+                      }}
+                      onError={(msg) => toast.error(msg)}
+                    />
+                  )}
+                  {expo.status === 'published' && (
+                    <ExpoStatusTransitionButton
+                      expoId={expo._id}
+                      action="ongoing"
+                      onSuccess={() => {
+                        toast.success('Expo is now ongoing!');
+                        expoService.getByIdForOrganizer(id!).then((d: any) => setExpo(d?.expo ?? d));
+                      }}
+                      onError={(msg) => toast.error(msg)}
+                    />
+                  )}
+                  {expo.status === 'ongoing' && (
+                    <ExpoStatusTransitionButton
+                      expoId={expo._id}
+                      action="complete"
+                      onSuccess={() => {
+                        toast.success('Expo completed!');
+                        expoService.getByIdForOrganizer(id!).then((d: any) => setExpo(d?.expo ?? d));
+                      }}
+                      onError={(msg) => toast.error(msg)}
+                    />
+                  )}
+                  {(expo.status === 'published' || expo.status === 'ongoing') && (
+                    <ExpoStatusTransitionButton
+                      expoId={expo._id}
+                      action="archive"
+                      onSuccess={() => { toast.success('Expo archived.'); navigate('/organizer/expos'); }}
+                      onError={(msg) => toast.error(msg)}
+                    />
+                  )}
+                </div>
               </div>
             )}
 

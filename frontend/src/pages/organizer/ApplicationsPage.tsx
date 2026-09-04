@@ -9,6 +9,8 @@ import BackButton from '../../components/layout/BackButton';
 import ApplicationCard from '../../components/application/ApplicationCard';
 import ReviewPanel from '../../components/application/ReviewPanel';
 import BoothAssignmentModal from '../../components/application/BoothAssignmentModal';
+import { BentoCard } from '../../components/common/BentoCard';
+import { Users, Clock, CheckCircle2, XCircle, Store } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
@@ -138,66 +140,105 @@ export default function ApplicationsPage() {
             <div className="mb-sm-token">
               <BackButton fallback="/organizer/expos" label="My Expos" />
             </div>
-            <div className="flex flex-wrap items-end justify-between gap-md-token">
-              <div>
-                <h1 className={`text-xl-token font-semibold leading-tight-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
-                  Manage Applications
-                </h1>
-                <p className={`mt-xs-token text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
-                  Review and action exhibitor applications
-                </p>
-              </div>
-              {/* Summary stats inline */}
-              {!loading && (
-                <div className="flex flex-wrap gap-md-token">
-                  {[
-                    { label: 'Total', value: allApps.length },
-                    { label: 'Pending', value: pending.length, accent: pending.length > 0 },
-                    { label: 'Approved', value: approved.length },
-                    { label: 'Rejected', value: rejected.length },
-                  ].map(({ label, value, accent }) => (
-                    <div key={label} className="text-center">
-                      <div className={`text-lg-token font-semibold leading-tight-token ${
-                        accent
-                          ? isDarkMode ? 'text-text-warning-dark' : 'text-text-warning-light'
-                          : isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
-                      }`}>
-                        {value}
-                      </div>
-                      <div className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
-                        {label}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+            <div>
+              <h1 className={`text-xl-token font-semibold leading-tight-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                Manage Applications
+              </h1>
+              <p className={`mt-xs-token text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                Review, filter, and action exhibitor booth applications
+              </p>
             </div>
-
-            {/* Booth fill rate — inline below header, no card border */}
-            {!loading && totalBooths > 0 && (
-              <div className="mt-md-token">
-                <div className="flex items-center justify-between mb-xs-token">
-                  <span className={`text-xs-token font-medium ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
-                    Booth capacity
-                  </span>
-                  <span className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
-                    {assignedBooths} / {totalBooths} ({boothFillRate}%)
-                  </span>
-                </div>
-                <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-bg-hover-dark' : 'bg-bg-hover-light'}`}>
-                  <div
-                    className={`h-full rounded-full transition-all ${fillColor}`}
-                    style={{ width: `${Math.min(boothFillRate, 100)}%` }}
-                    role="progressbar"
-                    aria-valuenow={boothFillRate}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-label={`Booth fill rate: ${boothFillRate}%`}
-                  />
-                </div>
-              </div>
-            )}
           </div>
+
+          {/* BentoCard Stats & Capacity Summary Panel */}
+          {!loading && (
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-sm-token md:gap-md-token mb-lg-token">
+              <BentoCard className="p-sm-token md:p-md-token flex items-center gap-3">
+                <div className={`p-2 rounded-md-token ${isDarkMode ? 'bg-bg-hover-dark text-text-primary-dark' : 'bg-bg-hover-light text-text-primary-light'}`}>
+                  <Users className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className={`text-xl-token font-bold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                    {allApps.length}
+                  </div>
+                  <div className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                    Total Apps
+                  </div>
+                </div>
+              </BentoCard>
+
+              <BentoCard className="p-sm-token md:p-md-token flex items-center gap-3">
+                <div className={`p-2 rounded-md-token ${isDarkMode ? 'bg-text-warning-dark/20 text-text-warning-dark' : 'bg-text-warning-light/20 text-text-warning-light'}`}>
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className={`text-xl-token font-bold ${pending.length > 0 ? (isDarkMode ? 'text-text-warning-dark' : 'text-text-warning-light') : (isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light')}`}>
+                    {pending.length}
+                  </div>
+                  <div className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                    Pending
+                  </div>
+                </div>
+              </BentoCard>
+
+              <BentoCard className="p-sm-token md:p-md-token flex items-center gap-3">
+                <div className={`p-2 rounded-md-token ${isDarkMode ? 'bg-text-success-dark/20 text-text-success-dark' : 'bg-text-success-light/20 text-text-success-light'}`}>
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className={`text-xl-token font-bold ${isDarkMode ? 'text-text-success-dark' : 'text-text-success-light'}`}>
+                    {approved.length}
+                  </div>
+                  <div className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                    Approved
+                  </div>
+                </div>
+              </BentoCard>
+
+              <BentoCard className="p-sm-token md:p-md-token flex items-center gap-3">
+                <div className={`p-2 rounded-md-token ${isDarkMode ? 'bg-text-danger-dark/20 text-text-danger-dark' : 'bg-text-danger-light/20 text-text-danger-light'}`}>
+                  <XCircle className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className={`text-xl-token font-bold ${isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'}`}>
+                    {rejected.length}
+                  </div>
+                  <div className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                    Rejected
+                  </div>
+                </div>
+              </BentoCard>
+
+              {/* Booth capacity card */}
+              <BentoCard className="col-span-2 lg:col-span-1 p-sm-token md:p-md-token flex flex-col justify-center">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className={`text-xs-token font-medium flex items-center gap-1.5 ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                    <Store className="w-3.5 h-3.5" />
+                    Booths
+                  </span>
+                  <span className={`text-xs-token font-bold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                    {totalBooths > 0 ? `${assignedBooths}/${totalBooths}` : `${assignedBooths}`}
+                  </span>
+                </div>
+                {totalBooths > 0 ? (
+                  <div className={`w-full h-2 rounded-full overflow-hidden ${isDarkMode ? 'bg-bg-hover-dark' : 'bg-bg-hover-light'}`}>
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${fillColor}`}
+                      style={{ width: `${Math.min(boothFillRate, 100)}%` }}
+                      role="progressbar"
+                      aria-valuenow={boothFillRate}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                    />
+                  </div>
+                ) : (
+                  <div className={`text-[11px] ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                    Capacity not set
+                  </div>
+                )}
+              </BentoCard>
+            </div>
+          )}
 
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-sm-token mb-lg-token">
