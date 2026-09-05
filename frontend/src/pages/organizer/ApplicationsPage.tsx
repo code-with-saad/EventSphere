@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { applicationService } from '../../services/applicationService';
+import { expoService } from '../../services/expoService';
 import { Sidebar } from '../../components/layout/Sidebar';
 import { Header } from '../../components/layout/Header';
 import { BottomNav } from '../../components/layout/BottomNav';
@@ -17,9 +18,14 @@ import toast from 'react-hot-toast';
 type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
 
 export default function ApplicationsPage() {
-  const { id: expoId } = useParams<{ id: string }>();
+  const { id: paramExpoId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
+
+  const [expos, setExpos] = useState<any[]>([]);
+  const [selectedExpoId, setSelectedExpoId] = useState<string>(paramExpoId || '');
+  const [expo, setExpo] = useState<any | null>(null);
 
   const [pending, setPending] = useState<any[]>([]);
   const [approved, setApproved] = useState<any[]>([]);
@@ -37,24 +43,42 @@ export default function ApplicationsPage() {
   const [messageApp, setMessageApp] = useState<any | null>(null);
   const [isActing, setIsActing] = useState(false);
 
+  useEffect(() => {
+    expoService
+      .listMine()
+      .then((list: any[]) => {
+        setExpos(list || []);
+        if (!selectedExpoId && list && list.length > 0) {
+          setSelectedExpoId(list[0]._id);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const activeExpoId = paramExpoId || selectedExpoId;
+
   const fetchApplications = useCallback(async () => {
-    if (!expoId) return;
+    if (!activeExpoId) return;
     setLoading(true);
     setError(null);
     try {
-      const data = await applicationService.listForExpo(expoId);
+      const [data, expoData] = await Promise.all([
+        applicationService.listForExpo(activeExpoId),
+        expoService.getByIdForOrganizer(activeExpoId).catch(() => null),
+      ]);
       setPending(data?.pending ?? []);
       setApproved(data?.approved ?? []);
       setRejected(data?.rejected ?? []);
-      setTotalBooths(data?.totalBooths ?? 0);
+      setTotalBooths(data?.totalBooths ?? expoData?.expo?.totalBooths ?? 0);
       setAssignedBooths(data?.assignedBooths ?? 0);
       setBoothFillRate(data?.boothFillRate ?? 0);
+      setExpo(expoData?.expo ?? expoData);
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || 'Failed to load applications');
     } finally {
       setLoading(false);
     }
-  }, [expoId]);
+  }, [activeExpoId]);
 
   useEffect(() => { fetchApplications(); }, [fetchApplications]);
 
@@ -75,10 +99,10 @@ export default function ApplicationsPage() {
   };
 
   const handleBoothConfirm = async (boothLabel: string) => {
-    if (!expoId || !selectedApp) return;
+    if (!activeExpoId || !selectedApp) return;
     setIsActing(true);
     try {
-      const result = await applicationService.review(expoId, selectedApp._id, { action: 'approve', boothLabel });
+      const result = await applicationService.review(activeExpoId, selectedApp._id, { action: 'approve', boothLabel });
       toast.success(result?.overfillWarning ? 'Approved! Note: expo is now over capacity.' : 'Application approved!');
       setShowBoothModal(false);
       setSelectedApp(null);
@@ -92,10 +116,10 @@ export default function ApplicationsPage() {
   };
 
   const handleReject = async (applicationId: string) => {
-    if (!expoId) return;
+    if (!activeExpoId) return;
     setIsActing(true);
     try {
-      await applicationService.review(expoId, applicationId, { action: 'reject' });
+      await applicationService.review(activeExpoId, applicationId, { action: 'reject' });
       toast.success('Application rejected.');
       setSelectedApp(null);
       fetchApplications();
@@ -107,10 +131,10 @@ export default function ApplicationsPage() {
   };
 
   const handleRevoke = async (applicationId: string) => {
-    if (!expoId) return;
+    if (!activeExpoId) return;
     setIsActing(true);
     try {
-      await applicationService.review(expoId, applicationId, { action: 'revoke' });
+      await applicationService.review(activeExpoId, applicationId, { action: 'revoke' });
       toast.success('Approval revoked.');
       setSelectedApp(null);
       fetchApplications();
@@ -137,14 +161,46 @@ export default function ApplicationsPage() {
         <Header title="Manage Applications" />
         <main className="flex-1 p-md-token md:p-lg-token pb-16 md:pb-lg-token">
 
+          {/* Back button & Expo selector bar */}
+          <div className="mb-lg-token flex flex-wrap items-center justify-between gap-md-token">
+            <BackButton fallback="/organizer/expos" label="My Expos" />
+
+            {/* Expo Selector Bar */}
+            {expos.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className={`text-xs-token font-medium ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                  Select Expo:
+                </span>
+                <select
+                  value={activeExpoId}
+                  onChange={(e) => {
+                    const newId = e.target.value;
+                    setSelectedExpoId(newId);
+                    if (paramExpoId) {
+                      navigate(`/organizer/expos/${newId}/applications`);
+                    }
+                  }}
+                  className={`px-3 py-1.5 rounded-lg-token border text-xs-token font-medium outline-none transition-colors ${
+                    isDarkMode
+                      ? 'bg-bg-surface-dark border-border-base-dark text-text-primary-dark'
+                      : 'bg-white border-border-base-light text-text-primary-light'
+                  }`}
+                >
+                  {expos.map((e) => (
+                    <option key={e._id} value={e._id}>
+                      {e.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+
           {/* Page header with expo context */}
           <div className="mb-xl-token">
-            <div className="mb-sm-token">
-              <BackButton fallback="/organizer/expos" label="My Expos" />
-            </div>
             <div>
               <h1 className={`text-xl-token font-semibold leading-tight-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
-                Manage Applications
+                {expo ? `${expo.name} — Applications` : 'Manage Applications'}
               </h1>
               <p className={`mt-xs-token text-sm-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
                 Review, filter, and action exhibitor booth applications
@@ -308,7 +364,7 @@ export default function ApplicationsPage() {
         <BoothAssignmentModal
           isOpen={showBoothModal}
           applicationId={selectedApp._id}
-          expoId={expoId ?? ''}
+          expoId={activeExpoId ?? ''}
           totalBooths={totalBooths}
           assignedBooths={assignedBooths}
           initialBooth={selectedApp.preferredBooth}

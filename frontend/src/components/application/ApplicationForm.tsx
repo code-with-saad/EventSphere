@@ -72,10 +72,16 @@ export default function ApplicationForm({
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Booth info state
-  const [boothData, setBoothData] = useState<{ totalBooths: number; occupiedBooths: string[]; zones?: { name: string; boothCount: number }[] }>({
+  const [boothData, setBoothData] = useState<{
+    totalBooths: number;
+    occupiedBooths: string[];
+    zones?: { name: string; boothCount: number }[];
+    spatialLayout?: any;
+  }>({
     totalBooths: 20,
     occupiedBooths: [],
     zones: undefined,
+    spatialLayout: undefined,
   });
 
   useEffect(() => {
@@ -87,6 +93,7 @@ export default function ApplicationForm({
             totalBooths: data.totalBooths || 20,
             occupiedBooths: data.occupiedBooths || [],
             zones: data.zones || undefined,
+            spatialLayout: data.spatialLayout || undefined,
           });
         }
       })
@@ -490,6 +497,7 @@ export default function ApplicationForm({
         <BoothSelectorGrid
           totalBooths={boothData.totalBooths}
           zones={boothData.zones}
+          spatialLayout={boothData.spatialLayout}
           occupiedBooths={boothData.occupiedBooths}
           selectedBooth={form.preferredBooth}
           onSelectBooth={(booth) => setForm((prev) => ({ ...prev, preferredBooth: booth }))}

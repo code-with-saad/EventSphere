@@ -100,11 +100,15 @@ router.get(
       if (!threadMap.has(appIdStr)) {
         const app = appMap.get(appIdStr);
         const expo = app ? expoMap.get(app.expoId.toString()) : null;
+        const appStatus = app?.status || 'pending';
+        const isArchived = appStatus === 'rejected' || appStatus === 'withdrawn';
+
         threadMap.set(appIdStr, {
           applicationId: appIdStr,
           companyName: app?.companyName || 'Applicant',
           category: app?.category || '',
-          status: app?.status || 'pending',
+          status: appStatus,
+          isArchived,
           expoId: app?.expoId?.toString() || '',
           expoName: expo?.name || 'Expo',
           lastMessage: {
@@ -123,16 +127,25 @@ router.get(
       }
     }
 
-    // Include applications that don't have messages yet so user can start conversations
+    // Include active applications (pending/approved) that don't have messages yet so user can start conversations.
+    // Exclude rejected/withdrawn applications if totalMessages === 0.
     for (const app of applications) {
       const appIdStr = app._id.toString();
+      const isClosed = app.status === 'rejected' || app.status === 'withdrawn';
+
       if (!threadMap.has(appIdStr)) {
+        if (isClosed) {
+          // Skip closed/withdrawn/rejected applications with zero messages
+          continue;
+        }
+
         const expo = expoMap.get(app.expoId.toString());
         threadMap.set(appIdStr, {
           applicationId: appIdStr,
           companyName: app.companyName || 'Applicant',
           category: app.category || '',
           status: app.status || 'pending',
+          isArchived: false,
           expoId: app.expoId?.toString() || '',
           expoName: expo?.name || 'Expo',
           lastMessage: null,

@@ -31,7 +31,6 @@ export default function MyApplicationsPage() {
   const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [withdrawnApps, setWithdrawnApps] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<AppStatus>('all');
 
@@ -92,16 +91,12 @@ export default function MyApplicationsPage() {
     if (!withdrawTarget) return;
     setWithdrawing(true);
     try {
-      const withdrawnApp = applications.find(a => a._id === withdrawTarget.appId);
       await applicationService.withdraw(withdrawTarget.expoId, withdrawTarget.appId);
       toast.success('Application withdrawn.');
       setWithdrawTarget(null);
-      if (withdrawnApp) {
-        setApplications(prev => prev.filter(a => a._id !== withdrawTarget.appId));
-        setWithdrawnApps(prev => [...prev, { ...withdrawnApp, status: 'withdrawn' as const }]);
-      } else {
-        fetchApplications();
-      }
+      setApplications(prev =>
+        prev.map(a => (a._id === withdrawTarget.appId ? { ...a, status: 'withdrawn' } : a))
+      );
     } catch (err: unknown) {
       toast.error(
         (err as any)?.response?.data?.message ||
@@ -113,7 +108,7 @@ export default function MyApplicationsPage() {
     }
   };
 
-  const allApps = [...applications, ...withdrawnApps];
+  const allApps = applications;
 
   // Count per status for chip badges
   const statusCounts = useMemo(() => {

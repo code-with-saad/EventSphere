@@ -224,6 +224,67 @@ describe('ApplicationService.submit()', () => {
     expect(second).toBeDefined();
     expect(second.status).toBe('pending');
   });
+
+  it('8. allows application to an ongoing expo when booths are available', async () => {
+    const organizer = await createTestUser({ role: 'organizer', status: 'active', isEmailVerified: true });
+    const exhibitor = await createTestUser({ role: 'exhibitor', status: 'active', isEmailVerified: true });
+    const expoId = await insertExpo(organizer._id.toString(), 'ongoing');
+    const payload = makePayload(expoId, exhibitor._id.toString());
+
+    const result = await ApplicationService.submit(payload);
+    expect(result.status).toBe('pending');
+    expect(result.expoId.toString()).toBe(expoId);
+  });
+
+  it('9. blocks application to an ongoing expo when all booths are booked with EXPO_FULLY_BOOKED (400)', async () => {
+    const organizer = await createTestUser({ role: 'organizer', status: 'active', isEmailVerified: true });
+    const exhibitorA = await createTestUser({ role: 'exhibitor', status: 'active', isEmailVerified: true });
+    const exhibitorB = await createTestUser({ role: 'exhibitor', status: 'active', isEmailVerified: true });
+    
+    // Create an ongoing expo with only 1 booth
+    const db = getTestDb();
+    const now = new Date();
+    const past = (days: number) => new Date(Date.now() - days * 86400000);
+    const future = (days: number) => new Date(Date.now() + days * 86400000);
+    const expoRes = await db.collection('expos').insertOne({
+      organizerId: new ObjectId(organizer._id.toString()),
+      name: 'Full Ongoing Expo',
+      description: 'A full expo',
+      status: 'ongoing',
+      startDate: past(1),
+      endDate: future(2),
+      venueName: 'Test Venue',
+      venueAddress: '123 Test St',
+      totalBooths: 1,
+      createdAt: now,
+      updatedAt: now,
+    });
+    const expoId = expoRes.insertedId.toString();
+
+    // Fill the 1 booth with an approved application
+    await db.collection('applications').insertOne({
+      expoId: new ObjectId(expoId),
+      exhibitorId: new ObjectId(exhibitorA._id.toString()),
+      companyName: 'Company A',
+      status: 'approved',
+      boothLabel: 'A1',
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    // Attempting to submit application from Exhibitor B should fail with EXPO_FULLY_BOOKED
+    let caughtError: any;
+    try {
+      await ApplicationService.submit(makePayload(expoId, exhibitorB._id.toString()));
+    } catch (err) {
+      caughtError = err;
+    }
+
+    expect(caughtError).toBeDefined();
+    expect(caughtError.code).toBe('EXPO_FULLY_BOOKED');
+    expect(caughtError.statusCode).toBe(400);
+    expect(caughtError.message).toBe('All booth spaces for this expo have been filled');
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -231,7 +292,7 @@ describe('ApplicationService.submit()', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('ApplicationService.withdraw()', () => {
-  it('1. hard-deletes a pending application', async () => {
+  it('1. soft-deletes a pending application to status withdrawn', async () => {
     const organizer = await createTestUser({ role: 'organizer', status: 'active', isEmailVerified: true });
     const exhibitor = await createTestUser({ role: 'exhibitor', status: 'active', isEmailVerified: true });
     const expoId = await insertExpo(organizer._id.toString(), 'published');
@@ -243,10 +304,11 @@ describe('ApplicationService.withdraw()', () => {
       ApplicationService.withdraw(application._id.toString(), exhibitor._id.toString())
     ).resolves.toBeUndefined();
 
-    // Record must be gone from the DB
+    // Record must be soft-deleted in DB with status 'withdrawn'
     const db = getTestDb();
     const found = await db.collection('applications').findOne({ _id: application._id });
-    expect(found).toBeNull();
+    expect(found).not.toBeNull();
+    expect(found?.status).toBe('withdrawn');
   });
 
   it('2. allows reapplication after withdrawal (REQ-3.14)', async () => {
@@ -443,10 +505,25 @@ describe('ApplicationService.approve()', () => {
     expect(resultA.status).toBe('approved');
     expect(resultA.overfillWarning).toBeFalsy(); // 0 approved before this one, 0 < 1
 
-    // Second exhibitor — 1 approved >= 1 total → overfill warning
+    // Second exhibitor — insert application directly to bypass EXPO_FULLY_BOOKED guard
+    // (The guard intentionally blocks new submissions once booths are full; overfillWarning
+    //  on approve() tests the *organizer-side* safeguard for manually-overridden applications)
     const exhibitorB = await createTestUser({ role: 'exhibitor', status: 'active', isEmailVerified: true });
-    const appB = await ApplicationService.submit(makePayload(tinyExpoId, exhibitorB._id.toString()));
-    const resultB = await ApplicationService.approve(appB._id.toString(), organizer._id.toString(), 'A-2');
+    const now = new Date();
+    const insertedB = await db.collection('applications').insertOne({
+      expoId: new ObjectId(tinyExpoId),
+      exhibitorId: new ObjectId(exhibitorB._id.toString()),
+      companyName: 'Exhibitor B',
+      companyDescription: 'Test',
+      category: 'Technology',
+      phoneNumber: '+1234567890',
+      status: 'pending',
+      createdAt: now,
+      updatedAt: now,
+    });
+    const appBId = insertedB.insertedId.toString();
+
+    const resultB = await ApplicationService.approve(appBId, organizer._id.toString(), 'A-2');
     expect(resultB.status).toBe('approved');
     expect(resultB.overfillWarning).toBe(true); // 1 approved >= 1 totalBooths
   });

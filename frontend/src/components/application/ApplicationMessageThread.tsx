@@ -61,7 +61,7 @@ export default function ApplicationMessageThread({
         if (!cancelled) setLoading(false);
       });
 
-    // Polling interval (every 4 seconds)
+    // Polling interval (every 10 seconds)
     const intervalId = setInterval(() => {
       if (cancelled) return;
       messageService.getByApplication(applicationId)
@@ -71,7 +71,6 @@ export default function ApplicationMessageThread({
             const existingIds = new Set(prev.map((m) => m._id));
             const newIncoming = latestMsgs.filter((m) => !existingIds.has(m._id));
             if (newIncoming.length > 0) {
-              console.log('[ApplicationMessageThread] Polled new messages:', newIncoming.length);
               setTimeout(scrollToBottom, 50);
               return [...prev, ...newIncoming];
             }
@@ -79,9 +78,9 @@ export default function ApplicationMessageThread({
           });
         })
         .catch(() => {
-          // Silent failure on polling background tick
+          // Silent failure on background polling tick
         });
-    }, 4000);
+    }, 10000);
 
     return () => {
       cancelled = true;
@@ -94,23 +93,30 @@ export default function ApplicationMessageThread({
     if (!newMessage.trim() || sending) return;
 
     const messageContent = newMessage.trim();
+    const tempId = `temp-${Date.now()}`;
+    const optimisticMsg: ApplicationMessage = {
+      _id: tempId,
+      applicationId,
+      senderId: user?.id || '',
+      senderName: (user as any)?.fullName || (user as any)?.name || 'You',
+      senderRole: (user?.role as any) || 'attendee',
+      content: messageContent,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Immediate optimistic update
+    setMessages((prev) => [...prev, optimisticMsg]);
+    setNewMessage('');
+    setTimeout(scrollToBottom, 50);
     setSending(true);
+
     try {
-      console.log('[ApplicationMessageThread] Sending message:', messageContent);
       const msg = await messageService.sendMessage(applicationId, messageContent);
-      console.log('[ApplicationMessageThread] Received send response msg:', msg);
-      setMessages((prev) => {
-        console.log('[ApplicationMessageThread] Appending msg to state. Prev length:', prev.length);
-        const existingIds = new Set(prev.map((m) => m._id));
-        if (existingIds.has(msg._id)) return prev;
-        const next = [...prev, msg];
-        console.log('[ApplicationMessageThread] New messages length:', next.length);
-        return next;
-      });
-      setNewMessage('');
-      setTimeout(scrollToBottom, 50);
+      setMessages((prev) =>
+        prev.map((m) => (m._id === tempId ? msg : m))
+      );
     } catch (err: any) {
-      console.error('[ApplicationMessageThread] Send failed:', err);
+      setMessages((prev) => prev.filter((m) => m._id !== tempId));
       setError(err?.response?.data?.message || 'Failed to send message');
     } finally {
       setSending(false);

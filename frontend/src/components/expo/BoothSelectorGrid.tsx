@@ -1,6 +1,8 @@
-import React from 'react';
-import { Store, CheckCircle, Ban, Layers } from 'lucide-react';
+import React, { useState } from 'react';
+import { Store, CheckCircle, Ban, Layers, Map, LayoutGrid } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { IExpoSpatialLayout } from '../../services/expoService';
+import SpatialFloorPlanViewer from './SpatialFloorPlanViewer';
 
 export interface ExpoZone {
   name: string;
@@ -10,6 +12,7 @@ export interface ExpoZone {
 interface BoothSelectorGridProps {
   totalBooths?: number;
   zones?: ExpoZone[];
+  spatialLayout?: IExpoSpatialLayout;
   occupiedBooths: string[];
   selectedBooth?: string;
   onSelectBooth: (boothLabel: string) => void;
@@ -51,6 +54,7 @@ function generateZoneBoothLabels(prefix: string, count: number): string[] {
 export const BoothSelectorGrid: React.FC<BoothSelectorGridProps> = ({
   totalBooths = 20,
   zones,
+  spatialLayout,
   occupiedBooths = [],
   selectedBooth,
   onSelectBooth,
@@ -58,6 +62,9 @@ export const BoothSelectorGrid: React.FC<BoothSelectorGridProps> = ({
 }) => {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
+
+  const hasSpatial = Boolean(spatialLayout && spatialLayout.booths && spatialLayout.booths.length > 0);
+  const [viewMode, setViewMode] = useState<'spatial' | 'grid'>(hasSpatial ? 'spatial' : 'grid');
 
   // If no explicit zones provided, create a default "Main Hall" zone using totalBooths
   const effectiveZones: ExpoZone[] = zones && zones.length > 0
@@ -68,29 +75,82 @@ export const BoothSelectorGrid: React.FC<BoothSelectorGridProps> = ({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Legend & Summary */}
-      <div className="flex items-center justify-between flex-wrap gap-2 text-xs-token">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5">
-            <div className={`w-3.5 h-3.5 rounded border ${isDarkMode ? 'bg-bg-glass-dark border-border-base-dark' : 'bg-white border-border-base-light'}`} />
-            <span className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>Available</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className={`w-3.5 h-3.5 rounded ${isDarkMode ? 'bg-brand-primary-dark text-white' : 'bg-brand-primary-light text-white'}`} />
-            <span className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>Selected</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className={`w-3.5 h-3.5 rounded ${isDarkMode ? 'bg-black/40 border border-border-base-dark/50' : 'bg-black/10 border border-border-base-light'}`} />
-            <span className={isDarkMode ? 'text-text-muted-dark' : 'text-text-muted-light'}>Reserved</span>
+      {/* View Toggle Bar when spatial layout exists */}
+      {hasSpatial && (
+        <div className="flex items-center justify-between gap-2 border-b border-border-base-dark/20 pb-2">
+          <span className={`text-xs-token font-medium ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+            Venue Booth Layout
+          </span>
+          <div className="flex items-center gap-1 rounded-md-token p-0.5 bg-black/10 dark:bg-white/5 border border-border-base-dark/30">
+            <button
+              type="button"
+              onClick={() => setViewMode('spatial')}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs-token font-medium transition-colors cursor-pointer ${
+                viewMode === 'spatial'
+                  ? isDarkMode
+                    ? 'bg-brand-primary-dark text-white shadow'
+                    : 'bg-brand-primary-light text-white shadow'
+                  : isDarkMode
+                  ? 'text-text-secondary-dark hover:text-white'
+                  : 'text-text-secondary-light hover:text-black'
+              }`}
+            >
+              <Map className="w-3.5 h-3.5" />
+              <span>Interactive Map</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs-token font-medium transition-colors cursor-pointer ${
+                viewMode === 'grid'
+                  ? isDarkMode
+                    ? 'bg-brand-primary-dark text-white shadow'
+                    : 'bg-brand-primary-light text-white shadow'
+                  : isDarkMode
+                  ? 'text-text-secondary-dark hover:text-white'
+                  : 'text-text-secondary-light hover:text-black'
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>Grid View</span>
+            </button>
           </div>
         </div>
+      )}
 
-        {selectedBooth && (
-          <div className={`font-semibold ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`}>
-            Selected Booth: {selectedBooth}
+      {viewMode === 'spatial' && spatialLayout ? (
+        <SpatialFloorPlanViewer
+          spatialLayout={spatialLayout}
+          occupiedBooths={occupiedBooths}
+          selectedBooth={selectedBooth}
+          onSelectBooth={disabled ? undefined : onSelectBooth}
+          interactive={!disabled}
+        />
+      ) : (
+        <>
+          {/* Legend & Summary */}
+          <div className="flex items-center justify-between flex-wrap gap-2 text-xs-token">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5">
+                <div className={`w-3.5 h-3.5 rounded border ${isDarkMode ? 'bg-bg-glass-dark border-border-base-dark' : 'bg-white border-border-base-light'}`} />
+                <span className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>Available</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className={`w-3.5 h-3.5 rounded ${isDarkMode ? 'bg-brand-primary-dark text-white' : 'bg-brand-primary-light text-white'}`} />
+                <span className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>Selected</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className={`w-3.5 h-3.5 rounded ${isDarkMode ? 'bg-black/40 border border-border-base-dark/50' : 'bg-black/10 border border-border-base-light'}`} />
+                <span className={isDarkMode ? 'text-text-muted-dark' : 'text-text-muted-light'}>Reserved</span>
+              </div>
+            </div>
+
+            {selectedBooth && (
+              <div className={`font-semibold ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`}>
+                Selected Booth: {selectedBooth}
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
       {/* Zoned containers */}
       <div className="flex flex-col gap-4">
@@ -179,6 +239,8 @@ export const BoothSelectorGrid: React.FC<BoothSelectorGridProps> = ({
           );
         })}
       </div>
+      </>
+      )}
 
       <p className={`text-[11px] ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
         Click an available booth to request it. Booth allocation is confirmed upon organizer approval.

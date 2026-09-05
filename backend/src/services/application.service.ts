@@ -87,8 +87,8 @@ class ApplicationService {
       throw createError('Expo not found', 'EXPO_NOT_FOUND', 404);
     }
 
-    // 2. Validate expo is published (REQ-3.1, REQ-3.11)
-    if (expo.status !== 'published') {
+    // 2. Validate expo status — published or ongoing accept applications (REQ-3.1, REQ-3.11)
+    if (expo.status !== 'published' && expo.status !== 'ongoing') {
       throw createError(
         'This expo is not currently accepting applications',
         'EXPO_NOT_ACCEPTING_APPLICATIONS',
@@ -96,7 +96,20 @@ class ApplicationService {
       );
     }
 
-    // 3. Check for existing pending or approved application (REQ-3.6, Property 10)
+    // 3. Check booth capacity — block if all booths are booked (EXPO_FULLY_BOOKED)
+    const approvedCount = await ApplicationModel.getCollection().countDocuments({
+      expoId: expo._id,
+      status: 'approved',
+    });
+    if (approvedCount >= expo.totalBooths) {
+      throw createError(
+        'All booth spaces for this expo have been filled',
+        'EXPO_FULLY_BOOKED',
+        400
+      );
+    }
+
+    // 4. Check for existing pending or approved application (REQ-3.6, Property 10)
     const existingActiveApplication = await ApplicationModel.findActiveByExpoAndExhibitor(
       data.expoId,
       data.exhibitorId
@@ -110,7 +123,7 @@ class ApplicationService {
       );
     }
 
-    // 4. Create application record — model sets status: 'pending' automatically (REQ-3.7)
+    // 5. Create application record — model sets status: 'pending' automatically (REQ-3.7)
     const application = await ApplicationModel.create(data);
     return application;
   }
@@ -207,14 +220,14 @@ class ApplicationService {
   // -------------------------------------------------------------------------
 
   /**
-   * Withdraw a pending application (hard-delete).
+   * Withdraw a pending application (soft-delete).
    *
    * Validates:
    * 1. Application exists (APPLICATION_NOT_FOUND 404)
    * 2. Caller owns the application (APPLICATION_FORBIDDEN 403)
    * 3. Application is still pending (APPLICATION_NOT_WITHDRAWABLE 400)
    *
-   * On success, hard-deletes the record and returns void.
+   * On success, updates status to 'withdrawn' and returns void.
    *
    * @param applicationId — MongoDB _id string of the application to withdraw
    * @param exhibitorId   — string from req.user.userId (must match application.exhibitorId)
@@ -244,9 +257,9 @@ class ApplicationService {
       );
     }
 
-    // 4. Hard-delete the record (race condition guard)
-    const deleted = await ApplicationModel.deleteById(applicationId);
-    if (!deleted) {
+    // 4. Soft-delete the record by setting status to 'withdrawn'
+    const updated = await ApplicationModel.updateById(applicationId, { status: 'withdrawn' });
+    if (!updated) {
       throw createError('Application not found', 'APPLICATION_NOT_FOUND', 404);
     }
   }

@@ -20,6 +20,33 @@ export interface IExpoZone {
   boothCount: number;
 }
 
+export interface IBoothSpatialItem {
+  boothLabel: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  zoneName?: string;
+}
+
+export interface IReferenceShape {
+  id: string;
+  label: string;
+  type: 'stage' | 'entrance' | 'exit' | 'restroom' | 'pillar' | 'custom';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface IExpoSpatialLayout {
+  canvasWidth: number;
+  canvasHeight: number;
+  gridSize: number;
+  booths: IBoothSpatialItem[];
+  referenceShapes?: IReferenceShape[];
+}
+
 /**
  * Expo interface — represents an expo document in MongoDB
  */
@@ -35,6 +62,7 @@ export interface IExpo {
   venueAddress: string;
   totalBooths: number;        // integer ≥ 1
   zones?: IExpoZone[];        // optional zone-based booth configuration
+  spatialLayout?: IExpoSpatialLayout; // optional visual 2D spatial arrangement
   bannerUrl?: string;         // Cloudinary URL (PNG/JPG/WebP, ≤5 MB)
   websiteUrl?: string;
   category?: string;          // e.g. Technology, Health, Art
@@ -57,6 +85,7 @@ export interface IExpoCreate {
   venueAddress: string;
   totalBooths: number;
   zones?: IExpoZone[];
+  spatialLayout?: IExpoSpatialLayout;
   bannerUrl?: string;
   websiteUrl?: string;
   category?: string;

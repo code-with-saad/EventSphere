@@ -141,7 +141,33 @@ router.get(
         totalBooths: expo.totalBooths,
         occupiedBooths,
         zones,
+        spatialLayout: expo.spatialLayout,
       },
+    });
+  })
+);
+
+/**
+ * PUT /api/expos/:id/spatial-layout
+ *
+ * Saves 2D spatial arrangement coordinates for an expo.
+ * Access: Organizer only (must own the expo)
+ */
+router.put(
+  '/:id/spatial-layout',
+  authenticate,
+  authorize('organizer'),
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const expo = await ExpoService.updateSpatialLayout(
+      req.params.id as string,
+      req.user!.userId,
+      req.body.spatialLayout
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Spatial floor plan saved successfully',
+      data: { expo },
     });
   })
 );

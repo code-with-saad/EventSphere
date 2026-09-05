@@ -4,6 +4,7 @@ import ApplicationModel from '../models/Application.model';
 import TicketModel from '../models/Ticket.model';
 import SessionModel from '../models/Session.model';
 import BookmarkModel from '../models/Bookmark.model';
+import expoService from './expo.service';
 
 // ---------------------------------------------------------------------------
 // Types / DTOs
@@ -135,6 +136,7 @@ class StatsService {
    * - recentExpos: last 5 expos updated by this organizer (any status)
    */
   async getOrganizerDashboard(organizerId: string): Promise<OrganizerDashboardDTO> {
+    await expoService.syncTemporalStatuses();
     // Step 1: fetch active expos
     const activeExpos = await ExpoModel.getCollection()
       .find({ organizerId: new ObjectId(organizerId), status: { $in: ['published', 'ongoing'] } })
@@ -291,6 +293,7 @@ class StatsService {
    * (preserveNullAndEmpty: false on $unwind).
    */
   async getSuperAdminDashboard(): Promise<SuperAdminDashboardDTO> {
+    await expoService.syncTemporalStatuses();
     // Step 1: platform-wide counts in parallel
     const [totalExpos, totalAttendees, totalApplications, totalCheckIns] = await Promise.all([
       ExpoModel.getCollection().countDocuments({}),
@@ -355,6 +358,7 @@ class StatsService {
    * Return comprehensive analytics aggregated across all expos owned by the organizer.
    */
   async getOrganizerAnalytics(organizerId: string): Promise<OrganizerAnalyticsDTO> {
+    await expoService.syncTemporalStatuses();
     const expos = await ExpoModel.getCollection()
       .find({ organizerId: new ObjectId(organizerId) })
       .toArray();

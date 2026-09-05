@@ -12,6 +12,7 @@ import ExhibitorFilterBar from '../../components/exhibitor/ExhibitorFilterBar';
 import ExhibitorDetailModal from '../../components/exhibitor/ExhibitorDetailModal';
 import { BoothSelectorGrid } from '../../components/expo/BoothSelectorGrid';
 import PublicNavBar from '../../components/layout/PublicNavBar';
+import BackButton from '../../components/layout/BackButton';
 import { BentoCard } from '../../components/common/BentoCard';
 
 function formatDate(iso: string | Date): string {
@@ -165,6 +166,11 @@ export default function ExpoDetailPage() {
 
       {/* Main Content Area: Two Columns on lg+ */}
       <div className="max-w-6xl mx-auto px-md-token md:px-lg-token pt-lg-token md:pt-xl-token pb-xxl-token">
+        {/* Return to listing back button */}
+        <div className="mb-md-token">
+          <BackButton fallback="/expos" label="Browse Expos" />
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-lg-token lg:gap-xl-token items-start">
           
           {/* ── Left Column (~65% width: 8 cols on lg) ────────────────── */}
@@ -386,6 +392,7 @@ export default function ExpoDetailPage() {
                 <BoothSelectorGrid
                   totalBooths={expo.totalBooths}
                   zones={expo.zones}
+                  spatialLayout={expo.spatialLayout}
                   occupiedBooths={exhibitors.map((e: any) => e.boothLabel).filter(Boolean)}
                   onSelectBooth={() => {}}
                   disabled={true}

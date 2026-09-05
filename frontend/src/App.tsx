@@ -39,6 +39,7 @@ import ExhibitorAnalyticsPage from './pages/analytics/ExhibitorAnalyticsPage';
 import ProfilePage from './pages/auth/ProfilePage';
 import MessagesPage from './pages/messages/MessagesPage';
 import BookmarksPage from './pages/attendee/BookmarksPage';
+import MyFeedbackPage from './pages/feedback/MyFeedbackPage';
 
 /**
  * Single source of truth for where an authenticated user should land.
@@ -121,8 +122,11 @@ function App() {
             <Route path="/organizer/expos" element={<ProtectedRoute allowedRoles={['organizer']}><MyExposPage /></ProtectedRoute>} />
             <Route path="/organizer/expos/new" element={<ProtectedRoute allowedRoles={['organizer']}><CreateExpoPage /></ProtectedRoute>} />
             <Route path="/organizer/expos/:id/edit" element={<ProtectedRoute allowedRoles={['organizer']}><EditExpoPage /></ProtectedRoute>} />
+            <Route path="/organizer/applications" element={<ProtectedRoute allowedRoles={['organizer']}><ApplicationsPage /></ProtectedRoute>} />
             <Route path="/organizer/expos/:id/applications" element={<ProtectedRoute allowedRoles={['organizer']}><ApplicationsPage /></ProtectedRoute>} />
+            <Route path="/organizer/schedule" element={<ProtectedRoute allowedRoles={['organizer']}><ScheduleBuilderPage /></ProtectedRoute>} />
             <Route path="/organizer/expos/:id/schedule" element={<ProtectedRoute allowedRoles={['organizer']}><ScheduleBuilderPage /></ProtectedRoute>} />
+            <Route path="/organizer/booths" element={<ProtectedRoute allowedRoles={['organizer']}><BoothLayoutPage /></ProtectedRoute>} />
             <Route path="/organizer/expos/:id/booths" element={<ProtectedRoute allowedRoles={['organizer']}><BoothLayoutPage /></ProtectedRoute>} />
             <Route path="/organizer/messages" element={<ProtectedRoute allowedRoles={['organizer']}><MessagesPage /></ProtectedRoute>} />
             <Route path="/organizer/scanner" element={<ProtectedRoute allowedRoles={['organizer']}><ScannerPage /></ProtectedRoute>} />
@@ -139,6 +143,8 @@ function App() {
             <Route path="/attendee/tickets/:ticketId" element={<ProtectedRoute allowedRoles={['attendee']}><TicketDetailPage /></ProtectedRoute>} />
             <Route path="/attendee/bookmarks" element={<ProtectedRoute allowedRoles={['attendee']}><BookmarksPage /></ProtectedRoute>} />
             
+            {/* -- Common Authenticated Routes -- */}
+            <Route path="/feedback/mine" element={<ProtectedRoute allowedRoles={['organizer', 'exhibitor', 'attendee']}><MyFeedbackPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute allowedRoles={['superadmin','organizer','exhibitor','attendee']}><ProfilePage /></ProtectedRoute>} />
 
             <Route path="*" element={<Navigate to="/" replace />} />

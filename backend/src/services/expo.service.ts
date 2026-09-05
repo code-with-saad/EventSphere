@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 import ExpoModel from '../models/Expo.model';
 import ApplicationModel from '../models/Application.model';
 import TicketModel from '../models/Ticket.model';
-import type { IExpo, ExpoStatus } from '../models/Expo.model';
+import type { IExpo, ExpoStatus, IExpoSpatialLayout } from '../models/Expo.model';
 
 /**
  * ExpoService
@@ -481,6 +481,31 @@ class ExpoService {
     }
   }
 
+  /**
+   * Automatically transition statuses based on current date:
+   * - 'published' -> 'ongoing' when now >= startDate && now < endDate
+   * - 'published' / 'ongoing' -> 'completed' when now >= endDate
+   * Persists real updateMany writes to the database.
+   */
+  async syncTemporalStatuses(): Promise<void> {
+    const now = new Date();
+    try {
+      const collection = ExpoModel.getCollection();
+      await Promise.all([
+        collection.updateMany(
+          { status: 'published', startDate: { $lte: now }, endDate: { $gt: now } },
+          { $set: { status: 'ongoing', updatedAt: now } }
+        ),
+        collection.updateMany(
+          { status: { $in: ['published', 'ongoing'] }, endDate: { $lte: now } },
+          { $set: { status: 'completed', updatedAt: now } }
+        ),
+      ]);
+    } catch (err) {
+      console.error('Error syncing temporal expo statuses:', err);
+    }
+  }
+
   // -------------------------------------------------------------------------
   // 11f - listPublic()
   // -------------------------------------------------------------------------
@@ -499,6 +524,8 @@ class ExpoService {
   async listPublic(
     query: ExpoListQuery
   ): Promise<{ expos: ExpoCardDTO[]; pagination: PaginationMeta }> {
+    await this.syncTemporalStatuses();
+
     const page = Math.max(1, Number(query.page) || 1);
     const limit = Math.min(12, Math.max(1, Number(query.limit) || 12));
     const skip = (page - 1) * limit;
@@ -566,6 +593,7 @@ class ExpoService {
 
   // getById - organizer-scoped (all statuses including draft)
   async getById(expoId: string, organizerId: string): Promise<IExpo> {
+    await this.syncTemporalStatuses();
     const expo = await this._requireExpo(expoId);
     this._requireOwnership(expo, organizerId);
     return expo;
@@ -579,6 +607,7 @@ class ExpoService {
    * Full expo document + all approved applications for the exhibitor list.
    */
   async getPublicDetail(expoId: string): Promise<ExpoDetailDTO> {
+    await this.syncTemporalStatuses();
     const expo = await this._requireExpo(expoId);
 
     // Only publicly visible expos are accessible via this method
@@ -611,6 +640,8 @@ class ExpoService {
       venueName: expo.venueName,
       venueAddress: expo.venueAddress,
       totalBooths: expo.totalBooths,
+      zones: expo.zones,
+      spatialLayout: expo.spatialLayout,
       bannerUrl: expo.bannerUrl,
       websiteUrl: expo.websiteUrl,
       category: expo.category,
@@ -623,14 +654,33 @@ class ExpoService {
   }
 
   // -------------------------------------------------------------------------
-  // 11h - listByOrganizer() and getExpoStats()
+  // 11h - listByOrganizer() and updateSpatialLayout()
   // -------------------------------------------------------------------------
 
   /**
    * Return all expos belonging to the given organizer, sorted by createdAt desc.
    */
   async listByOrganizer(organizerId: string): Promise<IExpo[]> {
+    await this.syncTemporalStatuses();
     return ExpoModel.findByOrganizer(organizerId);
+  }
+
+  /**
+   * Update 2D spatial layout coordinates for an expo.
+   */
+  async updateSpatialLayout(
+    expoId: string,
+    organizerId: string,
+    spatialLayout: IExpoSpatialLayout
+  ): Promise<IExpo> {
+    const expo = await this._requireExpo(expoId);
+    this._requireOwnership(expo, organizerId);
+
+    const updated = await ExpoModel.updateById(expoId, { spatialLayout });
+    if (!updated) {
+      throw createError('Expo not found', 'EXPO_NOT_FOUND', 404);
+    }
+    return updated;
   }
 
   // -------------------------------------------------------------------------

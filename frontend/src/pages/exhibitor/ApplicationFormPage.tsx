@@ -98,6 +98,9 @@ export default function ApplicationFormPage() {
           toast.error('You already have an active application for this expo.');
         }
         navigate(`/expos/${expoId}`, { replace: true });
+      } else if (code === 'EXPO_FULLY_BOOKED') {
+        toast.error('All booth spaces for this expo are fully booked. No more applications can be submitted.');
+        navigate(`/expos/${expoId}`, { replace: true });
       } else {
         toast.error(
           (err as any)?.response?.data?.message ||
@@ -137,8 +140,8 @@ export default function ApplicationFormPage() {
                 ? 'Update your application details below.'
                 : 'Complete both steps to submit your application. The organizer will review it before approval.'
               }
-              backFallback="/exhibitor/applications"
-              backLabel={isEditing ? 'My Applications' : 'Back'}
+              backFallback={isEditing ? '/exhibitor/applications' : `/expos/${expoId}`}
+              backLabel={isEditing ? 'My Applications' : 'Expo Details'}
             />
             <ApplicationForm
               expoId={expoId}

@@ -4,6 +4,7 @@ import { Plus, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTheme } from '../../contexts/ThemeContext';
 import { sessionService } from '../../services/sessionService';
+import { expoService } from '../../services/expoService';
 import { Sidebar } from '../../components/layout/Sidebar';
 import { Header } from '../../components/layout/Header';
 import { BottomNav } from '../../components/layout/BottomNav';
@@ -84,9 +85,13 @@ function sessionsForDay(sessions: Session[], day: Date): Session[] {
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ScheduleBuilderPage() {
-  const { id: expoId } = useParams<{ id: string }>();
+  const { id: paramExpoId } = useParams<{ id: string }>();
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
+
+  const [expos, setExpos] = useState<any[]>([]);
+  const [selectedExpoId, setSelectedExpoId] = useState<string>(paramExpoId || '');
+  const [expo, setExpo] = useState<any | null>(null);
 
   // Sessions state
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -103,24 +108,41 @@ export default function ScheduleBuilderPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [conflictError, setConflictError] = useState<ConflictingSession | null>(null);
 
+  useEffect(() => {
+    expoService
+      .listMine()
+      .then((list: any[]) => {
+        setExpos(list || []);
+        if (!selectedExpoId && list && list.length > 0) {
+          setSelectedExpoId(list[0]._id);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const activeExpoId = paramExpoId || selectedExpoId;
+
   // ── Data fetching ──────────────────────────────────────────────────────────
 
   const fetchSessions = useCallback(async () => {
-    if (!expoId) return;
+    if (!activeExpoId) return;
     setLoading(true);
     setFetchError(null);
     try {
-      const data = await sessionService.list(expoId);
-      const list: Session[] = Array.isArray(data) ? data : [];
-      // Sort ascending by startTime (REQ-6.1)
+      const [data, expoData] = await Promise.all([
+        sessionService.list(activeExpoId),
+        expoService.getByIdForOrganizer(activeExpoId).catch(() => null),
+      ]);
+      const list: Session[] = Array.isArray(data) ? data : (data?.sessions ?? []);
       list.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
       setSessions(list);
+      setExpo(expoData?.expo ?? expoData);
     } catch (err: any) {
       setFetchError(err?.response?.data?.message || err?.message || 'Failed to load sessions');
     } finally {
       setLoading(false);
     }
-  }, [expoId]);
+  }, [activeExpoId]);
 
   useEffect(() => {
     fetchSessions();
@@ -170,16 +192,16 @@ export default function ScheduleBuilderPage() {
   // ── Submit handler (create + edit) ─────────────────────────────────────────
 
   const handleSubmit = async (formData: SessionFormData) => {
-    if (!expoId) return;
+    if (!activeExpoId) return;
     setIsSubmitting(true);
     setConflictError(null);
 
     try {
       if (modalMode === 'create') {
-        await sessionService.create(expoId, formData);
+        await sessionService.create(activeExpoId, formData);
         toast.success('Session added.');
       } else if (editingSession) {
-        await sessionService.update(expoId, editingSession._id, formData);
+        await sessionService.update(activeExpoId, editingSession._id, formData);
         toast.success('Session updated.');
       }
       closeModal();
@@ -211,7 +233,7 @@ export default function ScheduleBuilderPage() {
   // ── Delete handler ─────────────────────────────────────────────────────────
 
   const handleDelete = async (sessionId: string) => {
-    if (!expoId) return;
+    if (!activeExpoId) return;
 
     const session = sessions.find((s) => s._id === sessionId);
     const sessionTitle = session?.title ?? 'this session';
@@ -223,7 +245,7 @@ export default function ScheduleBuilderPage() {
     if (!confirmed) return;
 
     try {
-      await sessionService.delete(expoId, sessionId);
+      await sessionService.delete(activeExpoId, sessionId);
       toast.success('Session deleted.');
       await fetchSessions();
     } catch (err: any) {
@@ -255,19 +277,42 @@ export default function ScheduleBuilderPage() {
                   Schedule Builder
                 </h1>
                 <p className={`mt-xs-token text-sm-token ${textSecondary}`}>
-                  Manage sessions for this expo
+                  {expo ? `Manage sessions for ${expo.title}` : 'Manage sessions for this expo'}
                 </p>
               </div>
 
               {/* Single primary CTA — "Add session" (REQ-6, one accent fill per view) */}
               <button
                 onClick={openCreateModal}
-                className="inline-flex items-center gap-xs-token px-md-token py-sm-token rounded-[8px] text-sm-token font-semibold transition-colors bg-[#FF4D2E] text-[#2C0B03] hover:bg-[#E8451F]"
+                disabled={!activeExpoId}
+                className="inline-flex items-center gap-xs-token px-md-token py-sm-token rounded-[8px] text-sm-token font-semibold transition-colors bg-[#FF4D2E] text-[#2C0B03] hover:bg-[#E8451F] disabled:opacity-50"
               >
                 <Plus className="w-4 h-4" aria-hidden="true" />
                 Add session
               </button>
             </div>
+
+            {/* Expo Selector when accessed directly */}
+            {expos.length > 0 && (
+              <div className="mt-md-token flex items-center gap-sm-token">
+                <span className={`text-sm-token font-medium ${textSecondary}`}>Select Expo:</span>
+                <select
+                  value={activeExpoId}
+                  onChange={(e) => setSelectedExpoId(e.target.value)}
+                  className={`px-sm-token py-xs-token rounded-[8px] text-sm-token font-medium border ${
+                    isDarkMode
+                      ? 'bg-neutral-800 border-neutral-700 text-white'
+                      : 'bg-white border-neutral-300 text-neutral-900'
+                  }`}
+                >
+                  {expos.map((e) => (
+                    <option key={e._id} value={e._id}>
+                      {e.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           {/* ── Loading ───────────────────────────────────────────────────── */}

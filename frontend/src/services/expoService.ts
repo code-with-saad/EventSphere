@@ -1,5 +1,37 @@
 import api from './api';
 
+export interface IExpoZone {
+  name: string;
+  boothCount: number;
+}
+
+export interface IBoothSpatialItem {
+  boothLabel: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  zoneName?: string;
+}
+
+export interface IReferenceShape {
+  id: string;
+  label: string;
+  type: 'stage' | 'entrance' | 'exit' | 'restroom' | 'pillar' | 'custom';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface IExpoSpatialLayout {
+  canvasWidth: number;
+  canvasHeight: number;
+  gridSize: number;
+  booths: IBoothSpatialItem[];
+  referenceShapes?: IReferenceShape[];
+}
+
 export interface ExpoCardDTO {
   _id: string;
   name: string;
@@ -12,6 +44,8 @@ export interface ExpoCardDTO {
   bannerUrl?: string;
   approvedExhibitorCount?: number;
   category?: string;
+  zones?: IExpoZone[];
+  spatialLayout?: IExpoSpatialLayout;
 }
 
 export const expoService = {
@@ -23,7 +57,18 @@ export const expoService = {
     api.get(`/api/expos/${id}`).then(r => r.data.data),
 
   getBooths: (id: string) =>
-    api.get<{ success: boolean; data: { totalBooths: number; occupiedBooths: string[] } }>(`/api/expos/${id}/booths`).then(r => r.data.data),
+    api.get<{
+      success: boolean;
+      data: {
+        totalBooths: number;
+        occupiedBooths: string[];
+        zones?: IExpoZone[];
+        spatialLayout?: IExpoSpatialLayout;
+      };
+    }>(`/api/expos/${id}/booths`).then(r => r.data.data),
+
+  saveSpatialLayout: (id: string, spatialLayout: IExpoSpatialLayout) =>
+    api.put(`/api/expos/${id}/spatial-layout`, { spatialLayout }).then(r => r.data.data),
 
   // Organizer-scoped fetch — returns draft expos too (getById only returns published/ongoing/completed)
   getByIdForOrganizer: (id: string) =>

@@ -34,6 +34,7 @@ export default function MessagesPage() {
   const [sending, setSending] = useState(false);
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [tab, setTab] = useState<'active' | 'archived'>('active');
   const [error, setError] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -53,11 +54,14 @@ export default function MessagesPage() {
         const found = list.find((t) => t.applicationId === activeAppIdFromUrl);
         if (found) {
           setSelectedThread(found);
+          if (found.isArchived) setTab('archived');
         } else if (!selectedThread) {
-          setSelectedThread(list[0]);
+          const firstActive = list.find(t => !t.isArchived) || list[0];
+          setSelectedThread(firstActive);
         }
       } else if (list && list.length > 0 && !selectedThread) {
-        setSelectedThread(list[0]);
+        const firstActive = list.find(t => !t.isArchived) || list[0];
+        setSelectedThread(firstActive);
       }
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Failed to load conversation threads');
@@ -70,7 +74,7 @@ export default function MessagesPage() {
     fetchThreads();
   }, [activeAppIdFromUrl]);
 
-  // 2. Fetch messages & polling for the selected thread
+  // 2. Fetch messages & polling for the selected thread (10s interval)
   useEffect(() => {
     if (!selectedThread) return;
 
@@ -95,7 +99,7 @@ export default function MessagesPage() {
         if (!cancelled) setLoadingMessages(false);
       });
 
-    // 4-second polling
+    // 10-second polling
     const intervalId = setInterval(() => {
       if (cancelled) return;
       messageService.getByApplication(selectedThread.applicationId)
@@ -112,7 +116,7 @@ export default function MessagesPage() {
           });
         })
         .catch(() => {});
-    }, 4000);
+    }, 10000);
 
     return () => {
       cancelled = true;
@@ -120,24 +124,35 @@ export default function MessagesPage() {
     };
   }, [selectedThread?.applicationId]);
 
-  // 3. Send message handler
+  // 3. Send message handler with optimistic UI update
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || sending || !selectedThread) return;
 
     const content = newMessage.trim();
+    const tempId = `temp-${Date.now()}`;
+    const optimisticMsg: ApplicationMessage = {
+      _id: tempId,
+      applicationId: selectedThread.applicationId,
+      senderId: user?.id || '',
+      senderName: (user as any)?.fullName || (user as any)?.name || 'You',
+      senderRole: (user?.role as any) || 'attendee',
+      content,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Immediate optimistic update
+    setMessages((prev) => [...prev, optimisticMsg]);
+    setNewMessage('');
+    setTimeout(scrollToBottom, 50);
     setSending(true);
+
     try {
       const msg = await messageService.sendMessage(selectedThread.applicationId, content);
-      setMessages((prev) => {
-        const existingIds = new Set(prev.map((m) => m._id));
-        if (existingIds.has(msg._id)) return prev;
-        return [...prev, msg];
-      });
-      setNewMessage('');
-      setTimeout(scrollToBottom, 50);
-
-      // Update the thread's lastMessage preview in the thread list
+      // Reconcile optimistic message with server response
+      setMessages((prev) =>
+        prev.map((m) => (m._id === tempId ? msg : m))
+      );
       setThreads((prev) =>
         prev.map((t) =>
           t.applicationId === selectedThread.applicationId
@@ -146,6 +161,8 @@ export default function MessagesPage() {
         )
       );
     } catch (err: any) {
+      // Rollback on error
+      setMessages((prev) => prev.filter((m) => m._id !== tempId));
       setError(err?.response?.data?.message || 'Failed to send message');
     } finally {
       setSending(false);
@@ -157,15 +174,19 @@ export default function MessagesPage() {
     setSearchParams({ appId: thread.applicationId });
   };
 
+  // Strictly filter by companyName and tab
   const filteredThreads = threads.filter((t) => {
+    const isArchived = Boolean(t.isArchived);
+    if (tab === 'active' && isArchived) return false;
+    if (tab === 'archived' && !isArchived) return false;
+
     const q = searchQuery.toLowerCase().trim();
     if (!q) return true;
-    return (
-      t.companyName?.toLowerCase().includes(q) ||
-      t.expoName?.toLowerCase().includes(q) ||
-      t.lastMessage?.content?.toLowerCase().includes(q)
-    );
+    return t.companyName?.toLowerCase().includes(q);
   });
+
+  const activeCount = threads.filter((t) => !t.isArchived).length;
+  const archivedCount = threads.filter((t) => t.isArchived).length;
 
   return (
     <div className="dashboard-root">
@@ -194,6 +215,48 @@ export default function MessagesPage() {
                   : 'bg-glass-light border-glass-border-light'
               }`}
             >
+              {/* Active / Archived Tabs */}
+              <div className="flex border-b border-border-base-dark/20 text-xs-token font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setTab('active')}
+                  className={`flex-1 py-2.5 px-3 text-center transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
+                    tab === 'active'
+                      ? isDarkMode
+                        ? 'border-b-2 border-brand-primary-dark text-brand-primary-dark bg-white/5'
+                        : 'border-b-2 border-brand-primary-light text-brand-primary-light bg-black/5'
+                      : isDarkMode
+                      ? 'text-text-secondary-dark hover:text-text-primary-dark'
+                      : 'text-text-secondary-light hover:text-text-primary-light'
+                  }`}
+                >
+                  <span>Active</span>
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/10 dark:bg-white/10">
+                    {activeCount}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTab('archived')}
+                  className={`flex-1 py-2.5 px-3 text-center transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
+                    tab === 'archived'
+                      ? isDarkMode
+                        ? 'border-b-2 border-brand-primary-dark text-brand-primary-dark bg-white/5'
+                        : 'border-b-2 border-brand-primary-light text-brand-primary-light bg-black/5'
+                      : isDarkMode
+                      ? 'text-text-secondary-dark hover:text-text-primary-dark'
+                      : 'text-text-secondary-light hover:text-text-primary-light'
+                  }`}
+                >
+                  <span>Archived</span>
+                  {archivedCount > 0 && (
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/10 dark:bg-white/10">
+                      {archivedCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+
               {/* Thread Search */}
               <div className="p-3 border-b border-border-base-dark/20">
                 <div className="relative">
@@ -202,7 +265,7 @@ export default function MessagesPage() {
                   }`} />
                   <input
                     type="text"
-                    placeholder="Search messages..."
+                    placeholder="Search by company name..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className={`w-full pl-9 pr-3 py-1.5 rounded-md-token border text-xs-token outline-none transition-colors ${

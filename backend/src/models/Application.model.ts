@@ -13,7 +13,7 @@ import { getDatabase } from '../config/database';
 /**
  * Application review status values
  */
-export type ApplicationStatus = 'pending' | 'approved' | 'rejected';
+export type ApplicationStatus = 'pending' | 'approved' | 'rejected' | 'withdrawn';
 
 /**
  * Application interface — represents an application document in MongoDB

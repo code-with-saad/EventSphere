@@ -7,6 +7,7 @@ import { sessionService } from '../../services/sessionService';
 import { bookmarkService } from '../../services/bookmarkService';
 import { useTickets } from '../../hooks/useTickets';
 import PublicNavBar from '../../components/layout/PublicNavBar';
+import BackButton from '../../components/layout/BackButton';
 import DayTabs from '../../components/session/DayTabs';
 import ScheduleGrid from '../../components/session/ScheduleGrid';
 
@@ -275,6 +276,11 @@ export default function ScheduleBrowsePage() {
       <PublicNavBar />
 
       <div className="max-w-4xl mx-auto px-md-token md:px-lg-token py-lg-token md:py-xl-token">
+
+        {/* ── Back button ─────────────────────────────────────────────────── */}
+        <div className="mb-md-token">
+          <BackButton fallback={`/expos/${expoId}`} label="Back to Expo" />
+        </div>
 
         {/* ── Page header ─────────────────────────────────────────────────── */}
         <div className="mb-xl-token">

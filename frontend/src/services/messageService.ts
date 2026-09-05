@@ -15,6 +15,7 @@ export interface MessageThread {
   companyName: string;
   category?: string;
   status: string;
+  isArchived?: boolean;
   expoId: string;
   expoName: string;
   lastMessage: ApplicationMessage | null;
