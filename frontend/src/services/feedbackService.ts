@@ -34,6 +34,10 @@ export const feedbackService = {
     message: string;
   }) => api.post('/api/feedback', payload).then(r => r.data),
 
+  /** List user's own feedback submissions */
+  listMine: (): Promise<FeedbackItem[]> =>
+    api.get<{ success: boolean; data: { feedback: FeedbackItem[] } }>('/api/feedback/mine').then(r => r.data.data.feedback),
+
   /** List all feedback (superadmin only) */
   listAll: (params?: {
     status?: FeedbackStatus;

@@ -10,6 +10,7 @@ import ExpoStatusBadge from '../../components/expo/ExpoStatusBadge';
 import ExhibitorCard from '../../components/exhibitor/ExhibitorCard';
 import ExhibitorFilterBar from '../../components/exhibitor/ExhibitorFilterBar';
 import ExhibitorDetailModal from '../../components/exhibitor/ExhibitorDetailModal';
+import { BoothSelectorGrid } from '../../components/expo/BoothSelectorGrid';
 import PublicNavBar from '../../components/layout/PublicNavBar';
 import { BentoCard } from '../../components/common/BentoCard';
 
@@ -260,9 +261,22 @@ export default function ExpoDetailPage() {
             {/* Schedule Section — Timeline Layout */}
             {sessions.length > 0 && (
               <section aria-labelledby="schedule-heading">
-                <h2 id="schedule-heading" className={`text-lg-token font-semibold mb-md-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
-                  Event Schedule
-                </h2>
+                <div className="flex items-center justify-between flex-wrap gap-sm-token mb-md-token">
+                  <h2 id="schedule-heading" className={`text-lg-token font-semibold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                    Event Schedule
+                  </h2>
+                  <button
+                    onClick={() => navigate(`/expos/${id}/schedule`)}
+                    className={`inline-flex items-center gap-1.5 px-sm-token py-1.5 rounded-md-token text-xs-token font-semibold border transition-colors cursor-pointer ${
+                      isDarkMode
+                        ? 'border-brand-primary-dark text-brand-primary-dark hover:bg-brand-primary-dark/10'
+                        : 'border-brand-primary-light text-brand-primary-light hover:bg-brand-primary-light/10'
+                    }`}
+                  >
+                    <span>View Full Schedule & Bookmarks</span>
+                    <span>→</span>
+                  </button>
+                </div>
 
                 <div className="relative pl-6 md:pl-8 space-y-md-token before:absolute before:left-[11px] md:before:left-[15px] before:top-3 before:bottom-3 before:w-[2px] before:bg-brand-primary-dark/40">
                   {sessions.map((s: any) => (
@@ -313,6 +327,33 @@ export default function ExpoDetailPage() {
                     </div>
                   ))}
                 </div>
+              </section>
+            )}
+
+            {/* Booth Layout / Floorplan section */}
+            {expo.totalBooths && expo.totalBooths > 0 && (
+              <section aria-labelledby="booths-heading" className={`p-md-token md:p-lg-token rounded-xl-token border ${
+                isDarkMode
+                  ? 'bg-bg-surface-dark/90 border-border-base-dark'
+                  : 'bg-bg-surface-light/95 border-border-base-light'
+              }`}>
+                <div className="flex items-center justify-between flex-wrap gap-sm-token mb-md-token">
+                  <div>
+                    <h2 id="booths-heading" className={`text-lg-token font-semibold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                      Exhibition Floor Layout
+                    </h2>
+                    <p className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                      Available and reserved booths across the exhibition floor
+                    </p>
+                  </div>
+                </div>
+
+                <BoothSelectorGrid
+                  totalBooths={expo.totalBooths}
+                  occupiedBooths={exhibitors.map((e: any) => e.boothLabel).filter(Boolean)}
+                  onSelectBooth={() => {}}
+                  disabled={true}
+                />
               </section>
             )}
 

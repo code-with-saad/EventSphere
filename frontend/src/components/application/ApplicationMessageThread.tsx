@@ -42,10 +42,13 @@ export default function ApplicationMessageThread({
     setLoading(true);
     setError(null);
 
+    // Initial fetch
     messageService.getByApplication(applicationId)
       .then((msgs) => {
         if (!cancelled) {
-          setMessages(msgs || []);
+          const list = msgs || [];
+          console.log('[ApplicationMessageThread] Initial messages loaded, count:', list.length);
+          setMessages(list);
           setTimeout(scrollToBottom, 100);
         }
       })
@@ -58,8 +61,31 @@ export default function ApplicationMessageThread({
         if (!cancelled) setLoading(false);
       });
 
+    // Polling interval (every 4 seconds)
+    const intervalId = setInterval(() => {
+      if (cancelled) return;
+      messageService.getByApplication(applicationId)
+        .then((latestMsgs) => {
+          if (cancelled || !latestMsgs) return;
+          setMessages((prev) => {
+            const existingIds = new Set(prev.map((m) => m._id));
+            const newIncoming = latestMsgs.filter((m) => !existingIds.has(m._id));
+            if (newIncoming.length > 0) {
+              console.log('[ApplicationMessageThread] Polled new messages:', newIncoming.length);
+              setTimeout(scrollToBottom, 50);
+              return [...prev, ...newIncoming];
+            }
+            return prev;
+          });
+        })
+        .catch(() => {
+          // Silent failure on polling background tick
+        });
+    }, 4000);
+
     return () => {
       cancelled = true;
+      clearInterval(intervalId);
     };
   }, [isOpen, applicationId]);
 
@@ -67,13 +93,24 @@ export default function ApplicationMessageThread({
     e.preventDefault();
     if (!newMessage.trim() || sending) return;
 
+    const messageContent = newMessage.trim();
     setSending(true);
     try {
-      const msg = await messageService.sendMessage(applicationId, newMessage.trim());
-      setMessages((prev) => [...prev, msg]);
+      console.log('[ApplicationMessageThread] Sending message:', messageContent);
+      const msg = await messageService.sendMessage(applicationId, messageContent);
+      console.log('[ApplicationMessageThread] Received send response msg:', msg);
+      setMessages((prev) => {
+        console.log('[ApplicationMessageThread] Appending msg to state. Prev length:', prev.length);
+        const existingIds = new Set(prev.map((m) => m._id));
+        if (existingIds.has(msg._id)) return prev;
+        const next = [...prev, msg];
+        console.log('[ApplicationMessageThread] New messages length:', next.length);
+        return next;
+      });
       setNewMessage('');
       setTimeout(scrollToBottom, 50);
     } catch (err: any) {
+      console.error('[ApplicationMessageThread] Send failed:', err);
       setError(err?.response?.data?.message || 'Failed to send message');
     } finally {
       setSending(false);

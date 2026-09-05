@@ -108,6 +108,11 @@ class FeedbackModelClass {
     return { items, total };
   }
 
+  async findByUserId(userId: ObjectId | string): Promise<IFeedback[]> {
+    const uid = typeof userId === 'string' ? new ObjectId(userId) : userId;
+    return this.collection.find({ userId: uid }).sort({ createdAt: -1 }).toArray();
+  }
+
   async updateStatus(
     id: ObjectId | string,
     status: FeedbackStatus,

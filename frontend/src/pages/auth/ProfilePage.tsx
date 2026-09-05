@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { userService } from '../../services/userService';
+import { feedbackService, FeedbackItem } from '../../services/feedbackService';
 import { Header } from '../../components/layout/Header';
 import { Sidebar } from '../../components/layout/Sidebar';
 import { BottomNav } from '../../components/layout/BottomNav';
@@ -17,7 +18,16 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  MessageSquare,
+  Clock,
 } from 'lucide-react';
+
+const STATUS_BADGE_STYLES: Record<string, { bg: string; text: string; label: string }> = {
+  open: { bg: 'bg-yellow-500/10 border-yellow-500/30', text: 'text-yellow-500', label: 'Open' },
+  in_review: { bg: 'bg-blue-500/10 border-blue-500/30', text: 'text-blue-500', label: 'In Review' },
+  resolved: { bg: 'bg-green-500/10 border-green-500/30', text: 'text-green-500', label: 'Resolved' },
+  closed: { bg: 'bg-zinc-500/10 border-zinc-500/30', text: 'text-zinc-400', label: 'Closed' },
+};
 
 export default function ProfilePage() {
   const { theme, toggleTheme } = useTheme();
@@ -42,6 +52,19 @@ export default function ProfilePage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
   const [passwordMsg, setPasswordMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // My Feedback state
+  const [myFeedback, setMyFeedback] = useState<FeedbackItem[]>([]);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+
+  useEffect(() => {
+    setFeedbackLoading(true);
+    feedbackService
+      .listMine()
+      .then((items) => setMyFeedback(items || []))
+      .catch(() => {})
+      .finally(() => setFeedbackLoading(false));
+  }, []);
 
   // Handle Profile Update (Full Name)
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -622,6 +645,96 @@ export default function ProfilePage() {
                     </button>
                   </div>
                 </form>
+              </div>
+            </BentoCard>
+
+            {/* ── Section 4: My Submitted Feedback & Issues ───────────────── */}
+            <BentoCard>
+              <div className="flex flex-col gap-md-token">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3
+                      className={`text-base-token font-semibold flex items-center gap-2 ${
+                        isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+                      }`}
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      My Feedback & Inquiries
+                    </h3>
+                    <p
+                      className={`text-xs-token mt-0.5 ${
+                        isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                      }`}
+                    >
+                      Track the status and admin responses for issues you submitted.
+                    </p>
+                  </div>
+                </div>
+
+                {feedbackLoading ? (
+                  <div className="flex items-center justify-center py-6 text-xs-token opacity-70">
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    <span>Loading your submissions…</span>
+                  </div>
+                ) : myFeedback.length === 0 ? (
+                  <div className={`p-md-token rounded-lg-token border text-center text-xs-token ${
+                    isDarkMode
+                      ? 'bg-black/20 border-border-base-dark text-text-secondary-dark'
+                      : 'bg-black/5 border-border-base-light text-text-secondary-light'
+                  }`}>
+                    You haven't submitted any feedback yet. Click the message icon in the top header to report a bug or request a feature.
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-sm-token">
+                    {myFeedback.map((item) => {
+                      const badge = STATUS_BADGE_STYLES[item.status] || STATUS_BADGE_STYLES.open;
+                      return (
+                        <div
+                          key={item._id}
+                          className={`p-sm-token md:p-md-token rounded-lg-token border flex flex-col gap-2 ${
+                            isDarkMode
+                              ? 'bg-glass-dark border-border-base-dark'
+                              : 'bg-glass-light border-border-base-light'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex flex-col">
+                              <span className={`text-sm-token font-semibold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                                {item.subject}
+                              </span>
+                              <div className="flex items-center gap-2 mt-0.5 text-[11px] text-text-secondary-dark">
+                                <span className="capitalize">{item.category.replace('_', ' ')}</span>
+                                <span>·</span>
+                                <span className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {new Date(item.createdAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                            <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${badge.bg} ${badge.text}`}>
+                              {badge.label}
+                            </span>
+                          </div>
+
+                          <p className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                            {item.message}
+                          </p>
+
+                          {item.adminNote && (
+                            <div className={`mt-1 p-2 rounded-md-token text-xs-token border ${
+                              isDarkMode
+                                ? 'bg-brand-primary-dark/10 border-brand-primary-dark/30 text-text-primary-dark'
+                                : 'bg-brand-primary-light/10 border-brand-primary-light/30 text-text-primary-light'
+                            }`}>
+                              <span className="font-semibold block mb-0.5 text-brand-primary-dark">Admin Response:</span>
+                              <span>{item.adminNote}</span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </BentoCard>
           </div>

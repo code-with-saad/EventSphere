@@ -94,18 +94,37 @@ export default function ScheduleBrowsePage() {
   // ── Ticket check ──────────────────────────────────────────────────────────
   const { tickets, loading: ticketsLoading } = useTickets();
 
+  // Diagnostic logging of tickets array
+  useEffect(() => {
+    if (!ticketsLoading) {
+      console.log('[ScheduleBrowsePage] Raw tickets array from useTickets():', tickets);
+      console.log('[ScheduleBrowsePage] Current route expoId:', expoId);
+    }
+  }, [tickets, ticketsLoading, expoId]);
+
   // True if the user holds an active/checked_in ticket for THIS expo
   const hasQualifyingTicket = useMemo(() => {
-    if (!isAuthenticated || ticketsLoading) return false;
-    return tickets.some(
-      (t: any) =>
-        (t.status === 'active' || t.status === 'checked_in') &&
-        // expoId stored as a string or ObjectId on the ticket
-        (t.expoId === expoId ||
-          t.expoId?._id === expoId ||
-          t.expo === expoId ||
-          t.expo?._id === expoId),
-    );
+    if (!isAuthenticated || ticketsLoading || !expoId) return false;
+    const targetExpoId = expoId.toString().trim();
+
+    return tickets.some((t: any) => {
+      const statusMatch = t.status === 'active' || t.status === 'checked_in';
+      if (!statusMatch) return false;
+
+      // Extract and stringify expoId from any possible representation
+      const candidateExpoId =
+        (typeof t.expoId === 'object' && t.expoId?._id ? t.expoId._id : t.expoId) ||
+        (typeof t.expo === 'object' && t.expo?._id ? t.expo._id : t.expo) ||
+        t.expo_id ||
+        '';
+
+      const candidateString = candidateExpoId.toString().trim();
+      const match = candidateString === targetExpoId;
+      if (match) {
+        console.log('[ScheduleBrowsePage] Found qualifying ticket:', t);
+      }
+      return match;
+    });
   }, [isAuthenticated, ticketsLoading, tickets, expoId]);
 
   // ── Fetch sessions ─────────────────────────────────────────────────────────

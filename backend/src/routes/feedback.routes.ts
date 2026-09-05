@@ -81,6 +81,42 @@ router.post(
 );
 
 /**
+ * GET /api/feedback/mine
+ *
+ * List all feedback submitted by the authenticated user.
+ *
+ * Access: Any authenticated user
+ */
+router.get(
+  '/mine',
+  authenticate,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const userId = req.user!.userId;
+    const feedbacks = await FeedbackModel.findByUserId(userId);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        feedback: feedbacks.map((f) => ({
+          _id: f._id.toString(),
+          userId: f.userId.toString(),
+          userEmail: f.userEmail,
+          userName: f.userName,
+          userRole: f.userRole,
+          category: f.category,
+          subject: f.subject,
+          message: f.message,
+          status: f.status,
+          adminNote: f.adminNote,
+          createdAt: f.createdAt,
+          updatedAt: f.updatedAt,
+        })),
+      },
+    });
+  })
+);
+
+/**
  * GET /api/admin/feedback
  *
  * List all feedback with optional ?status= and ?category= filters.
