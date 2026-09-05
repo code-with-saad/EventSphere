@@ -112,10 +112,7 @@ export default function ExpoListingPage() {
     return expos[0];
   }, [showFeaturedHero, expos]);
 
-  const standardExpos = useMemo(() => {
-    if (!featuredExpo) return expos;
-    return expos.filter((e) => e._id !== featuredExpo._id);
-  }, [expos, featuredExpo]);
+  const standardExpos = expos;
 
   return (
     <div className="min-h-screen">

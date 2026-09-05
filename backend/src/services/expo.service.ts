@@ -552,15 +552,76 @@ class ExpoService {
 
     const collection = ExpoModel.getCollection();
 
-    const [docs, total] = await Promise.all([
-      collection
-        .find(filter)
-        .sort({ startDate: 1 })
-        .skip(skip)
-        .limit(limit)
-        .toArray(),
-      collection.countDocuments(filter),
-    ]);
+    let docs: any[] = [];
+    let total = 0;
+
+    if (!query.status) {
+      // Default "All Expos" view: compound sort by priority
+      // 1. Ongoing first (startDate ascending)
+      // 2. Upcoming published (startDate ascending)
+      // 3. Completed last (startDate descending, most recent first)
+      const refinedPipeline: any[] = [
+        { $match: filter },
+        {
+          $addFields: {
+            statusPriority: {
+              $switch: {
+                branches: [
+                  { case: { $eq: ['$status', 'ongoing'] }, then: 1 },
+                  { case: { $eq: ['$status', 'published'] }, then: 2 },
+                  { case: { $eq: ['$status', 'completed'] }, then: 3 },
+                ],
+                default: 4,
+              },
+            },
+            // For ongoing/published, dateSortWeight is positive timestamp (ascending).
+            // For completed, dateSortWeight is negative timestamp (descending, so newer/larger timestamp comes first).
+            dateSortWeight: {
+              $cond: {
+                if: { $eq: ['$status', 'completed'] },
+                then: { $multiply: [{ $toLong: '$startDate' }, -1] },
+                else: { $toLong: '$startDate' },
+              },
+            },
+          },
+        },
+        {
+          $facet: {
+            data: [
+              {
+                $sort: {
+                  statusPriority: 1,
+                  dateSortWeight: 1,
+                },
+              },
+              { $skip: skip },
+              { $limit: limit },
+            ],
+            totalCount: [
+              { $count: 'total' },
+            ],
+          },
+        },
+      ];
+
+      const [facetResult] = await collection.aggregate(refinedPipeline).toArray();
+      docs = facetResult?.data || [];
+      total = facetResult?.totalCount?.[0]?.total || 0;
+    } else {
+      // Filtered views (upcoming, ongoing, completed) maintain their standard index queries
+      const sortOrder: any = query.status === 'completed' ? { startDate: -1 } : { startDate: 1 };
+      const [fetchedDocs, count] = await Promise.all([
+        collection
+          .find(filter)
+          .sort(sortOrder)
+          .skip(skip)
+          .limit(limit)
+          .toArray(),
+        collection.countDocuments(filter),
+      ]);
+      docs = fetchedDocs;
+      total = count;
+    }
 
     // Fetch approvedExhibitorCount for each expo on this page
     const expoIds = docs.map((d) => d._id);

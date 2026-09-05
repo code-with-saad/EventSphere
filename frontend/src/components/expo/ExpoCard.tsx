@@ -88,7 +88,7 @@ export default function ExpoCard({ expo, isFavoritedInitially = false }: ExpoCar
           />
         </div>
       ) : (
-        <div className={`w-full h-24 flex items-center justify-center ${
+        <div className={`w-full h-40 flex items-center justify-center ${
           isDarkMode ? 'bg-bg-hover-dark' : 'bg-bg-hover-light'
         }`}>
           <span
