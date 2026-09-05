@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { expoService } from '../../services/expoService';
+import { favoriteService } from '../../services/favoriteService';
 import ExpoCard from '../../components/expo/ExpoCard';
 import PublicNavBar from '../../components/layout/PublicNavBar';
 import { Search, Sparkles, Calendar, MapPin } from 'lucide-react';
@@ -24,8 +26,10 @@ function formatDate(iso: string): string {
 export default function ExpoListingPage() {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
+  const { isAuthenticated, user } = useAuth();
 
   const [expos, setExpos] = useState<any[]>([]);
+  const [favoriteExpoIds, setFavoriteExpoIds] = useState<string[]>([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,15 +46,24 @@ export default function ExpoListingPage() {
 
   const handleStatusChange = (value: StatusFilter) => { setStatusFilter(value); setPage(1); };
 
-  const fetchExpos = useCallback(async () => {
+  const fetchExposAndFavorites = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const query: Record<string, any> = { page, limit: 12 };
       if (statusFilter) query.status = statusFilter;
       if (debouncedSearch) query.search = debouncedSearch;
-      const data = await expoService.list(query);
+
+      const promises: [Promise<any>, Promise<string[]>] = [
+        expoService.list(query),
+        isAuthenticated && (!user?.role || user?.role === 'attendee')
+          ? favoriteService.getFavoriteIds().catch(() => [])
+          : Promise.resolve([]),
+      ];
+
+      const [data, favIds] = await Promise.all(promises);
       setExpos(data?.expos ?? []);
+      setFavoriteExpoIds(favIds || []);
       setPagination({
         page: data?.pagination?.page ?? 1,
         totalPages: data?.pagination?.totalPages ?? 1,
@@ -61,9 +74,9 @@ export default function ExpoListingPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, statusFilter, debouncedSearch]);
+  }, [page, statusFilter, debouncedSearch, isAuthenticated, user?.role]);
 
-  useEffect(() => { fetchExpos(); }, [fetchExpos]);
+  useEffect(() => { fetchExposAndFavorites(); }, [fetchExposAndFavorites]);
 
   const chipBase = 'px-sm-token md:px-md-token py-xs-token rounded-md-token text-xs-token md:text-sm-token font-medium transition-colors cursor-pointer whitespace-nowrap';
   const chipActive = isDarkMode ? 'bg-brand-primary-dark text-text-on-primary-dark font-semibold' : 'bg-brand-primary-light text-text-on-primary-light font-semibold';
@@ -71,10 +84,38 @@ export default function ExpoListingPage() {
     ? 'text-text-secondary-dark hover:text-text-primary-dark hover:bg-bg-hover-dark'
     : 'text-text-secondary-light hover:text-text-primary-light hover:bg-bg-hover-light';
 
-  // Feature the first expo if we are on page 1 without search filters
+  // Feature spotlight logic on page 1 without search filters
   const showFeaturedHero = page === 1 && !debouncedSearch && !statusFilter && expos.length > 0;
-  const featuredExpo = showFeaturedHero ? expos[0] : null;
-  const standardExpos = showFeaturedHero ? expos.slice(1) : expos;
+
+  const featuredExpo = useMemo(() => {
+    if (!showFeaturedHero || expos.length === 0) return null;
+
+    // 1. Ongoing expos — earliest started first
+    const ongoing = expos
+      .filter((e) => e.status === 'ongoing')
+      .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+    if (ongoing.length > 0) return ongoing[0];
+
+    // 2. Upcoming published expos — earliest future startDate first
+    const published = expos
+      .filter((e) => e.status === 'published')
+      .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+    if (published.length > 0) return published[0];
+
+    // 3. Fallback: most recently completed expo (startDate descending)
+    const completed = expos
+      .filter((e) => e.status === 'completed')
+      .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+    if (completed.length > 0) return completed[0];
+
+    // Final fallback if status is something else (e.g. draft/archived)
+    return expos[0];
+  }, [showFeaturedHero, expos]);
+
+  const standardExpos = useMemo(() => {
+    if (!featuredExpo) return expos;
+    return expos.filter((e) => e._id !== featuredExpo._id);
+  }, [expos, featuredExpo]);
 
   return (
     <div className="min-h-screen">
@@ -274,7 +315,11 @@ export default function ExpoListingPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md-token">
               {standardExpos.map((expo) => (
-                <ExpoCard key={expo._id} expo={expo} />
+                <ExpoCard
+                  key={expo._id}
+                  expo={expo}
+                  isFavoritedInitially={favoriteExpoIds.includes(expo._id)}
+                />
               ))}
             </div>
           </>

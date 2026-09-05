@@ -227,7 +227,7 @@ export default function BookmarksPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md-token">
                         {favorites.map((fav) => (
                           <div key={fav._id} className="relative group">
-                            <ExpoCard expo={fav.expo} />
+                            <ExpoCard expo={fav.expo} isFavoritedInitially={true} />
                             <button
                               type="button"
                               onClick={(e) => handleRemoveFavorite(e, fav.expoId)}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Heart } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -38,6 +38,10 @@ export default function ExpoCard({ expo, isFavoritedInitially = false }: ExpoCar
 
   const [isFavorited, setIsFavorited] = useState(isFavoritedInitially);
   const [loadingFav, setLoadingFav] = useState(false);
+
+  useEffect(() => {
+    setIsFavorited(isFavoritedInitially);
+  }, [isFavoritedInitially]);
 
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();

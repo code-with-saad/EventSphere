@@ -1,11 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, Building2, Globe, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Calendar, MapPin, Building2, Globe, Clock, CheckCircle2, AlertCircle, Heart } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { expoService } from '../../services/expoService';
 import { sessionService } from '../../services/sessionService';
 import { ticketService } from '../../services/ticketService';
+import { favoriteService } from '../../services/favoriteService';
+import toast from 'react-hot-toast';
 import ExpoStatusBadge from '../../components/expo/ExpoStatusBadge';
 import ExhibitorCard from '../../components/exhibitor/ExhibitorCard';
 import ExhibitorFilterBar from '../../components/exhibitor/ExhibitorFilterBar';
@@ -32,6 +34,8 @@ export default function ExpoDetailPage() {
 
   const [expo, setExpo] = useState<any | null>(null);
   const [sessions, setSessions] = useState<any[]>([]);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [togglingFavorite, setTogglingFavorite] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,17 +49,23 @@ export default function ExpoDetailPage() {
     if (!id) return;
     setLoading(true);
     setError(null);
+    const fetchFavorite = isAuthenticated && (!user?.role || user?.role === 'attendee')
+      ? favoriteService.getFavoriteIds().then((ids) => ids.includes(id)).catch(() => false)
+      : Promise.resolve(false);
+
     Promise.all([
       expoService.getById(id),
       sessionService.list(id).catch(() => []),
+      fetchFavorite,
     ])
-      .then(([expoData, sessionData]: [any, any]) => {
+      .then(([expoData, sessionData, favStatus]: [any, any, boolean]) => {
         setExpo(expoData?.expo ?? expoData);
         setSessions(sessionData?.sessions ?? (Array.isArray(sessionData) ? sessionData : []));
+        setIsFavorited(favStatus);
       })
       .catch((err: any) => setError(err?.response?.data?.message || err?.message || 'Failed to load expo'))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, isAuthenticated, user?.role]);
 
   const exhibitors: any[] = expo?.approvedApplications ?? [];
   const categories = useMemo(() => [...new Set<string>(exhibitors.map((e: any) => e.category).filter(Boolean))], [exhibitors]);
@@ -195,33 +205,39 @@ export default function ExpoDetailPage() {
                 {(!isAuthenticated || user?.role === 'attendee') && (
                   <button
                     type="button"
+                    disabled={togglingFavorite}
                     onClick={async () => {
                       if (!isAuthenticated) {
                         navigate(`/login?redirect=/expos/${id}`);
                         return;
                       }
+                      setTogglingFavorite(true);
                       try {
-                        const favIds = await (await import('../../services/favoriteService')).favoriteService.getFavoriteIds();
-                        const isFav = favIds.includes(expo._id);
-                        if (isFav) {
-                          await (await import('../../services/favoriteService')).favoriteService.removeFavorite(expo._id);
-                          (await import('react-hot-toast')).default.success('Removed from favorites');
+                        if (isFavorited) {
+                          await favoriteService.removeFavorite(expo._id);
+                          setIsFavorited(false);
+                          toast.success('Removed from favorites');
                         } else {
-                          await (await import('../../services/favoriteService')).favoriteService.addFavorite(expo._id);
-                          (await import('react-hot-toast')).default.success('Added to favorites');
+                          await favoriteService.addFavorite(expo._id);
+                          setIsFavorited(true);
+                          toast.success('Added to favorites');
                         }
                       } catch {
-                        (await import('react-hot-toast')).default.error('Failed to update favorite');
+                        toast.error('Failed to update favorite');
+                      } finally {
+                        setTogglingFavorite(false);
                       }
                     }}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs-token font-semibold border transition-all cursor-pointer ${
-                      isDarkMode
-                        ? 'border-border-base-dark bg-glass-dark text-text-primary-dark hover:border-red-500 hover:text-red-500'
-                        : 'border-border-base-light bg-white text-text-primary-light hover:border-red-500 hover:text-red-500'
+                      isFavorited
+                        ? 'bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20'
+                        : isDarkMode
+                          ? 'border-border-base-dark bg-glass-dark text-text-secondary-dark hover:border-red-500/40 hover:text-red-400'
+                          : 'border-border-base-light bg-white text-text-secondary-light hover:border-red-500/40 hover:text-red-500'
                     }`}
                   >
-                    <span className="text-red-500 font-bold">♥</span>
-                    <span>Favorite</span>
+                    <Heart className={`w-3.5 h-3.5 ${isFavorited ? 'fill-red-500 text-red-500' : ''}`} />
+                    <span>{isFavorited ? 'Favorited' : 'Favorite'}</span>
                   </button>
                 )}
               </div>
@@ -489,7 +505,7 @@ export default function ExpoDetailPage() {
                     </button>
                   )}
 
-                  {expo.status === 'published' && (!isAuthenticated || user?.role === 'exhibitor') && (
+                  {(expo.status === 'published' || expo.status === 'ongoing') && (!isAuthenticated || user?.role === 'exhibitor') && (
                     <button onClick={handleApply} className={(!isAuthenticated || user?.role === 'attendee') ? secondaryBtn : primaryBtn}>
                       Apply to Exhibit
                     </button>
