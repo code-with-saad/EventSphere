@@ -131,11 +131,16 @@ router.get(
       .map((app) => app.boothLabel)
       .filter((label): label is string => Boolean(label));
 
+    const zones = expo.zones && expo.zones.length > 0
+      ? expo.zones
+      : [{ name: 'Main Hall', boothCount: expo.totalBooths || 20 }];
+
     return res.status(200).json({
       success: true,
       data: {
         totalBooths: expo.totalBooths,
         occupiedBooths,
+        zones,
       },
     });
   })

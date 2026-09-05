@@ -1,5 +1,19 @@
 import api from './api';
 
+export interface ExpoCardDTO {
+  _id: string;
+  name: string;
+  description: string;
+  status: 'draft' | 'published' | 'ongoing' | 'completed' | 'archived';
+  startDate: string;
+  endDate: string;
+  venueName: string;
+  venueAddress: string;
+  bannerUrl?: string;
+  approvedExhibitorCount?: number;
+  category?: string;
+}
+
 export const expoService = {
   // Public listing with optional query params: { status?, search?, page?, limit? }
   list: (query?: Record<string, any>) =>

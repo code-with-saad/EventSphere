@@ -9,4 +9,7 @@ export const bookmarkService = {
 
   getMine: (expoId: string) =>
     api.get(`/api/expos/${expoId}/bookmarks/mine`).then(r => r.data.data),
+
+  getAllMine: () =>
+    api.get('/api/bookmarks/mine/all').then(r => r.data.data.sessions),
 };

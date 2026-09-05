@@ -9,6 +9,28 @@ const router = Router();
 // ── Route ordering: literal paths before wildcard params ──────────────────────
 
 /**
+ * GET /api/bookmarks/mine/all
+ *
+ * Returns all bookmarked sessions for the authenticated attendee across ALL expos.
+ *
+ * Access: Attendee only
+ */
+router.get(
+  '/mine/all',
+  authenticate,
+  authorize('attendee'),
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const sessions = await BookmarkService.listAllForAttendee(req.user!.userId);
+
+    return res.status(200).json({
+      success: true,
+      message: 'All bookmarked sessions retrieved successfully',
+      data: { sessions },
+    });
+  })
+);
+
+/**
  * GET /:expoId/bookmarks/mine
  *
  * Returns all bookmarked sessions for the authenticated attendee within

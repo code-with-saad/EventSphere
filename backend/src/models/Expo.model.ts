@@ -15,6 +15,11 @@ import { getDatabase } from '../config/database';
  */
 export type ExpoStatus = 'draft' | 'published' | 'ongoing' | 'completed' | 'archived';
 
+export interface IExpoZone {
+  name: string;
+  boothCount: number;
+}
+
 /**
  * Expo interface — represents an expo document in MongoDB
  */
@@ -29,6 +34,7 @@ export interface IExpo {
   venueName: string;
   venueAddress: string;
   totalBooths: number;        // integer ≥ 1
+  zones?: IExpoZone[];        // optional zone-based booth configuration
   bannerUrl?: string;         // Cloudinary URL (PNG/JPG/WebP, ≤5 MB)
   websiteUrl?: string;
   category?: string;          // e.g. Technology, Health, Art
@@ -50,6 +56,7 @@ export interface IExpoCreate {
   venueName: string;
   venueAddress: string;
   totalBooths: number;
+  zones?: IExpoZone[];
   bannerUrl?: string;
   websiteUrl?: string;
   category?: string;

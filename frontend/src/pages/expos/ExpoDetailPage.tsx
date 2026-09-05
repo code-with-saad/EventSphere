@@ -172,16 +172,51 @@ export default function ExpoDetailPage() {
             
             {/* Header / Title block */}
             <div>
-              <div className="flex flex-wrap items-center gap-sm-token mb-sm-token">
-                <ExpoStatusBadge status={expo.status} />
-                {expo.category && (
-                  <span className={`inline-flex items-center px-sm-token py-xs-token rounded-sm-token text-xs-token font-medium ${
-                    isDarkMode
-                      ? 'bg-bg-surface-dark text-text-secondary-dark border border-border-base-dark'
-                      : 'bg-bg-surface-light text-text-secondary-light border border-border-base-light'
-                  }`}>
-                    {expo.category}
-                  </span>
+              <div className="flex flex-wrap items-center justify-between gap-sm-token mb-sm-token">
+                <div className="flex flex-wrap items-center gap-sm-token">
+                  <ExpoStatusBadge status={expo.status} />
+                  {expo.category && (
+                    <span className={`inline-flex items-center px-sm-token py-xs-token rounded-sm-token text-xs-token font-medium ${
+                      isDarkMode
+                        ? 'bg-bg-surface-dark text-text-secondary-dark border border-border-base-dark'
+                        : 'bg-bg-surface-light text-text-secondary-light border border-border-base-light'
+                    }`}>
+                      {expo.category}
+                    </span>
+                  )}
+                </div>
+
+                {(!isAuthenticated || user?.role === 'attendee') && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!isAuthenticated) {
+                        navigate(`/login?redirect=/expos/${id}`);
+                        return;
+                      }
+                      try {
+                        const favIds = await (await import('../../services/favoriteService')).favoriteService.getFavoriteIds();
+                        const isFav = favIds.includes(expo._id);
+                        if (isFav) {
+                          await (await import('../../services/favoriteService')).favoriteService.removeFavorite(expo._id);
+                          (await import('react-hot-toast')).default.success('Removed from favorites');
+                        } else {
+                          await (await import('../../services/favoriteService')).favoriteService.addFavorite(expo._id);
+                          (await import('react-hot-toast')).default.success('Added to favorites');
+                        }
+                      } catch {
+                        (await import('react-hot-toast')).default.error('Failed to update favorite');
+                      }
+                    }}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs-token font-semibold border transition-all cursor-pointer ${
+                      isDarkMode
+                        ? 'border-border-base-dark bg-glass-dark text-text-primary-dark hover:border-red-500 hover:text-red-500'
+                        : 'border-border-base-light bg-white text-text-primary-light hover:border-red-500 hover:text-red-500'
+                    }`}
+                  >
+                    <span className="text-red-500 font-bold">♥</span>
+                    <span>Favorite</span>
+                  </button>
                 )}
               </div>
               <h1 className={`text-2xl-token md:text-display-token font-bold leading-tight-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
@@ -350,6 +385,7 @@ export default function ExpoDetailPage() {
 
                 <BoothSelectorGrid
                   totalBooths={expo.totalBooths}
+                  zones={expo.zones}
                   occupiedBooths={exhibitors.map((e: any) => e.boothLabel).filter(Boolean)}
                   onSelectBooth={() => {}}
                   disabled={true}

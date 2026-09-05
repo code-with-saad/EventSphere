@@ -1,7 +1,11 @@
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, MapPin } from 'lucide-react';
+import { Calendar, MapPin, Heart } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { favoriteService } from '../../services/favoriteService';
 import ExpoStatusBadge from './ExpoStatusBadge';
+import toast from 'react-hot-toast';
 
 interface ExpoCardProps {
   expo: {
@@ -16,6 +20,7 @@ interface ExpoCardProps {
     bannerUrl?: string;
     approvedExhibitorCount?: number;
   };
+  isFavoritedInitially?: boolean;
 }
 
 function truncate(text: string, max: number): string {
@@ -26,14 +31,43 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export default function ExpoCard({ expo }: ExpoCardProps) {
+export default function ExpoCard({ expo, isFavoritedInitially = false }: ExpoCardProps) {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
+  const { isAuthenticated, user } = useAuth();
+
+  const [isFavorited, setIsFavorited] = useState(isFavoritedInitially);
+  const [loadingFav, setLoadingFav] = useState(false);
+
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      toast.error('Please log in to save favorites');
+      return;
+    }
+    setLoadingFav(true);
+    try {
+      if (isFavorited) {
+        await favoriteService.removeFavorite(expo._id);
+        setIsFavorited(false);
+        toast.success('Removed from favorites');
+      } else {
+        await favoriteService.addFavorite(expo._id);
+        setIsFavorited(true);
+        toast.success('Added to favorites');
+      }
+    } catch {
+      toast.error('Failed to update favorite');
+    } finally {
+      setLoadingFav(false);
+    }
+  };
 
   return (
     <Link
       to={`/expos/${expo._id}`}
-      className={`group block rounded-lg-token overflow-hidden transition-all backdrop-blur-sm hover:translate-y-[-2px] ${
+      className={`group relative block rounded-lg-token overflow-hidden transition-all backdrop-blur-sm hover:translate-y-[-2px] ${
         isDarkMode
           ? 'bg-glass-dark border border-glass-border-dark hover:border-brand-primary-dark'
           : 'bg-glass-light border border-glass-border-light hover:border-brand-primary-light'
@@ -42,7 +76,7 @@ export default function ExpoCard({ expo }: ExpoCardProps) {
     >
       {/* Banner — full width, no padding */}
       {expo.bannerUrl ? (
-        <div className="w-full h-40 overflow-hidden">
+        <div className="relative w-full h-40 overflow-hidden">
           <img
             src={expo.bannerUrl}
             alt={expo.name}
@@ -60,6 +94,23 @@ export default function ExpoCard({ expo }: ExpoCardProps) {
             {expo.name.charAt(0).toUpperCase()}
           </span>
         </div>
+      )}
+
+      {/* Favorite Heart Button */}
+      {(!isAuthenticated || user?.role === 'attendee') && (
+        <button
+          type="button"
+          onClick={handleToggleFavorite}
+          disabled={loadingFav}
+          title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+          className={`absolute top-2.5 right-2.5 p-2 rounded-full transition-all shadow-md z-10 ${
+            isFavorited
+              ? 'bg-red-500 text-white'
+              : 'bg-black/40 hover:bg-black/60 text-white/80 hover:text-white'
+          }`}
+        >
+          <Heart className={`w-3.5 h-3.5 ${isFavorited ? 'fill-white' : ''}`} />
+        </button>
       )}
 
       {/* Content */}

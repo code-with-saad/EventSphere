@@ -17,6 +17,7 @@ import {
   LogOut,
   X,
   MessageSquare,
+  Bookmark,
 } from 'lucide-react';
 
 export interface NavLink {
@@ -35,6 +36,7 @@ export const ROLE_NAV_LINKS: Record<string, NavLink[]> = {
   organizer: [
     { label: 'Dashboard',           path: '/dashboard/organizer', icon: LayoutDashboard },
     { label: 'My Expos',            path: '/organizer/expos',     icon: CalendarDays },
+    { label: 'Messages',            path: '/organizer/messages',  icon: MessageSquare },
     { label: 'Reports & Analytics', path: '/organizer/analytics', icon: BarChart3 },
     { label: 'Scanner',             path: '/organizer/scanner',   icon: ScanLine },
     { label: 'Browse Expos',        path: '/expos',               icon: Compass },
@@ -42,13 +44,15 @@ export const ROLE_NAV_LINKS: Record<string, NavLink[]> = {
   exhibitor: [
     { label: 'Dashboard',           path: '/dashboard/exhibitor',     icon: Store },
     { label: 'My Applications',     path: '/exhibitor/applications', icon: FileText },
+    { label: 'Messages',            path: '/exhibitor/messages',     icon: MessageSquare },
     { label: 'Reports & Analytics', path: '/exhibitor/analytics',    icon: BarChart3 },
     { label: 'Browse Expos',        path: '/expos',                  icon: Compass },
   ],
   attendee: [
-    { label: 'Dashboard',    path: '/dashboard/attendee', icon: Ticket },
-    { label: 'My Tickets',   path: '/attendee/tickets',   icon: Ticket },
-    { label: 'Browse Expos', path: '/expos',              icon: Compass },
+    { label: 'Dashboard',              path: '/dashboard/attendee', icon: LayoutDashboard },
+    { label: 'My Tickets',             path: '/attendee/tickets',   icon: Ticket },
+    { label: 'Bookmarks & Favorites',  path: '/attendee/bookmarks', icon: Bookmark },
+    { label: 'Browse Expos',           path: '/expos',              icon: Compass },
   ],
 };
 

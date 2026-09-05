@@ -135,6 +135,7 @@ class ExpoService {
       venueName: string;
       venueAddress: string;
       totalBooths: number;
+      zones?: { name: string; boothCount: number }[];
       bannerUrl?: string;
       websiteUrl?: string;
       category?: string;
@@ -142,6 +143,12 @@ class ExpoService {
       venueMapUrl?: string;
     }
   ): Promise<IExpo> {
+    // If zones are provided, calculate totalBooths from zones
+    let totalBooths = data.totalBooths;
+    if (data.zones && Array.isArray(data.zones) && data.zones.length > 0) {
+      totalBooths = data.zones.reduce((sum, z) => sum + (Number(z.boothCount) || 0), 0);
+    }
+
     // Field presence
     const requiredFields: Array<keyof typeof data> = [
       'name',
@@ -150,9 +157,11 @@ class ExpoService {
       'endDate',
       'venueName',
       'venueAddress',
-      'totalBooths',
     ];
     const missing = requiredFields.filter((f) => !data[f] && data[f] !== 0);
+    if (!totalBooths || totalBooths < 1) {
+      missing.push('totalBooths');
+    }
     if (missing.length > 0) {
       const err = createError(
         `Missing required fields: ${missing.join(', ')}`,
@@ -180,8 +189,8 @@ class ExpoService {
     if (!data.venueAddress.trim()) {
       throw createError('venueAddress is required', 'MISSING_REQUIRED_FIELDS', 400);
     }
-    if (!Number.isInteger(data.totalBooths) || data.totalBooths < 1) {
-      throw createError('totalBooths must be an integer - 1', 'INVALID_FIELD_LENGTH', 400);
+    if (!Number.isInteger(totalBooths) || totalBooths < 1) {
+      throw createError('totalBooths must be an integer ≥ 1', 'INVALID_FIELD_LENGTH', 400);
     }
     if (data.tags && data.tags.length > 10) {
       throw createError('tags must have at most 10 items', 'INVALID_FIELD_LENGTH', 400);
@@ -223,7 +232,8 @@ class ExpoService {
       endDate,
       venueName: data.venueName,
       venueAddress: data.venueAddress,
-      totalBooths: data.totalBooths,
+      totalBooths,
+      zones: data.zones,
       bannerUrl: data.bannerUrl,
       websiteUrl: data.websiteUrl,
       category: data.category,
@@ -257,6 +267,7 @@ class ExpoService {
       venueName?: string;
       venueAddress?: string;
       totalBooths?: number;
+      zones?: { name: string; boothCount: number }[];
       bannerUrl?: string;
       websiteUrl?: string;
       category?: string;
@@ -266,6 +277,12 @@ class ExpoService {
   ): Promise<IExpo> {
     const expo = await this._requireExpo(expoId);
     this._requireOwnership(expo, organizerId);
+
+    // If zones are provided, calculate totalBooths from zones
+    let totalBooths = data.totalBooths;
+    if (data.zones && Array.isArray(data.zones) && data.zones.length > 0) {
+      totalBooths = data.zones.reduce((sum, z) => sum + (Number(z.boothCount) || 0), 0);
+    }
 
     // Optional field length checks
     if (data.name !== undefined && (data.name.length < 1 || data.name.length > 120)) {
@@ -281,9 +298,9 @@ class ExpoService {
         400
       );
     }
-    if (data.totalBooths !== undefined) {
-      if (!Number.isInteger(data.totalBooths) || data.totalBooths < 1) {
-        throw createError('totalBooths must be an integer - 1', 'INVALID_FIELD_LENGTH', 400);
+    if (totalBooths !== undefined) {
+      if (!Number.isInteger(totalBooths) || totalBooths < 1) {
+        throw createError('totalBooths must be an integer ≥ 1', 'INVALID_FIELD_LENGTH', 400);
       }
     }
     if (data.tags !== undefined) {

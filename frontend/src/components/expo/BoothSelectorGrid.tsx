@@ -1,9 +1,15 @@
 import React from 'react';
-import { Store, CheckCircle, Ban } from 'lucide-react';
+import { Store, CheckCircle, Ban, Layers } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
+export interface ExpoZone {
+  name: string;
+  boothCount: number;
+}
+
 interface BoothSelectorGridProps {
-  totalBooths: number;
+  totalBooths?: number;
+  zones?: ExpoZone[];
   occupiedBooths: string[];
   selectedBooth?: string;
   onSelectBooth: (boothLabel: string) => void;
@@ -11,22 +17,40 @@ interface BoothSelectorGridProps {
 }
 
 /**
- * Generates an array of formatted booth labels, e.g. A-01, A-02 ... B-01 ... up to totalBooths
+ * Derives a clean zone prefix code:
+ * e.g. "Hall A" -> "A", "Hall B" -> "B", "North Wing" -> "NW", "Main Hall" -> "M", "Zone 1" -> "Z1"
  */
-function generateBoothLabels(total: number): string[] {
+function getZonePrefix(zoneName: string, index: number): string {
+  const trimmed = zoneName.trim();
+  const matchHall = trimmed.match(/^(?:hall|zone|section|area|room)\s+([a-z0-9]+)/i);
+  if (matchHall) {
+    return matchHall[1].toUpperCase();
+  }
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  if (words.length > 1) {
+    return words.map(w => w[0]).join('').toUpperCase().slice(0, 3);
+  }
+  if (trimmed.length > 0) {
+    return trimmed.slice(0, 2).toUpperCase();
+  }
+  return String.fromCharCode(65 + index);
+}
+
+/**
+ * Generates an array of formatted booth labels for a zone, e.g. A-01, A-02 ...
+ */
+function generateZoneBoothLabels(prefix: string, count: number): string[] {
   const labels: string[] = [];
-  const boothsPerRow = 10;
-  for (let i = 0; i < total; i++) {
-    const rowChar = String.fromCharCode(65 + Math.floor(i / boothsPerRow)); // A, B, C...
-    const colNum = (i % boothsPerRow) + 1;
-    const padNum = colNum < 10 ? `0${colNum}` : `${colNum}`;
-    labels.push(`${rowChar}-${padNum}`);
+  for (let i = 1; i <= count; i++) {
+    const padNum = i < 10 ? `0${i}` : `${i}`;
+    labels.push(`${prefix}-${padNum}`);
   }
   return labels;
 }
 
 export const BoothSelectorGrid: React.FC<BoothSelectorGridProps> = ({
-  totalBooths,
+  totalBooths = 20,
+  zones,
   occupiedBooths = [],
   selectedBooth,
   onSelectBooth,
@@ -35,11 +59,15 @@ export const BoothSelectorGrid: React.FC<BoothSelectorGridProps> = ({
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
 
-  const allBooths = generateBoothLabels(Math.min(Math.max(totalBooths || 1, 1), 60));
+  // If no explicit zones provided, create a default "Main Hall" zone using totalBooths
+  const effectiveZones: ExpoZone[] = zones && zones.length > 0
+    ? zones
+    : [{ name: 'Main Hall', boothCount: Math.max(totalBooths || 1, 1) }];
+
   const occupiedSet = new Set(occupiedBooths.map((b) => b.toUpperCase().trim()));
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       {/* Legend & Summary */}
       <div className="flex items-center justify-between flex-wrap gap-2 text-xs-token">
         <div className="flex items-center gap-4">
@@ -64,63 +92,94 @@ export const BoothSelectorGrid: React.FC<BoothSelectorGridProps> = ({
         )}
       </div>
 
-      {/* Grid container */}
-      <div
-        className={`p-3 md:p-4 rounded-lg-token border max-h-64 overflow-y-auto ${
-          isDarkMode
-            ? 'bg-black/20 border-border-base-dark'
-            : 'bg-black/5 border-border-base-light'
-        }`}
-      >
-        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-10 gap-2">
-          {allBooths.map((label) => {
-            const isOccupied = occupiedSet.has(label.toUpperCase());
-            const isSelected = selectedBooth?.toUpperCase() === label.toUpperCase();
+      {/* Zoned containers */}
+      <div className="flex flex-col gap-4">
+        {effectiveZones.map((zone, zIdx) => {
+          const prefix = getZonePrefix(zone.name, zIdx);
+          const boothLabels = generateZoneBoothLabels(prefix, zone.boothCount);
+          const availableCount = boothLabels.filter(l => !occupiedSet.has(l.toUpperCase())).length;
 
-            if (isOccupied) {
-              return (
-                <div
-                  key={label}
-                  title={`Booth ${label} is already reserved`}
-                  className={`flex flex-col items-center justify-center p-2 rounded-md-token text-xs-token font-medium cursor-not-allowed opacity-40 border border-dashed ${
-                    isDarkMode
-                      ? 'bg-black/40 border-border-base-dark text-text-muted-dark'
-                      : 'bg-black/10 border-border-base-light text-text-muted-light'
-                  }`}
-                >
-                  <Ban className="w-3.5 h-3.5 mb-0.5 opacity-60" />
-                  <span className="text-[11px] font-mono">{label}</span>
+          return (
+            <div
+              key={`${zone.name}-${zIdx}`}
+              className={`p-3 md:p-4 rounded-lg-token border ${
+                isDarkMode
+                  ? 'bg-black/20 border-border-base-dark'
+                  : 'bg-black/5 border-border-base-light'
+              }`}
+            >
+              {/* Zone Header */}
+              <div className="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-border-base-dark/20">
+                <div className="flex items-center gap-2">
+                  <Layers className={`w-4 h-4 ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`} />
+                  <span className={`text-sm-token font-semibold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                    {zone.name}
+                  </span>
+                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-mono font-medium ${
+                    isDarkMode ? 'bg-bg-hover-dark text-text-secondary-dark' : 'bg-bg-hover-light text-text-secondary-light'
+                  }`}>
+                    Code: {prefix}
+                  </span>
                 </div>
-              );
-            }
+                <div className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                  <span className="font-semibold text-brand-primary-dark">{availableCount}</span> / {zone.boothCount} available
+                </div>
+              </div>
 
-            return (
-              <button
-                key={label}
-                type="button"
-                disabled={disabled}
-                onClick={() => onSelectBooth(isSelected ? '' : label)}
-                className={`flex flex-col items-center justify-center p-2 rounded-md-token text-xs-token font-medium transition-all duration-150 cursor-pointer border ${
-                  isSelected
-                    ? isDarkMode
-                      ? 'bg-brand-primary-dark border-brand-primary-dark text-white shadow-md scale-105'
-                      : 'bg-brand-primary-light border-brand-primary-light text-white shadow-md scale-105'
-                    : isDarkMode
-                    ? 'bg-bg-glass-dark border-border-base-dark text-text-primary-dark hover:border-brand-primary-dark hover:bg-white/5'
-                    : 'bg-white border-border-base-light text-text-primary-light hover:border-brand-primary-light hover:bg-black/5'
-                }`}
-              >
-                {isSelected ? (
-                  <CheckCircle className="w-3.5 h-3.5 mb-0.5 text-white" />
-                ) : (
-                  <Store className={`w-3.5 h-3.5 mb-0.5 ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`} />
-                )}
-                <span className="text-[11px] font-mono font-semibold">{label}</span>
-              </button>
-            );
-          })}
-        </div>
+              {/* Booth grid for this zone */}
+              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2">
+                {boothLabels.map((label) => {
+                  const isOccupied = occupiedSet.has(label.toUpperCase());
+                  const isSelected = selectedBooth?.toUpperCase() === label.toUpperCase();
+
+                  if (isOccupied) {
+                    return (
+                      <div
+                        key={label}
+                        title={`Booth ${label} is already reserved`}
+                        className={`flex flex-col items-center justify-center p-2 rounded-md-token text-xs-token font-medium cursor-not-allowed opacity-40 border border-dashed ${
+                          isDarkMode
+                            ? 'bg-black/40 border-border-base-dark text-text-muted-dark'
+                            : 'bg-black/10 border-border-base-light text-text-muted-light'
+                        }`}
+                      >
+                        <Ban className="w-3.5 h-3.5 mb-0.5 opacity-60" />
+                        <span className="text-[11px] font-mono">{label}</span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={label}
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => onSelectBooth(isSelected ? '' : label)}
+                      className={`flex flex-col items-center justify-center p-2 rounded-md-token text-xs-token font-medium transition-all duration-150 cursor-pointer border ${
+                        isSelected
+                          ? isDarkMode
+                            ? 'bg-brand-primary-dark border-brand-primary-dark text-white shadow-md scale-105'
+                            : 'bg-brand-primary-light border-brand-primary-light text-white shadow-md scale-105'
+                          : isDarkMode
+                          ? 'bg-bg-glass-dark border-border-base-dark text-text-primary-dark hover:border-brand-primary-dark hover:bg-white/5'
+                          : 'bg-white border-border-base-light text-text-primary-light hover:border-brand-primary-light hover:bg-black/5'
+                      }`}
+                    >
+                      {isSelected ? (
+                        <CheckCircle className="w-3.5 h-3.5 mb-0.5 text-white" />
+                      ) : (
+                        <Store className={`w-3.5 h-3.5 mb-0.5 ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`} />
+                      )}
+                      <span className="text-[11px] font-mono font-semibold">{label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
+
       <p className={`text-[11px] ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
         Click an available booth to request it. Booth allocation is confirmed upon organizer approval.
       </p>

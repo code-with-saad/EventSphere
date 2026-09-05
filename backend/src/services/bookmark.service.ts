@@ -97,6 +97,69 @@ class BookmarkService {
     // 5. Filter sessions to only those bookmarked, preserving startTime sort order
     return sessions.filter((s) => bookmarkedIds.has(s._id.toString()));
   }
+
+  // -------------------------------------------------------------------------
+  // 24d — listAllForAttendee()
+  // -------------------------------------------------------------------------
+
+  /**
+   * Return all sessions the attendee has bookmarked across ALL expos,
+   * grouped with expo information.
+   *
+   * @param attendeeId  Attendee user ID string
+   * @returns Array of bookmarked sessions with populated expo information, sorted by startTime
+   */
+  async listAllForAttendee(attendeeId: string): Promise<any[]> {
+    // 1. Fetch all attendee bookmarks
+    const bookmarks = await BookmarkModel.findByAttendee(attendeeId);
+    if (bookmarks.length === 0) {
+      return [];
+    }
+
+    const sessionIds = bookmarks.map((b) => b.sessionId);
+
+    // 2. Fetch session documents
+    const sessions = await SessionModel.getCollection()
+      .find({ _id: { $in: sessionIds } })
+      .sort({ startTime: 1 })
+      .toArray();
+
+    if (sessions.length === 0) {
+      return [];
+    }
+
+    // 3. Fetch expo details for all unique expos
+    const expoIds = [...new Set(sessions.map((s) => s.expoId))];
+    const expos = await (await import('../models/Expo.model')).default.getCollection()
+      .find({ _id: { $in: expoIds } })
+      .toArray();
+
+    const expoMap = new Map<string, any>();
+    expos.forEach((e) => {
+      expoMap.set(e._id.toString(), {
+        _id: e._id.toString(),
+        name: e.name,
+        startDate: e.startDate,
+        endDate: e.endDate,
+        venueName: e.venueName,
+        bannerUrl: e.bannerUrl,
+      });
+    });
+
+    // 4. Return sessions populated with expo info
+    return sessions.map((s) => ({
+      _id: s._id.toString(),
+      expoId: s.expoId.toString(),
+      title: s.title,
+      speakerName: s.speakerName,
+      startTime: s.startTime,
+      endTime: s.endTime,
+      room: s.room,
+      description: s.description,
+      track: s.track,
+      expo: expoMap.get(s.expoId.toString()) || null,
+    }));
+  }
 }
 
 export default new BookmarkService();

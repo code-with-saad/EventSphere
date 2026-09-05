@@ -37,6 +37,8 @@ import BoothLayoutPage from './pages/organizer/BoothLayoutPage';
 import OrganizerAnalyticsPage from './pages/analytics/OrganizerAnalyticsPage';
 import ExhibitorAnalyticsPage from './pages/analytics/ExhibitorAnalyticsPage';
 import ProfilePage from './pages/auth/ProfilePage';
+import MessagesPage from './pages/messages/MessagesPage';
+import BookmarksPage from './pages/attendee/BookmarksPage';
 
 /**
  * Single source of truth for where an authenticated user should land.
@@ -67,8 +69,6 @@ function DashboardRedirect() {
   if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
   return <Navigate to={getHomeRoute(user)} replace />;
 }
-
-
 
 /**
  * Wraps public-only pages (login, register).
@@ -124,17 +124,20 @@ function App() {
             <Route path="/organizer/expos/:id/applications" element={<ProtectedRoute allowedRoles={['organizer']}><ApplicationsPage /></ProtectedRoute>} />
             <Route path="/organizer/expos/:id/schedule" element={<ProtectedRoute allowedRoles={['organizer']}><ScheduleBuilderPage /></ProtectedRoute>} />
             <Route path="/organizer/expos/:id/booths" element={<ProtectedRoute allowedRoles={['organizer']}><BoothLayoutPage /></ProtectedRoute>} />
+            <Route path="/organizer/messages" element={<ProtectedRoute allowedRoles={['organizer']}><MessagesPage /></ProtectedRoute>} />
             <Route path="/organizer/scanner" element={<ProtectedRoute allowedRoles={['organizer']}><ScannerPage /></ProtectedRoute>} />
             <Route path="/organizer/analytics" element={<ProtectedRoute allowedRoles={['organizer']}><OrganizerAnalyticsPage /></ProtectedRoute>} />
 
             {/* -- Phase 2: Exhibitor Routes -- */}
             <Route path="/exhibitor/applications" element={<ProtectedRoute allowedRoles={['exhibitor']}><MyApplicationsPage /></ProtectedRoute>} />
+            <Route path="/exhibitor/messages" element={<ProtectedRoute allowedRoles={['exhibitor']}><MessagesPage /></ProtectedRoute>} />
             <Route path="/exhibitor/analytics" element={<ProtectedRoute allowedRoles={['exhibitor']}><ExhibitorAnalyticsPage /></ProtectedRoute>} />
             <Route path="/expos/:id/apply" element={<ProtectedRoute allowedRoles={['exhibitor']}><ApplicationFormPage /></ProtectedRoute>} />
 
             {/* -- Phase 2: Attendee Routes -- */}
             <Route path="/attendee/tickets" element={<ProtectedRoute allowedRoles={['attendee']}><MyTicketsPage /></ProtectedRoute>} />
             <Route path="/attendee/tickets/:ticketId" element={<ProtectedRoute allowedRoles={['attendee']}><TicketDetailPage /></ProtectedRoute>} />
+            <Route path="/attendee/bookmarks" element={<ProtectedRoute allowedRoles={['attendee']}><BookmarksPage /></ProtectedRoute>} />
             
             <Route path="/profile" element={<ProtectedRoute allowedRoles={['superadmin','organizer','exhibitor','attendee']}><ProfilePage /></ProtectedRoute>} />
 

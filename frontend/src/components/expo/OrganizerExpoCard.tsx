@@ -149,8 +149,8 @@ export default function OrganizerExpoCard({
 
         {/* Action Row */}
         <div className="mt-auto pt-sm-token border-t border-border-base-dark/30 flex flex-col gap-2">
-          {/* Primary 3 actions */}
-          <div className="grid grid-cols-3 gap-1.5">
+          {/* Quick Sub-page links */}
+          <div className="grid grid-cols-4 gap-1">
             <button
               type="button"
               onClick={() => navigate(`/organizer/expos/${expo._id}/edit`)}
@@ -178,7 +178,16 @@ export default function OrganizerExpoCard({
               title="Manage Expo Schedule"
             >
               <CalendarClock className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">Schedule</span>
+              <span className="truncate">Sched</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate(`/organizer/expos/${expo._id}/booths`)}
+              className={actionBtnClass}
+              title="View Booth Layout"
+            >
+              <span className="truncate">Booths</span>
             </button>
           </div>
 

@@ -8,6 +8,7 @@ import SessionModel from './models/Session.model';
 import BookmarkModel from './models/Bookmark.model';
 import MessageModel from './models/Message.model';
 import FeedbackModel from './models/Feedback.model';
+import FavoriteModel from './models/Favorite.model';
 import app from './app';
 
 const PORT = env.PORT;
@@ -37,6 +38,7 @@ async function startServer() {
     await BookmarkModel.createIndexes();
     await MessageModel.createIndexes();
     await FeedbackModel.createIndexes();
+    await FavoriteModel.createIndexes();
 
     // Only start accepting requests after successful database connection
     app.listen(PORT, () => {

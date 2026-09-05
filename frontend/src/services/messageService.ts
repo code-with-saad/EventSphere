@@ -10,7 +10,28 @@ export interface ApplicationMessage {
   createdAt: string;
 }
 
+export interface MessageThread {
+  applicationId: string;
+  companyName: string;
+  category?: string;
+  status: string;
+  expoId: string;
+  expoName: string;
+  lastMessage: ApplicationMessage | null;
+  totalMessages: number;
+}
+
 export const messageService = {
+  /**
+   * Get all conversation threads for current user
+   */
+  async getThreads(): Promise<MessageThread[]> {
+    const res = await api.get<{ success: boolean; data: { threads: MessageThread[] } }>(
+      '/api/messages/threads'
+    );
+    return res.data.data.threads;
+  },
+
   /**
    * Get all messages in the application conversation
    */

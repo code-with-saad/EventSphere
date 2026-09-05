@@ -22,6 +22,7 @@ import uploadRoutes from './routes/upload.routes';
 import userRoutes from './routes/user.routes';
 import messageRoutes from './routes/message.routes';
 import feedbackRoutes from './routes/feedback.routes';
+import favoriteRoutes from './routes/favorite.routes';
 import errorHandler, { notFoundHandler } from './middleware/error.middleware';
 
 const app = express();
@@ -52,6 +53,9 @@ app.use('/api/tickets', ticketRoutes);
 app.use('/api/expos', ticketRoutes);
 app.use('/api/expos', sessionRoutes);
 app.use('/api/expos', bookmarkRoutes);
+app.use('/api/bookmarks', bookmarkRoutes);
+app.use('/api/favorites', favoriteRoutes);
+app.use('/api/expos', favoriteRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/messages', messageRoutes);

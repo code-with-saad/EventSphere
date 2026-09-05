@@ -65,6 +65,10 @@ export class MessageModel {
     const appId = typeof applicationId === 'string' ? new ObjectId(applicationId) : applicationId;
     return this.collection.find({ applicationId: appId }).sort({ createdAt: 1 }).toArray();
   }
+
+  getCollection(): Collection<IMessage> {
+    return this.collection;
+  }
 }
 
 export default new MessageModel();
