@@ -14,6 +14,7 @@ interface BoothSelectorGridProps {
   zones?: ExpoZone[];
   spatialLayout?: IExpoSpatialLayout;
   occupiedBooths: string[];
+  boothOwners?: Record<string, string>;
   selectedBooth?: string;
   onSelectBooth: (boothLabel: string) => void;
   disabled?: boolean;
@@ -56,6 +57,7 @@ export const BoothSelectorGrid: React.FC<BoothSelectorGridProps> = ({
   zones,
   spatialLayout,
   occupiedBooths = [],
+  boothOwners = {},
   selectedBooth,
   onSelectBooth,
   disabled = false,
@@ -122,6 +124,7 @@ export const BoothSelectorGrid: React.FC<BoothSelectorGridProps> = ({
         <SpatialFloorPlanViewer
           spatialLayout={spatialLayout}
           occupiedBooths={occupiedBooths}
+          boothOwners={boothOwners}
           selectedBooth={selectedBooth}
           onSelectBooth={disabled ? undefined : onSelectBooth}
           interactive={!disabled}

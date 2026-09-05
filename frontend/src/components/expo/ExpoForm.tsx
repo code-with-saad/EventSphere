@@ -170,6 +170,8 @@ export default function ExpoForm({
 
     if (!form.startDate) {
       errs.startDate = 'Start date is required.';
+    } else if (new Date(form.startDate) <= new Date()) {
+      errs.startDate = 'Start date has already passed. Please select a time in the future.';
     }
 
     if (!form.endDate) {

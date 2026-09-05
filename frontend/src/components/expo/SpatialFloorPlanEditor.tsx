@@ -79,56 +79,102 @@ export default function SpatialFloorPlanEditor({
 
   const snap = (val: number) => Math.round(val / gridSize) * gridSize;
 
-  // Auto-generate layout if booths are empty
+  // Auto-generate layout with reference landmarks and organized booth grid
   const handleAutoGenerate = () => {
+    const newShapes: IReferenceShape[] = [
+      {
+        id: `shape-stage-${Date.now()}`,
+        label: 'Main Stage',
+        type: 'stage',
+        x: snap(canvasWidth / 2 - 100),
+        y: snap(30),
+        width: 200,
+        height: 60,
+      },
+      {
+        id: `shape-entrance-${Date.now() + 1}`,
+        label: 'Main Entrance',
+        type: 'entrance',
+        x: snap(canvasWidth / 2 - 80),
+        y: snap(canvasHeight - 60),
+        width: 160,
+        height: 40,
+      },
+      {
+        id: `shape-restroom-${Date.now() + 2}`,
+        label: 'Restrooms',
+        type: 'restroom',
+        x: snap(canvasWidth - 120),
+        y: snap(30),
+        width: 90,
+        height: 50,
+      },
+      {
+        id: `shape-info-${Date.now() + 3}`,
+        label: 'Info Desk',
+        type: 'custom',
+        x: snap(40),
+        y: snap(30),
+        width: 90,
+        height: 50,
+      },
+    ];
+
     const newBooths: IBoothSpatialItem[] = [];
     const boothW = 70;
     const boothH = 60;
-    const gapX = 20;
+    const gapX = 25;
     const gapY = 30;
-    const startX = 40;
-    let currentY = 120;
+    const startX = 60;
+    let currentY = 120; // below top landmarks
 
     if (zones && zones.length > 0) {
       zones.forEach((z, zIdx) => {
         const prefix = z.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 2).toUpperCase() || `Z${zIdx + 1}`;
-        const cols = Math.max(1, Math.floor((canvasWidth - 80) / (boothW + gapX)));
+        const cols = Math.max(1, Math.floor((canvasWidth - 120) / (boothW + gapX)));
         for (let i = 1; i <= z.boothCount; i++) {
           const row = Math.floor((i - 1) / cols);
           const col = (i - 1) % cols;
           newBooths.push({
             boothLabel: `${prefix}-${String(i).padStart(2, '0')}`,
-            x: startX + col * (boothW + gapX),
-            y: currentY + row * (boothH + gapY),
+            x: snap(startX + col * (boothW + gapX)),
+            y: snap(currentY + row * (boothH + gapY)),
             width: boothW,
             height: boothH,
             zoneName: z.name,
           });
         }
         const totalRows = Math.ceil(z.boothCount / cols);
-        currentY += totalRows * (boothH + gapY) + 50;
+        currentY += totalRows * (boothH + gapY) + 40;
       });
     } else {
-      const cols = Math.max(1, Math.floor((canvasWidth - 80) / (boothW + gapX)));
+      const cols = Math.max(1, Math.floor((canvasWidth - 120) / (boothW + gapX)));
       for (let i = 1; i <= (totalBooths || 20); i++) {
         const row = Math.floor((i - 1) / cols);
         const col = (i - 1) % cols;
         newBooths.push({
           boothLabel: `B-${String(i).padStart(2, '0')}`,
-          x: startX + col * (boothW + gapX),
-          y: currentY + row * (boothH + gapY),
+          x: snap(startX + col * (boothW + gapX)),
+          y: snap(currentY + row * (boothH + gapY)),
           width: boothW,
           height: boothH,
           zoneName: 'Main Hall',
         });
       }
+      const totalRows = Math.ceil((totalBooths || 20) / cols);
+      currentY += totalRows * (boothH + gapY) + 40;
     }
 
-    if (currentY > canvasHeight - 50) {
-      setCanvasHeight(currentY + 100);
+    if (currentY + 100 > canvasHeight) {
+      const neededHeight = currentY + 120;
+      setCanvasHeight(neededHeight);
+      // reposition entrance to bottom
+      newShapes[1].y = snap(neededHeight - 60);
     }
+
+    setReferenceShapes(newShapes);
     setBooths(newBooths);
-    toast.success('Auto-arranged booths on canvas');
+    toast.success('Auto-arranged layout with architectural landmarks & booths');
   };
 
   const handleAddBooth = () => {

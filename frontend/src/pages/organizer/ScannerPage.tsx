@@ -12,6 +12,14 @@ interface OngoingExpo {
   status: string;
 }
 
+interface CheckInLogItem {
+  ticketId: string;
+  attendeeName: string;
+  attendeeEmail: string;
+  checkedInAt: string;
+  checkInCount: number;
+}
+
 /**
  * ScannerPage
  *
@@ -32,6 +40,12 @@ export default function ScannerPage() {
   const [scanResult, setScanResult] = useState<ScanResult>(null);
   const [attendeeName, setAttendeeName] = useState<string | undefined>(undefined);
   const [checkedInAt, setCheckedInAt] = useState<string | undefined>(undefined);
+  const [canCheckInAt, setCanCheckInAt] = useState<string | undefined>(undefined);
+  const [checkInCount, setCheckInCount] = useState<number | undefined>(undefined);
+
+  // ── Live Check-In Log state ─────────────────────────────────────────────────
+  const [checkInLogs, setCheckInLogs] = useState<CheckInLogItem[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
 
   // ── In-flight guard (prevents double-submission during processing) ─────────
   const [isChecking, setIsChecking] = useState(false);
@@ -46,7 +60,11 @@ export default function ScannerPage() {
       try {
         const all: OngoingExpo[] = await expoService.listMine();
         if (!cancelled) {
-          setExpos(all.filter((e) => e.status === 'ongoing'));
+          const live = all.filter((e) => e.status === 'ongoing');
+          setExpos(live);
+          if (live.length > 0 && !selectedExpoId) {
+            setSelectedExpoId(live[0]._id);
+          }
         }
       } catch {
         if (!cancelled) {
@@ -65,6 +83,26 @@ export default function ScannerPage() {
     };
   }, []);
 
+  // Fetch check-in logs whenever selected expo changes
+  const fetchLogs = useCallback(async (expoId: string) => {
+    if (!expoId) return;
+    setLogsLoading(true);
+    try {
+      const data = await expoService.getCheckIns(expoId);
+      setCheckInLogs(data?.checkIns || []);
+    } catch {
+      // quiet fail for logs
+    } finally {
+      setLogsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedExpoId) {
+      fetchLogs(selectedExpoId);
+    }
+  }, [selectedExpoId, fetchLogs]);
+
   // ── Scan handler ───────────────────────────────────────────────────────────
   const handleScan = useCallback(
     async (ticketId: string) => {
@@ -76,21 +114,29 @@ export default function ScannerPage() {
       setScanResult(null);
       setAttendeeName(undefined);
       setCheckedInAt(undefined);
+      setCanCheckInAt(undefined);
+      setCheckInCount(undefined);
 
       try {
         const data = await ticketService.checkIn(ticketId, selectedExpoId);
-        // ticketService.checkIn returns data object directly: { result, attendeeName, checkedInAt, expoName }
         const result: ScanResult = data?.result ?? 'invalid_ticket';
         setAttendeeName(data?.attendeeName || undefined);
         setCheckedInAt(data?.checkedInAt || undefined);
+        setCanCheckInAt(data?.canCheckInAt || undefined);
+        setCheckInCount(data?.checkInCount || undefined);
         setScanResult(result);
+
+        // Refresh log feed on successful check-in
+        if (result === 'checked_in') {
+          fetchLogs(selectedExpoId);
+        }
       } catch (err: unknown) {
         setScanResult('invalid_ticket');
       } finally {
         setIsChecking(false);
       }
     },
-    [selectedExpoId, isChecking]
+    [selectedExpoId, isChecking, fetchLogs]
   );
 
   // ── Derived values ─────────────────────────────────────────────────────────
@@ -265,11 +311,64 @@ export default function ScannerPage() {
                     onDismiss={() => setScanResult(null)}
                     attendeeName={attendeeName}
                     checkedInAt={checkedInAt}
+                    canCheckInAt={canCheckInAt}
+                    checkInCount={checkInCount}
                     expoName={selectedExpo?.name}
                   />
                 </div>
               )}
 
+            </div>
+          </BentoCard>
+        )}
+
+        {/* ── Organizer Check-in Activity Feed inside BentoCard ─────────── */}
+        {!exposLoading && selectedExpoId && (
+          <BentoCard>
+            <div className="flex flex-col gap-sm-token p-xs-token">
+              <div className="flex items-center justify-between border-b border-glass-border-dark/60 pb-sm-token">
+                <span className="text-xs-token font-semibold uppercase tracking-wider text-text-secondary-dark">
+                  Live Check-in Activity Log
+                </span>
+                <span className="text-xs-token font-mono font-medium text-brand-primary-dark">
+                  {checkInLogs.length} total event{checkInLogs.length === 1 ? '' : 's'}
+                </span>
+              </div>
+
+              {logsLoading && checkInLogs.length === 0 ? (
+                <div className="py-md-token text-center text-xs-token text-text-muted-dark">
+                  Loading activity log…
+                </div>
+              ) : checkInLogs.length === 0 ? (
+                <div className="py-lg-token text-center text-xs-token text-text-muted-dark">
+                  No attendees have checked in yet for this expo today.
+                </div>
+              ) : (
+                <div className="max-h-60 overflow-y-auto divide-y divide-border-base-dark/20 pr-1">
+                  {checkInLogs.map((log, idx) => (
+                    <div key={`${log.ticketId}-${idx}`} className="py-2 flex items-center justify-between gap-2 text-xs-token">
+                      <div className="flex flex-col truncate">
+                        <span className="font-semibold text-text-primary-dark truncate">
+                          {log.attendeeName}
+                        </span>
+                        <span className="text-[10px] text-text-muted-dark truncate">
+                          {log.attendeeEmail} · Pass: {log.ticketId.slice(0, 8)}…
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-end shrink-0">
+                        <span className="font-mono text-[11px] text-emerald-400 font-medium">
+                          {new Date(log.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </span>
+                        {log.checkInCount > 1 && (
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 font-semibold mt-0.5">
+                            Day {log.checkInCount} Check-in
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </BentoCard>
         )}

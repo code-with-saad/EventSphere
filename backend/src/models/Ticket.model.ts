@@ -15,6 +15,10 @@ import { getDatabase } from '../config/database';
  */
 export type TicketStatus = 'active' | 'checked_in' | 'cancelled';
 
+export interface ICheckInRecord {
+  checkedInAt: Date;
+}
+
 /**
  * Ticket interface — represents a ticket document in MongoDB
  */
@@ -25,7 +29,8 @@ export interface ITicket {
   attendeeId: ObjectId;   // ref: users._id
   status: TicketStatus;
   registeredAt: Date;
-  checkedInAt?: Date;     // set when status → checked_in
+  checkedInAt?: Date;     // set to latest check-in timestamp
+  checkIns?: ICheckInRecord[]; // full multi-day check-in history
   updatedAt: Date;
 }
 

@@ -394,6 +394,12 @@ export default function ExpoDetailPage() {
                   zones={expo.zones}
                   spatialLayout={expo.spatialLayout}
                   occupiedBooths={exhibitors.map((e: any) => e.boothLabel).filter(Boolean)}
+                  boothOwners={exhibitors.reduce((acc: Record<string, string>, e: any) => {
+                    if (e.boothLabel && e.companyName) {
+                      acc[e.boothLabel] = e.companyName;
+                    }
+                    return acc;
+                  }, {})}
                   onSelectBooth={() => {}}
                   disabled={true}
                 />

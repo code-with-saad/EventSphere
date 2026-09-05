@@ -42,6 +42,8 @@ export interface CheckInResponse {
   attendeeName?: string;
   expoName?: string;
   checkedInAt?: Date;
+  canCheckInAt?: Date;
+  checkInCount?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -459,25 +461,57 @@ class TicketService {
       return { result: 'wrong_event' };
     }
 
-    // 4. Already checked in — return original checkedInAt timestamp
+    // 4. Ticket is in checked_in status — check for 24-hour multi-day cooldown
     if (ticket.status === 'checked_in') {
+      const COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours
+      const lastCheckIn = ticket.checkedInAt ? new Date(ticket.checkedInAt) : new Date(ticket.updatedAt);
+      const now = new Date();
+      const elapsedMs = now.getTime() - lastCheckIn.getTime();
+
       const [attendee, expo] = await Promise.all([
         UserModel.findById(ticket.attendeeId),
         ExpoModel.findById(ticket.expoId),
       ]);
+
+      if (elapsedMs < COOLDOWN_MS) {
+        const canCheckInAt = new Date(lastCheckIn.getTime() + COOLDOWN_MS);
+        return {
+          result: 'already_checked_in',
+          checkedInAt: lastCheckIn,
+          canCheckInAt,
+          checkInCount: (ticket.checkIns?.length || 1),
+          attendeeName: attendee?.fullName,
+          expoName: expo?.name,
+        };
+      }
+
+      // Elapsed >= 24h: Record new check-in event
+      const currentHistory = ticket.checkIns || [{ checkedInAt: lastCheckIn }];
+      const newHistory = [...currentHistory, { checkedInAt: now }];
+
+      await TicketModel.updateById(ticket._id, {
+        checkedInAt: now,
+        checkIns: newHistory,
+      });
+
       return {
-        result: 'already_checked_in',
-        checkedInAt: ticket.checkedInAt,
+        result: 'checked_in',
+        checkedInAt: now,
+        checkInCount: newHistory.length,
         attendeeName: attendee?.fullName,
         expoName: expo?.name,
       };
     }
 
-    // 5. Active ticket — perform check-in (REQ-8, REQ-12.4)
+    // 5. Active ticket — perform first check-in (REQ-8, REQ-12.4)
     if (ticket.status === 'active') {
+      const now = new Date();
+      const firstCheckIn = { checkedInAt: now };
+
       const updated = await TicketModel.updateById(ticket._id, {
         status: 'checked_in',
-        checkedInAt: new Date(),
+        checkedInAt: now,
+        checkIns: [firstCheckIn],
       });
 
       const [attendee, expo] = await Promise.all([
@@ -487,7 +521,8 @@ class TicketService {
 
       return {
         result: 'checked_in',
-        checkedInAt: updated?.checkedInAt,
+        checkedInAt: updated?.checkedInAt || now,
+        checkInCount: 1,
         attendeeName: attendee?.fullName,
         expoName: expo?.name,
       };

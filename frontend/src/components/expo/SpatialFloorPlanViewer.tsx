@@ -6,6 +6,7 @@ import { Check } from 'lucide-react';
 interface Props {
   spatialLayout: IExpoSpatialLayout;
   occupiedBooths?: string[];
+  boothOwners?: Record<string, string>; // boothLabel -> companyName
   selectedBooth?: string;
   onSelectBooth?: (boothLabel: string) => void;
   interactive?: boolean;
@@ -14,6 +15,7 @@ interface Props {
 export default function SpatialFloorPlanViewer({
   spatialLayout,
   occupiedBooths = [],
+  boothOwners = {},
   selectedBooth,
   onSelectBooth,
   interactive = true,
@@ -25,6 +27,7 @@ export default function SpatialFloorPlanViewer({
     boothLabel: string;
     zoneName?: string;
     isOccupied: boolean;
+    companyName?: string;
     x: number;
     y: number;
   } | null>(null);
@@ -129,28 +132,32 @@ export default function SpatialFloorPlanViewer({
           {booths.map((booth) => {
             const isOccupied = occupiedSet.has(booth.boothLabel);
             const isSelected = selectedBooth === booth.boothLabel;
-            const isClickable = interactive && !isOccupied && Boolean(onSelectBooth);
+            const ownerName = boothOwners[booth.boothLabel];
 
-            let fillColor = isDark ? '#112520' : '#ECFDF5';
-            let strokeColor = isDark ? '#059669' : '#10B981';
-            let textColor = isDark ? '#34D399' : '#047857';
+            // Colors based on state
+            let fillColor = isDark ? '#1F2430' : '#FFFFFF';
+            let strokeColor = isDark ? '#374151' : '#D1D5DB';
+            let textColor = isDark ? '#E5E7EB' : '#1F2937';
 
             if (isSelected) {
-              fillColor = isDark ? '#3B1D54' : '#F3E8FF';
+              fillColor = isDark ? '#581C87' : '#E9D5FF';
               strokeColor = '#A855F7';
-              textColor = isDark ? '#D8B4FE' : '#7E22CE';
+              textColor = '#A855F7';
             } else if (isOccupied) {
-              fillColor = isDark ? '#261717' : '#FEF2F2';
+              fillColor = isDark ? '#2A1515' : '#FEE2E2';
               strokeColor = isDark ? '#7F1D1D' : '#FCA5A5';
-              textColor = isDark ? '#F87171' : '#B91C1C';
+              textColor = isDark ? '#F87171' : '#DC2626';
             }
 
             return (
               <g
                 key={booth.boothLabel}
                 transform={`translate(${booth.x}, ${booth.y})`}
+                className={`transition-all duration-150 ${
+                  interactive && !isOccupied ? 'cursor-pointer hover:opacity-90' : 'cursor-default'
+                }`}
                 onClick={() => {
-                  if (isClickable && onSelectBooth) {
+                  if (interactive && !isOccupied && onSelectBooth) {
                     onSelectBooth(isSelected ? '' : booth.boothLabel);
                   }
                 }}
@@ -159,14 +166,12 @@ export default function SpatialFloorPlanViewer({
                     boothLabel: booth.boothLabel,
                     zoneName: booth.zoneName,
                     isOccupied,
+                    companyName: ownerName,
                     x: booth.x + booth.width / 2,
-                    y: booth.y - 10,
+                    y: booth.y,
                   })
                 }
                 onMouseLeave={() => setHoveredBooth(null)}
-                className={`transition-all ${
-                  isClickable ? 'cursor-pointer hover:opacity-90' : isOccupied ? 'cursor-not-allowed opacity-75' : ''
-                }`}
               >
                 <rect
                   width={booth.width}
@@ -179,16 +184,27 @@ export default function SpatialFloorPlanViewer({
 
                 <text
                   x={booth.width / 2}
-                  y={booth.height / 2 - 2}
+                  y={booth.height / 2 - (ownerName ? 6 : 2)}
                   textAnchor="middle"
                   fill={textColor}
-                  fontSize={12}
+                  fontSize={11}
                   fontWeight="bold"
                 >
                   {booth.boothLabel}
                 </text>
 
-                {booth.zoneName && (
+                {ownerName ? (
+                  <text
+                    x={booth.width / 2}
+                    y={booth.height / 2 + 8}
+                    textAnchor="middle"
+                    fill={isDark ? '#FCA5A5' : '#DC2626'}
+                    fontSize={8.5}
+                    fontWeight="600"
+                  >
+                    {ownerName.length > 9 ? `${ownerName.slice(0, 8)}…` : ownerName}
+                  </text>
+                ) : booth.zoneName ? (
                   <text
                     x={booth.width / 2}
                     y={booth.height / 2 + 12}
@@ -198,9 +214,9 @@ export default function SpatialFloorPlanViewer({
                   >
                     {booth.zoneName}
                   </text>
-                )}
+                ) : null}
 
-                {isOccupied && (
+                {isOccupied && !ownerName && (
                   <text
                     x={booth.width / 2}
                     y={booth.height - 6}
@@ -220,7 +236,7 @@ export default function SpatialFloorPlanViewer({
         {/* Hover Tooltip Overlay */}
         {hoveredBooth && (
           <div
-            className={`absolute pointer-events-none z-20 px-2.5 py-1 rounded-md text-[11px] font-semibold border shadow-lg backdrop-blur-md ${
+            className={`absolute pointer-events-none z-20 px-2.5 py-1.5 rounded-md text-[11px] font-semibold border shadow-lg backdrop-blur-md ${
               isDark ? 'bg-black/90 text-white border-white/20' : 'bg-white/95 text-gray-900 border-gray-300'
             }`}
             style={{
@@ -229,10 +245,15 @@ export default function SpatialFloorPlanViewer({
               transform: 'translate(-50%, -100%)',
             }}
           >
-            <div>Booth {hoveredBooth.boothLabel}</div>
+            <div className="font-bold">Booth {hoveredBooth.boothLabel}</div>
+            {hoveredBooth.companyName && (
+              <div className="text-[10px] text-brand-primary-light dark:text-brand-primary-dark font-medium">
+                Exhibitor: {hoveredBooth.companyName}
+              </div>
+            )}
             {hoveredBooth.zoneName && <div className="text-[9px] opacity-70">{hoveredBooth.zoneName}</div>}
-            <div className={`text-[9px] font-bold ${hoveredBooth.isOccupied ? 'text-red-400' : 'text-emerald-400'}`}>
-              {hoveredBooth.isOccupied ? 'Reserved' : 'Available'}
+            <div className={`text-[9px] font-bold mt-0.5 ${hoveredBooth.isOccupied ? 'text-red-400' : 'text-emerald-400'}`}>
+              {hoveredBooth.isOccupied ? (hoveredBooth.companyName ? 'Occupied' : 'Reserved') : 'Available'}
             </div>
           </div>
         )}

@@ -293,60 +293,136 @@ export default function MessagesPage() {
                   </div>
                 )}
 
-                {!loadingThreads && filteredThreads.map((thread) => {
-                  const isSelected = selectedThread?.applicationId === thread.applicationId;
-                  const hasMessages = Boolean(thread.lastMessage);
+                {!loadingThreads && (() => {
+                  // For organizers: Group threads by companyName
+                  if (user?.role === 'organizer') {
+                    const companyGroups: Record<string, MessageThread[]> = {};
+                    filteredThreads.forEach((t) => {
+                      const key = t.companyName || 'Unknown Exhibitor';
+                      if (!companyGroups[key]) companyGroups[key] = [];
+                      companyGroups[key].push(t);
+                    });
 
-                  return (
-                    <button
-                      key={thread.applicationId}
-                      type="button"
-                      onClick={() => handleSelectThread(thread)}
-                      className={`w-full text-left p-3.5 transition-colors flex flex-col gap-1.5 ${
-                        isSelected
-                          ? isDarkMode
-                            ? 'bg-brand-primary-dark/15 border-l-4 border-l-brand-primary-dark'
-                            : 'bg-brand-primary-light/10 border-l-4 border-l-brand-primary-light'
-                          : isDarkMode
-                          ? 'hover:bg-bg-hover-dark/60'
-                          : 'hover:bg-bg-hover-light/60'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-1">
-                        <span className={`text-xs-token font-bold truncate ${
-                          isSelected
-                            ? isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'
-                            : isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
-                        }`}>
-                          {user?.role === 'organizer' ? thread.companyName : thread.expoName}
-                        </span>
-                        {thread.lastMessage && (
-                          <span className="text-[10px] text-text-tertiary-dark shrink-0">
-                            {new Date(thread.lastMessage.createdAt).toLocaleDateString([], {
-                              month: 'short',
-                              day: 'numeric',
-                            })}
+                    return Object.entries(companyGroups).map(([company, groupThreads]) => (
+                      <div key={company} className="flex flex-col">
+                        {/* Company Group Header */}
+                        <div className="px-3.5 py-1.5 bg-black/15 dark:bg-white/5 border-y border-border-base-dark/20 flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-text-primary-dark tracking-wide uppercase flex items-center gap-1.5">
+                            <Store className="w-3.5 h-3.5 text-brand-primary-dark" />
+                            {company}
                           </span>
-                        )}
-                      </div>
+                          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 dark:bg-white/10 text-text-secondary-dark font-medium">
+                            {groupThreads.length} expo{groupThreads.length === 1 ? '' : 's'}
+                          </span>
+                        </div>
 
-                      <div className="flex items-center gap-1.5 text-[11px] text-text-secondary-dark">
-                        <Calendar className="w-3 h-3 shrink-0" />
-                        <span className="truncate">
-                          {user?.role === 'organizer' ? `Expo: ${thread.expoName}` : `Company: ${thread.companyName}`}
-                        </span>
-                      </div>
+                        {/* Company's per-expo threads */}
+                        {groupThreads.map((thread) => {
+                          const isSelected = selectedThread?.applicationId === thread.applicationId;
+                          const hasMessages = Boolean(thread.lastMessage);
 
-                      <p className={`text-xs-token line-clamp-1 ${
-                        hasMessages
-                          ? isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
-                          : 'italic text-text-muted-dark'
-                      }`}>
-                        {hasMessages ? thread.lastMessage?.content : 'No messages yet — start conversation'}
-                      </p>
-                    </button>
-                  );
-                })}
+                          return (
+                            <button
+                              key={thread.applicationId}
+                              type="button"
+                              onClick={() => handleSelectThread(thread)}
+                              className={`w-full text-left pl-6 pr-3.5 py-3 transition-colors flex flex-col gap-1 ${
+                                isSelected
+                                  ? isDarkMode
+                                    ? 'bg-brand-primary-dark/15 border-l-4 border-l-brand-primary-dark'
+                                    : 'bg-brand-primary-light/10 border-l-4 border-l-brand-primary-light'
+                                  : isDarkMode
+                                  ? 'hover:bg-bg-hover-dark/60'
+                                  : 'hover:bg-bg-hover-light/60'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-1">
+                                <span className={`text-xs-token font-bold truncate flex items-center gap-1.5 ${
+                                  isSelected
+                                    ? isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'
+                                    : isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+                                }`}>
+                                  <Calendar className="w-3 h-3 text-text-tertiary-dark shrink-0" />
+                                  {thread.expoName}
+                                </span>
+                                {thread.lastMessage && (
+                                  <span className="text-[10px] text-text-tertiary-dark shrink-0">
+                                    {new Date(thread.lastMessage.createdAt).toLocaleDateString([], {
+                                      month: 'short',
+                                      day: 'numeric',
+                                    })}
+                                  </span>
+                                )}
+                              </div>
+
+                              <p className={`text-xs-token line-clamp-1 ${
+                                hasMessages
+                                  ? isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                                  : 'italic text-text-muted-dark'
+                              }`}>
+                                {hasMessages ? thread.lastMessage?.content : 'No messages yet — start conversation'}
+                              </p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ));
+                  }
+
+                  // For Exhibitors: Clean flat list of expos applied to
+                  return filteredThreads.map((thread) => {
+                    const isSelected = selectedThread?.applicationId === thread.applicationId;
+                    const hasMessages = Boolean(thread.lastMessage);
+
+                    return (
+                      <button
+                        key={thread.applicationId}
+                        type="button"
+                        onClick={() => handleSelectThread(thread)}
+                        className={`w-full text-left p-3.5 transition-colors flex flex-col gap-1.5 ${
+                          isSelected
+                            ? isDarkMode
+                              ? 'bg-brand-primary-dark/15 border-l-4 border-l-brand-primary-dark'
+                              : 'bg-brand-primary-light/10 border-l-4 border-l-brand-primary-light'
+                            : isDarkMode
+                            ? 'hover:bg-bg-hover-dark/60'
+                            : 'hover:bg-bg-hover-light/60'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-1">
+                          <span className={`text-xs-token font-bold truncate ${
+                            isSelected
+                              ? isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'
+                              : isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+                          }`}>
+                            {thread.expoName}
+                          </span>
+                          {thread.lastMessage && (
+                            <span className="text-[10px] text-text-tertiary-dark shrink-0">
+                              {new Date(thread.lastMessage.createdAt).toLocaleDateString([], {
+                                month: 'short',
+                                day: 'numeric',
+                              })}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1.5 text-[11px] text-text-secondary-dark">
+                          <Store className="w-3 h-3 shrink-0" />
+                          <span className="truncate">Application: {thread.companyName}</span>
+                        </div>
+
+                        <p className={`text-xs-token line-clamp-1 ${
+                          hasMessages
+                            ? isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                            : 'italic text-text-muted-dark'
+                        }`}>
+                          {hasMessages ? thread.lastMessage?.content : 'No messages yet — start conversation'}
+                        </p>
+                      </button>
+                    );
+                  });
+                })()}
               </div>
             </div>
 

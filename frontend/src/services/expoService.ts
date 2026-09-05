@@ -93,6 +93,9 @@ export const expoService = {
   getStats: (id: string) =>
     api.get(`/api/dashboard/organizer/${id}`).then(r => r.data.data),
 
+  getCheckIns: (id: string) =>
+    api.get(`/api/expos/${id}/checkins`).then(r => r.data.data),
+
   listMine: () =>
     api.get('/api/organizer/expos').then(r => r.data.data.expos),
 };

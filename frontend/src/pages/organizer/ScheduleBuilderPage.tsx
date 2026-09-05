@@ -277,7 +277,7 @@ export default function ScheduleBuilderPage() {
                   Schedule Builder
                 </h1>
                 <p className={`mt-xs-token text-sm-token ${textSecondary}`}>
-                  {expo ? `Manage sessions for ${expo.title}` : 'Manage sessions for this expo'}
+                  {expo?.name ? `Manage sessions for ${expo.name}` : 'Manage sessions for this expo'}
                 </p>
               </div>
 
@@ -295,19 +295,19 @@ export default function ScheduleBuilderPage() {
             {/* Expo Selector when accessed directly */}
             {expos.length > 0 && (
               <div className="mt-md-token flex items-center gap-sm-token">
-                <span className={`text-sm-token font-medium ${textSecondary}`}>Select Expo:</span>
+                <span className={`text-xs-token font-medium ${textSecondary}`}>Select Expo:</span>
                 <select
                   value={activeExpoId}
                   onChange={(e) => setSelectedExpoId(e.target.value)}
-                  className={`px-sm-token py-xs-token rounded-[8px] text-sm-token font-medium border ${
+                  className={`px-3 py-1.5 rounded-lg-token border text-xs-token font-medium outline-none transition-colors ${
                     isDarkMode
-                      ? 'bg-neutral-800 border-neutral-700 text-white'
-                      : 'bg-white border-neutral-300 text-neutral-900'
+                      ? 'bg-bg-surface-dark border-border-base-dark text-text-primary-dark'
+                      : 'bg-white border-border-base-light text-text-primary-light'
                   }`}
                 >
                   {expos.map((e) => (
                     <option key={e._id} value={e._id}>
-                      {e.title}
+                      {e.name}
                     </option>
                   ))}
                 </select>

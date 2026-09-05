@@ -1,7 +1,10 @@
 import { Router, Response } from 'express';
+import { ObjectId } from 'mongodb';
 import asyncHandler from '../utils/asyncHandler';
 import ExpoService from '../services/expo.service';
 import StatsService from '../services/stats.service';
+import TicketModel from '../models/Ticket.model';
+import UserModel from '../models/User.model';
 import { authenticate, AuthRequest } from '../middleware/auth.middleware';
 import { authorize } from '../middleware/authorize.middleware';
 import type { ExpoListStatusFilter } from '../services/expo.service';
@@ -305,6 +308,72 @@ router.delete(
     return res.status(200).json({
       success: true,
       message: 'Expo deleted successfully',
+    });
+  })
+);
+
+/**
+ * GET /api/expos/:id/checkins
+ *
+ * Full chronological check-in event logs for the organizer scanner view.
+ * Access: Organizer only (must own the expo)
+ */
+router.get(
+  '/:id/checkins',
+  authenticate,
+  authorize('organizer'),
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const expoId = req.params.id as string;
+    const expo = await ExpoService.getById(expoId, req.user!.userId);
+
+    const tickets = await TicketModel.getCollection()
+      .find({
+        expoId: new ObjectId(expoId),
+        status: 'checked_in',
+      })
+      .sort({ updatedAt: -1 })
+      .toArray();
+
+    // Map attendee info
+    const attendeeIds = tickets.map((t) => t.attendeeId);
+    const attendees = await UserModel.getCollection()
+      .find({ _id: { $in: attendeeIds } })
+      .toArray();
+    const attendeeMap = new Map(attendees.map((a) => [a._id.toString(), a]));
+
+    const checkIns: Array<{
+      ticketId: string;
+      attendeeName: string;
+      attendeeEmail: string;
+      checkedInAt: Date;
+      checkInCount: number;
+    }> = [];
+
+    tickets.forEach((t) => {
+      const attendee = attendeeMap.get(t.attendeeId.toString());
+      const records = t.checkIns && t.checkIns.length > 0 ? t.checkIns : [{ checkedInAt: t.checkedInAt || t.updatedAt }];
+      records.forEach((r) => {
+        checkIns.push({
+          ticketId: t.ticketId,
+          attendeeName: attendee?.fullName || 'Unknown Attendee',
+          attendeeEmail: attendee?.email || '',
+          checkedInAt: new Date(r.checkedInAt),
+          checkInCount: records.length,
+        });
+      });
+    });
+
+    // Sort all check-in events descending by time
+    checkIns.sort((a, b) => b.checkedInAt.getTime() - a.checkedInAt.getTime());
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        expoName: expo.name,
+        totalCheckedInAttendees: tickets.length,
+        totalCheckInEvents: checkIns.length,
+        checkIns,
+      },
     });
   })
 );

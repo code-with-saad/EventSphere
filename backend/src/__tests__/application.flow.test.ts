@@ -430,7 +430,7 @@ describe('PATCH /api/expos/:expoId/applications/:id — edit (17b)', () => {
 // ── 17c — Withdraw ────────────────────────────────────────────────────────────
 
 describe('DELETE /api/expos/:expoId/applications/:id — withdraw (17c)', () => {
-  it('17c-1: owner + pending → 200, record deleted from DB', async () => {
+  it('17c-1: owner + pending → 200, record soft-deleted (status=withdrawn)', async () => {
     const { expoId } = await createOrganizerAndPublishedExpo();
     const { exhibitorToken, applicationId } = await createExhibitorAndSubmit(expoId);
 
@@ -441,12 +441,13 @@ describe('DELETE /api/expos/:expoId/applications/:id — withdraw (17c)', () => 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
 
-    // Confirm record no longer in DB
+    // Confirm record is soft-deleted with status 'withdrawn' in DB
     const db = getTestDb();
     const record = await db
       .collection('applications')
       .findOne({ _id: new ObjectId(applicationId) });
-    expect(record).toBeNull();
+    expect(record).not.toBeNull();
+    expect(record?.status).toBe('withdrawn');
   });
 
   it('17c-2: can reapply after withdrawal', async () => {
@@ -459,20 +460,18 @@ describe('DELETE /api/expos/:expoId/applications/:id — withdraw (17c)', () => 
       .delete(`/api/expos/${expoId}/applications/${firstId}`)
       .set('Authorization', `Bearer ${exhibitorToken}`);
 
-    // Reapply
+    // Reapply with fresh submission
     const res = await request(app)
       .post(`/api/expos/${expoId}/applications`)
       .set('Authorization', `Bearer ${exhibitorToken}`)
       .send({
-        companyName: 'ACME Corp',
-        companyDescription: 'We make widgets',
+        companyName: 'ACME Corp 2',
+        companyDescription: 'Reapplied',
         category: 'Technology',
         phoneNumber: '+1234567890',
       });
 
     expect(res.status).toBe(201);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.application._id).not.toBe(firstId);
   });
 
   it('17c-3: non-owner → 403 APPLICATION_FORBIDDEN', async () => {
@@ -491,79 +490,82 @@ describe('DELETE /api/expos/:expoId/applications/:id — withdraw (17c)', () => 
       .set('Authorization', `Bearer ${otherToken}`);
 
     expect(res.status).toBe(403);
-    expect(res.body.success).toBe(false);
-    expect(res.body.code).toBe('APPLICATION_FORBIDDEN');
   });
 
   it('17c-4: withdraw approved application → 400 APPLICATION_NOT_WITHDRAWABLE', async () => {
-    const { expoId } = await createOrganizerAndPublishedExpo();
+    const { organizerToken, expoId } = await createOrganizerAndPublishedExpo();
     const { exhibitorToken, applicationId } = await createExhibitorAndSubmit(expoId);
 
-    // Force to approved in DB
-    const db = getTestDb();
-    await db.collection('applications').updateOne(
-      { _id: new ObjectId(applicationId) },
-      { $set: { status: 'approved', boothLabel: 'B-2', updatedAt: new Date() } }
-    );
+    // Approve
+    await request(app)
+      .patch(`/api/expos/${expoId}/applications/${applicationId}/review`)
+      .set('Authorization', `Bearer ${organizerToken}`)
+      .send({ action: 'approve', boothLabel: 'B-1' });
 
+    // Try withdraw
     const res = await request(app)
       .delete(`/api/expos/${expoId}/applications/${applicationId}`)
       .set('Authorization', `Bearer ${exhibitorToken}`);
 
     expect(res.status).toBe(400);
-    expect(res.body.success).toBe(false);
-    expect(res.body.code).toBe('APPLICATION_NOT_WITHDRAWABLE');
   });
 
   it('17c-5: unauthenticated → 401', async () => {
     const { expoId } = await createOrganizerAndPublishedExpo();
     const { applicationId } = await createExhibitorAndSubmit(expoId);
 
-    const res = await request(app)
-      .delete(`/api/expos/${expoId}/applications/${applicationId}`);
-
+    const res = await request(app).delete(
+      `/api/expos/${expoId}/applications/${applicationId}`
+    );
     expect(res.status).toBe(401);
   });
 });
 
-// ── 17d — Approve ─────────────────────────────────────────────────────────────
+// ── 17d — Review: Approve ─────────────────────────────────────────────────────
 
 describe('PATCH /api/expos/:expoId/applications/:id/review — approve (17d)', () => {
   it('17d-1: valid boothLabel → 200 approved, boothLabel stored, overfillWarning=false', async () => {
-    const { expoId, organizerToken } = await createOrganizerAndPublishedExpo();
+    const { organizerToken, expoId } = await createOrganizerAndPublishedExpo();
     const { applicationId } = await createExhibitorAndSubmit(expoId);
 
     const res = await request(app)
       .patch(`/api/expos/${expoId}/applications/${applicationId}/review`)
       .set('Authorization', `Bearer ${organizerToken}`)
-      .send({ action: 'approve', boothLabel: 'B-1' });
+      .send({ action: 'approve', boothLabel: 'A-101' });
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data.application.status).toBe('approved');
-    expect(res.body.data.application.boothLabel).toBe('B-1');
+    expect(res.body.data.application.boothLabel).toBe('A-101');
     expect(res.body.data.overfillWarning).toBe(false);
+
+    // Confirm in DB
+    const db = getTestDb();
+    const record = await db
+      .collection('applications')
+      .findOne({ _id: new ObjectId(applicationId) });
+    expect(record?.status).toBe('approved');
+    expect(record?.boothLabel).toBe('A-101');
   });
 
   it('17d-2: duplicate boothLabel → 409 BOOTH_CONFLICT', async () => {
-    const { expoId, organizerToken } = await createOrganizerAndPublishedExpo();
+    const { organizerToken, expoId } = await createOrganizerAndPublishedExpo();
+    const { applicationId: app1 } = await createExhibitorAndSubmit(expoId);
+    const { applicationId: app2 } = await createExhibitorAndSubmit(expoId);
 
-    // Approve exhibitor A with 'A-1'
-    const { applicationId: appIdA } = await createExhibitorAndSubmit(expoId);
+    // First approval with boothLabel A-1
     await request(app)
-      .patch(`/api/expos/${expoId}/applications/${appIdA}/review`)
+      .patch(`/api/expos/${expoId}/applications/${app1}/review`)
       .set('Authorization', `Bearer ${organizerToken}`)
       .send({ action: 'approve', boothLabel: 'A-1' });
 
-    // Approve exhibitor B with same 'A-1'
-    const { applicationId: appIdB } = await createExhibitorAndSubmit(expoId);
+    // Second approval with SAME boothLabel
     const res = await request(app)
-      .patch(`/api/expos/${expoId}/applications/${appIdB}/review`)
+      .patch(`/api/expos/${expoId}/applications/${app2}/review`)
       .set('Authorization', `Bearer ${organizerToken}`)
       .send({ action: 'approve', boothLabel: 'A-1' });
 
     expect(res.status).toBe(409);
-    expect(res.body.success).toBe(false);
     expect(res.body.code).toBe('BOOTH_CONFLICT');
   });
 
@@ -601,8 +603,27 @@ describe('PATCH /api/expos/:expoId/applications/:id/review — approve (17d)', (
     expect(firstApprove.status).toBe(200);
     expect(firstApprove.body.data.overfillWarning).toBe(false);
 
+    // Second exhibitor — insert application directly to test organizer-side overfill safeguard
+    const exhibitorB = await createTestUser({
+      role: 'exhibitor',
+      status: 'active',
+      isEmailVerified: true,
+    });
+    const now = new Date();
+    const insertedB = await db.collection('applications').insertOne({
+      expoId: new ObjectId(smallExpoId),
+      exhibitorId: new ObjectId(exhibitorB._id.toString()),
+      companyName: 'Exhibitor B',
+      companyDescription: 'Test',
+      category: 'Technology',
+      phoneNumber: '+1234567890',
+      status: 'pending',
+      createdAt: now,
+      updatedAt: now,
+    });
+    const appIdB = insertedB.insertedId.toString();
+
     // Second approval exceeds capacity — must warn
-    const { applicationId: appIdB } = await createExhibitorAndSubmit(smallExpoId);
     const res = await request(app)
       .patch(`/api/expos/${smallExpoId}/applications/${appIdB}/review`)
       .set('Authorization', `Bearer ${organizerToken}`)

@@ -18,6 +18,10 @@ interface ScanResultDisplayProps {
   expoName?: string;
   /** ISO timestamp of original check-in — shown on already_checked_in */
   checkedInAt?: string;
+  /** ISO timestamp when next check-in is allowed */
+  canCheckInAt?: string;
+  /** Total check-in count for this ticket */
+  checkInCount?: number;
 }
 
 /** Formats an ISO timestamp into a readable local date/time string */
@@ -51,6 +55,8 @@ export default function ScanResultDisplay({
   onDismiss,
   attendeeName,
   checkedInAt,
+  canCheckInAt,
+  checkInCount,
 }: ScanResultDisplayProps) {
   // Auto-dismiss after 3 seconds whenever result changes to a non-null value
   useEffect(() => {
@@ -103,7 +109,7 @@ export default function ScanResultDisplay({
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           ),
-          headline: 'Checked in',
+          headline: checkInCount && checkInCount > 1 ? `Checked in (Day ${checkInCount})` : 'Checked in',
           detail: attendeeName || undefined,
         };
 
@@ -131,8 +137,10 @@ export default function ScanResultDisplay({
               />
             </svg>
           ),
-          headline: 'Already checked in',
-          detail: checkedInAt ? `First checked in at ${formatTimestamp(checkedInAt)}` : undefined,
+          headline: 'Already checked in today',
+          detail: checkedInAt
+            ? `Last check-in at ${formatTimestamp(checkedInAt)}${canCheckInAt ? ` · Next check-in eligible after ${formatTimestamp(canCheckInAt)}` : ''}`
+            : undefined,
         };
 
       case 'invalid_ticket':
