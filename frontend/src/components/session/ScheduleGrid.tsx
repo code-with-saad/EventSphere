@@ -20,6 +20,8 @@ interface ScheduleGridProps {
   onEditSession?: (session: Session) => void;
   onDeleteSession?: (sessionId: string) => void;
   isOrganizer?: boolean;
+  onRate?: (sessionId: string) => void;
+  isRatedIds?: Set<string>;
 }
 
 function formatTime(iso: string | Date): string {
@@ -37,6 +39,8 @@ export default function ScheduleGrid({
   onEditSession,
   onDeleteSession,
   isOrganizer = false,
+  onRate,
+  isRatedIds = new Set(),
 }: ScheduleGridProps) {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
@@ -84,6 +88,8 @@ export default function ScheduleGrid({
               isBookmarked={bookmarkedSessionIds.has(session._id)}
               onBookmarkToggle={showBookmarks ? onBookmarkToggle : undefined}
               showBookmark={showBookmarks}
+              onRate={onRate}
+              isRated={isRatedIds.has(session._id)}
             />
 
             {/* Organizer quick actions */}

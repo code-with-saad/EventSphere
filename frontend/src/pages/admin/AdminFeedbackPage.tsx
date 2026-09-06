@@ -70,7 +70,7 @@ function FeedbackDrawer({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const cat = CATEGORY_META[item.category];
+  const cat = item.category ? CATEGORY_META[item.category] : null;
   const st = STATUS_META[item.status];
 
   const bg = isDark ? '#18181b' : '#fff';
@@ -111,10 +111,12 @@ function FeedbackDrawer({
         <div className="flex flex-col gap-5 p-5">
           {/* Meta */}
           <div className="flex flex-wrap gap-2 items-center">
-            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-              style={{ background: `${cat.color}18`, color: cat.color }}>
-              {cat.icon} {cat.label}
-            </span>
+            {cat && (
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                style={{ background: `${cat.color}18`, color: cat.color }}>
+                {cat.icon} {cat.label}
+              </span>
+            )}
             <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
               style={{ background: st.bg, color: st.color }}>
               {st.icon} {st.label}
@@ -367,7 +369,7 @@ export default function AdminFeedbackPage() {
                   </thead>
                   <tbody>
                     {items.map((item, i) => {
-                      const cat = CATEGORY_META[item.category];
+                      const cat = item.category ? CATEGORY_META[item.category] : null;
                       const st = STATUS_META[item.status];
                       return (
                         <tr
@@ -387,12 +389,16 @@ export default function AdminFeedbackPage() {
                             <p className={`text-xs ${muted}`}>{item.userRole}</p>
                           </td>
                           <td className="px-4 py-3">
-                            <span
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-                              style={{ background: `${cat.color}18`, color: cat.color }}
-                            >
-                              {cat.icon} {cat.label}
-                            </span>
+                            {cat ? (
+                              <span
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                                style={{ background: `${cat.color}18`, color: cat.color }}
+                              >
+                                {cat.icon} {cat.label}
+                              </span>
+                            ) : (
+                              <span className="text-xs opacity-50">—</span>
+                            )}
                           </td>
                           <td className="px-4 py-3">
                             <span

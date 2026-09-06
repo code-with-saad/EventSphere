@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, MapPin, Building2, Globe, Clock, CheckCircle2, AlertCircle, Heart } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -7,11 +7,13 @@ import { expoService } from '../../services/expoService';
 import { sessionService } from '../../services/sessionService';
 import { ticketService } from '../../services/ticketService';
 import { favoriteService } from '../../services/favoriteService';
+import { feedbackService, MyRatingItem } from '../../services/feedbackService';
 import toast from 'react-hot-toast';
 import ExpoStatusBadge from '../../components/expo/ExpoStatusBadge';
 import ExhibitorCard from '../../components/exhibitor/ExhibitorCard';
 import ExhibitorFilterBar from '../../components/exhibitor/ExhibitorFilterBar';
 import ExhibitorDetailModal from '../../components/exhibitor/ExhibitorDetailModal';
+import AttendeeRatingModal from '../../components/common/AttendeeRatingModal';
 import { BoothSelectorGrid } from '../../components/expo/BoothSelectorGrid';
 import PublicNavBar from '../../components/layout/PublicNavBar';
 import BackButton from '../../components/layout/BackButton';
@@ -45,6 +47,21 @@ export default function ExpoDetailPage() {
   const [registering, setRegistering] = useState(false);
   const [registerMessage, setRegisterMessage] = useState<{ text: string; type: 'success' | 'warn' } | null>(null);
 
+  // ── Rating modal state ─────────────────────────────────────────────────────
+  const [ratingTarget, setRatingTarget] = useState<{ id: string; name: string; boothLabel?: string } | null>(null);
+  const [myRatings, setMyRatings] = useState<MyRatingItem[]>([]);
+
+  // Build a Set of already-rated exhibitor applicationIds for quick lookup
+  const ratedExhibitorIds = useMemo(
+    () => new Set(myRatings.filter(r => r.feedbackType === 'booth_visit' || r.feedbackType === 'general_exhibitor').map(r => r.targetId)),
+    [myRatings]
+  );
+
+  const refreshMyRatings = useCallback(() => {
+    if (!isAuthenticated || user?.role !== 'attendee') return;
+    feedbackService.listMyRatings().then(setMyRatings).catch(() => {});
+  }, [isAuthenticated, user?.role]);
+
   useEffect(() => {
     if (!id) return;
     setLoading(true);
@@ -66,6 +83,11 @@ export default function ExpoDetailPage() {
       .catch((err: any) => setError(err?.response?.data?.message || err?.message || 'Failed to load expo'))
       .finally(() => setLoading(false));
   }, [id, isAuthenticated, user?.role]);
+
+  // Load existing ratings once auth is known
+  useEffect(() => {
+    refreshMyRatings();
+  }, [refreshMyRatings]);
 
   const exhibitors: any[] = expo?.approvedApplications ?? [];
   const categories = useMemo(() => [...new Set<string>(exhibitors.map((e: any) => e.category).filter(Boolean))], [exhibitors]);
@@ -308,7 +330,13 @@ export default function ExpoDetailPage() {
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-md-token">
                     {filteredExhibitors.map((ex: any) => (
-                      <ExhibitorCard key={ex._id} exhibitor={ex} onClick={() => setSelectedExhibitor(ex)} />
+                      <ExhibitorCard
+                        key={ex._id}
+                        exhibitor={ex}
+                        onClick={() => setSelectedExhibitor(ex)}
+                        onRate={user?.role === 'attendee' ? () => setRatingTarget({ id: ex._id, name: ex.companyName, boothLabel: ex.boothLabel }) : undefined}
+                        isRated={ratedExhibitorIds.has(ex._id)}
+                      />
                     ))}
                   </div>
                 )}
@@ -519,6 +547,22 @@ export default function ExpoDetailPage() {
       </div>
 
       <ExhibitorDetailModal exhibitor={selectedExhibitor} onClose={() => setSelectedExhibitor(null)} />
+
+      {/* Attendee rating modal for exhibitors */}
+      {ratingTarget && (
+        <AttendeeRatingModal
+          isOpen={!!ratingTarget}
+          onClose={() => setRatingTarget(null)}
+          onSuccess={() => {
+            refreshMyRatings();
+            setRatingTarget(null);
+          }}
+          targetId={ratingTarget.id}
+          targetName={ratingTarget.name}
+          initialType="booth_visit"
+          boothLabel={ratingTarget.boothLabel}
+        />
+      )}
     </div>
   );
 }

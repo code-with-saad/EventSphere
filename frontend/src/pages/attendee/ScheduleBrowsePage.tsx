@@ -5,11 +5,13 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { sessionService } from '../../services/sessionService';
 import { bookmarkService } from '../../services/bookmarkService';
+import { feedbackService, MyRatingItem } from '../../services/feedbackService';
 import { useTickets } from '../../hooks/useTickets';
 import PublicNavBar from '../../components/layout/PublicNavBar';
 import BackButton from '../../components/layout/BackButton';
 import DayTabs from '../../components/session/DayTabs';
 import ScheduleGrid from '../../components/session/ScheduleGrid';
+import AttendeeRatingModal from '../../components/common/AttendeeRatingModal';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -92,6 +94,21 @@ export default function ScheduleBrowsePage() {
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
   const [bookmarkPending, setBookmarkPending] = useState<Set<string>>(new Set());
 
+  // ── Session ratings ────────────────────────────────────────────────────────
+  const [ratingModalTarget, setRatingModalTarget] = useState<{ id: string; name: string; speakerName?: string } | null>(null);
+  const [mySessionRatings, setMySessionRatings] = useState<MyRatingItem[]>([]);
+  const ratedSessionIds = useMemo(
+    () => new Set(mySessionRatings.filter(r => r.feedbackType === 'session').map(r => r.targetId)),
+    [mySessionRatings]
+  );
+
+  const refreshMyRatings = useCallback(() => {
+    if (!isAuthenticated) return;
+    feedbackService.listMyRatings()
+      .then(all => setMySessionRatings(all.filter(r => r.feedbackType === 'session')))
+      .catch(() => {});
+  }, [isAuthenticated]);
+
   // ── Ticket check ──────────────────────────────────────────────────────────
   const { tickets, loading: ticketsLoading } = useTickets();
 
@@ -160,8 +177,6 @@ export default function ScheduleBrowsePage() {
       .getMine(expoId)
       .then((data: any) => {
         if (cancelled) return;
-        // Backend returns an array of session objects or bookmark objects
-        // Shape: ISession[] or { sessionId: string }[] — handle both
         const ids = new Set<string>(
           (Array.isArray(data) ? data : []).map((item: any) =>
             item._id ?? item.sessionId ?? item,
@@ -169,14 +184,17 @@ export default function ScheduleBrowsePage() {
         );
         setBookmarkedIds(ids);
       })
-      .catch(() => {
-        // Non-fatal — bookmarks simply remain empty
-      });
+      .catch(() => {});
 
     return () => {
       cancelled = true;
     };
   }, [expoId, isAuthenticated, hasQualifyingTicket]);
+
+  // ── Fetch existing session ratings ─────────────────────────────────────────
+  useEffect(() => {
+    refreshMyRatings();
+  }, [refreshMyRatings]);
 
   // ── Derived day data ───────────────────────────────────────────────────────
   const days = extractDays(sessions);
@@ -272,6 +290,7 @@ export default function ScheduleBrowsePage() {
   const isLoading = sessionsLoading || ticketsLoading;
 
   return (
+    <>
     <div className="min-h-screen">
       <PublicNavBar />
 
@@ -491,6 +510,11 @@ export default function ScheduleBrowsePage() {
                     onBookmarkToggle={hasQualifyingTicket ? handleBookmarkToggle : undefined}
                     showBookmarks={hasQualifyingTicket}
                     isOrganizer={false}
+                    onRate={isAuthenticated ? (sessionId) => {
+                      const session = sessions.find(s => s._id === sessionId);
+                      if (session) setRatingModalTarget({ id: session._id, name: session.title, speakerName: session.speakerName });
+                    } : undefined}
+                    isRatedIds={ratedSessionIds}
                   />
                 )}
 
@@ -506,5 +530,22 @@ export default function ScheduleBrowsePage() {
         )}
       </div>
     </div>
+
+    {/* Attendee rating modal for sessions */}
+    {ratingModalTarget && (
+      <AttendeeRatingModal
+        isOpen={!!ratingModalTarget}
+        onClose={() => setRatingModalTarget(null)}
+        onSuccess={() => {
+          refreshMyRatings();
+          setRatingModalTarget(null);
+        }}
+        targetId={ratingModalTarget.id}
+        targetName={ratingModalTarget.name}
+        initialType="session"
+        speakerName={ratingModalTarget.speakerName}
+      />
+    )}
+    </>
   );
 }

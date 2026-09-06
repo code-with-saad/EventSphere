@@ -1,4 +1,5 @@
-import { Bookmark, BookmarkCheck, Clock, MapPin } from 'lucide-react';
+import React from 'react';
+import { Bookmark, BookmarkCheck, Clock, MapPin, Star } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface SessionCardProps {
@@ -15,6 +16,8 @@ interface SessionCardProps {
   isBookmarked?: boolean;
   onBookmarkToggle?: (sessionId: string) => void;
   showBookmark?: boolean;
+  onRate?: (sessionId: string) => void;
+  isRated?: boolean;
 }
 
 function formatTime(iso: string | Date): string {
@@ -29,6 +32,8 @@ export default function SessionCard({
   isBookmarked = false,
   onBookmarkToggle,
   showBookmark = false,
+  onRate,
+  isRated = false,
 }: SessionCardProps) {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
@@ -46,7 +51,7 @@ export default function SessionCard({
           : 'bg-bg-surface-light border-border-base-light'
       }`}
     >
-      {/* Top row: track badge + bookmark */}
+      {/* Top row: track badge + actions */}
       <div className="flex items-start justify-between gap-sm-token mb-xs-token">
         <div className="flex flex-wrap gap-xs-token">
           {session.track && (
@@ -61,28 +66,53 @@ export default function SessionCard({
             </span>
           )}
         </div>
-        {showBookmark && onBookmarkToggle && (
-          <button
-            onClick={handleBookmark}
-            aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark this session'}
-            aria-pressed={isBookmarked}
-            className={`p-xs-token rounded-md-token transition-colors flex-shrink-0 ${
-              isBookmarked
-                ? isDarkMode
-                  ? 'text-brand-primary-dark'
-                  : 'text-brand-primary-light'
-                : isDarkMode
-                  ? 'text-text-secondary-dark hover:text-text-primary-dark hover:bg-bg-hover-dark'
-                  : 'text-text-secondary-light hover:text-text-primary-light hover:bg-bg-hover-light'
-            }`}
-          >
-            {isBookmarked ? (
-              <BookmarkCheck className="w-4 h-4" />
-            ) : (
-              <Bookmark className="w-4 h-4" />
-            )}
-          </button>
-        )}
+
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {onRate && (
+            <button
+              type="button"
+              disabled={isRated}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRate(session._id);
+              }}
+              title={isRated ? 'Already rated' : 'Rate this session'}
+              className={`px-2 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1 transition-all ${
+                isRated
+                  ? 'bg-amber-500/10 text-amber-500 border border-amber-500/30 cursor-default'
+                  : isDarkMode
+                    ? 'bg-white/5 hover:bg-amber-500/20 text-[#a1a1aa] hover:text-amber-400 border border-white/10 hover:border-amber-500/30'
+                    : 'bg-gray-100 hover:bg-amber-50 text-gray-600 hover:text-amber-600 border border-gray-200 hover:border-amber-400'
+              }`}
+            >
+              <Star className={`w-3 h-3 ${isRated ? 'fill-amber-500 text-amber-500' : ''}`} />
+              <span>{isRated ? 'Rated' : 'Rate'}</span>
+            </button>
+          )}
+
+          {showBookmark && onBookmarkToggle && (
+            <button
+              onClick={handleBookmark}
+              aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark this session'}
+              aria-pressed={isBookmarked}
+              className={`p-xs-token rounded-md-token transition-colors flex-shrink-0 ${
+                isBookmarked
+                  ? isDarkMode
+                    ? 'text-brand-primary-dark'
+                    : 'text-brand-primary-light'
+                  : isDarkMode
+                    ? 'text-text-secondary-dark hover:text-text-primary-dark hover:bg-bg-hover-dark'
+                    : 'text-text-secondary-light hover:text-text-primary-light hover:bg-bg-hover-light'
+              }`}
+            >
+              {isBookmarked ? (
+                <BookmarkCheck className="w-4 h-4" />
+              ) : (
+                <Bookmark className="w-4 h-4" />
+              )}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Title */}

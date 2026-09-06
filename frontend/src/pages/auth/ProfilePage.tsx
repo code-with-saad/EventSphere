@@ -703,7 +703,7 @@ export default function ProfilePage() {
                                 {item.subject}
                               </span>
                               <div className="flex items-center gap-2 mt-0.5 text-[11px] text-text-secondary-dark">
-                                <span className="capitalize">{item.category.replace('_', ' ')}</span>
+                                <span className="capitalize">{item.category?.replace('_', ' ') || item.feedbackType?.replace('_', ' ') || 'Feedback'}</span>
                                 <span>·</span>
                                 <span className="flex items-center gap-1">
                                   <Clock className="w-3 h-3" />

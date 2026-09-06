@@ -163,10 +163,10 @@ export function AdminApprovalsPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleRejectConfirm}
-              className={`px-3 py-1.5 rounded-md-token text-xs-token font-semibold text-text-on-primary-dark transition-colors ${
+              className={`px-3 py-1.5 rounded-md-token text-xs-token text-light transition-colors ${
                 isDarkMode
-                  ? 'bg-bg-danger-dark hover:opacity-90 text-text-danger-dark border border-text-danger-dark'
-                  : 'bg-bg-danger-light hover:opacity-90 text-text-danger-light border border-text-danger-light'
+                  ? 'bg-bg-danger-dark hover:opacity-90 border border-text-danger-dark'
+                  : 'bg-bg-danger-light hover:opacity-90 text-light border border-text-danger-light'
               }`}
               aria-label={`Confirm rejection of ${organizer.fullName}`}
             >

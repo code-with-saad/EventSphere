@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Star } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface ExhibitorDetailModalProps {
@@ -13,11 +14,15 @@ interface ExhibitorDetailModalProps {
     boothLabel?: string;
   } | null;
   onClose: () => void;
+  onRate?: () => void;
+  isRated?: boolean;
 }
 
 export default function ExhibitorDetailModal({
   exhibitor,
   onClose,
+  onRate,
+  isRated,
 }: ExhibitorDetailModalProps) {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
@@ -156,6 +161,24 @@ export default function ExhibitorDetailModal({
             </div>
           )}
         </div>
+
+        {onRate && (
+          <div className="mt-md-token pt-md-token border-t border-glass-border-dark/50 flex justify-end">
+            <button
+              type="button"
+              disabled={isRated}
+              onClick={onRate}
+              className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                isRated
+                  ? 'bg-amber-500/10 text-amber-500 border border-amber-500/30 cursor-default'
+                  : 'bg-brand-primary-dark text-white hover:opacity-90 shadow-md shadow-brand-primary-dark/20'
+              }`}
+            >
+              <Star className={`w-4 h-4 ${isRated ? 'fill-amber-500 text-amber-500' : 'fill-white text-white'}`} />
+              <span>{isRated ? 'Exhibitor Rated ⭐' : 'Leave Rating & Feedback'}</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
