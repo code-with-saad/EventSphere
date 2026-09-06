@@ -95,6 +95,15 @@ class SessionService {
       );
     }
 
+    // 2b. Status check (completed / archived expos are locked)
+    if (expo.status === 'completed' || expo.status === 'archived') {
+      throw createError(
+        'Cannot add sessions to a completed or archived expo',
+        'EXPO_COMPLETED_LOCKED',
+        400
+      );
+    }
+
     // 3. Time range validation
     if (data.endTime <= data.startTime) {
       throw createError('endTime must be after startTime', 'INVALID_TIME_RANGE', 400);
@@ -164,6 +173,15 @@ class SessionService {
         'You do not have permission to update this session',
         'SESSION_FORBIDDEN',
         403
+      );
+    }
+
+    // 3b. Status check (completed / archived expos are locked)
+    if (expo.status === 'completed' || expo.status === 'archived') {
+      throw createError(
+        'Cannot update sessions for a completed or archived expo',
+        'EXPO_COMPLETED_LOCKED',
+        400
       );
     }
 
@@ -243,6 +261,15 @@ class SessionService {
         'You do not have permission to delete this session',
         'SESSION_FORBIDDEN',
         403
+      );
+    }
+
+    // 3b. Status check (completed / archived expos are locked)
+    if (expo.status === 'completed' || expo.status === 'archived') {
+      throw createError(
+        'Cannot delete sessions from a completed or archived expo',
+        'EXPO_COMPLETED_LOCKED',
+        400
       );
     }
 

@@ -39,6 +39,7 @@ export default function OrganizerExpoCard({
   const navigate = useNavigate();
 
   const isOngoing = expo.status === 'ongoing';
+  const isEnded = expo.status === 'completed' || expo.status === 'archived';
 
   const actionBtnClass = `flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md-token text-xs-token font-medium border transition-colors ${
     isDarkMode
@@ -149,23 +150,29 @@ export default function OrganizerExpoCard({
 
         {/* Action Row */}
         <div className="mt-auto pt-sm-token border-t border-border-base-dark/30 flex flex-col gap-2">
+          {isEnded && (
+            <div className="flex items-center justify-between text-[11px] font-medium text-text-secondary-dark bg-white/5 px-2 py-1 rounded">
+              <span>Past Event (Read-Only Mode)</span>
+            </div>
+          )}
+
           {/* Quick Sub-page links */}
           <div className="grid grid-cols-4 gap-1">
             <button
               type="button"
               onClick={() => navigate(`/organizer/expos/${expo._id}/edit`)}
               className={actionBtnClass}
-              title="Edit Expo Details"
+              title={isEnded ? 'View Expo Details (Read-Only)' : 'Edit Expo Details'}
             >
               <Edit3 className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">Edit</span>
+              <span className="truncate">{isEnded ? 'View' : 'Edit'}</span>
             </button>
 
             <button
               type="button"
               onClick={() => navigate(`/organizer/expos/${expo._id}/applications`)}
               className={actionBtnClass}
-              title="Manage Exhibitor Applications"
+              title={isEnded ? 'View Exhibitor Applications (Read-Only)' : 'Manage Exhibitor Applications'}
             >
               <Users className="w-3.5 h-3.5 shrink-0" />
               <span className="truncate">Apps</span>
@@ -175,7 +182,7 @@ export default function OrganizerExpoCard({
               type="button"
               onClick={() => navigate(`/organizer/expos/${expo._id}/schedule`)}
               className={actionBtnClass}
-              title="Manage Expo Schedule"
+              title={isEnded ? 'View Expo Schedule (Read-Only)' : 'Manage Expo Schedule'}
             >
               <CalendarClock className="w-3.5 h-3.5 shrink-0" />
               <span className="truncate">Sched</span>
@@ -185,7 +192,7 @@ export default function OrganizerExpoCard({
               type="button"
               onClick={() => navigate(`/organizer/expos/${expo._id}/booths`)}
               className={actionBtnClass}
-              title="View Booth Layout"
+              title={isEnded ? 'View Booth Layout (Read-Only)' : 'View Booth Layout'}
             >
               <span className="truncate">Booths</span>
             </button>
@@ -200,18 +207,20 @@ export default function OrganizerExpoCard({
             >
               {expo.totalBooths ? `${expo.totalBooths} Booths` : ''}
             </span>
-            <ExpoStatusTransitionButton
-              expoId={expo._id}
-              action="delete"
-              className="text-xs-token px-2 py-1 opacity-70 hover:opacity-100"
-              onSuccess={onDeleteSuccess}
-              onError={onError}
-            >
-              <span className="flex items-center gap-1">
-                <Trash2 className="w-3 h-3" />
-                Delete
-              </span>
-            </ExpoStatusTransitionButton>
+            {!isEnded && (
+              <ExpoStatusTransitionButton
+                expoId={expo._id}
+                action="delete"
+                className="text-xs-token px-2 py-1 opacity-70 hover:opacity-100"
+                onSuccess={onDeleteSuccess}
+                onError={onError}
+              >
+                <span className="flex items-center gap-1">
+                  <Trash2 className="w-3 h-3" />
+                  Delete
+                </span>
+              </ExpoStatusTransitionButton>
+            )}
           </div>
         </div>
       </div>

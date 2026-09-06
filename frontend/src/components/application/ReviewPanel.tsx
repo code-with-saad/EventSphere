@@ -24,6 +24,7 @@ interface ReviewPanelProps {
   onRevoke: (applicationId: string) => void;
   onOpenMessages?: () => void;
   isActing?: boolean;
+  readOnly?: boolean;
 }
 
 function formatDate(iso: string): string {
@@ -40,6 +41,7 @@ export default function ReviewPanel({
   onRevoke,
   onOpenMessages,
   isActing = false,
+  readOnly = false,
 }: ReviewPanelProps) {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
@@ -203,76 +205,85 @@ export default function ReviewPanel({
               </button>
             )}
 
-            {application.status === 'pending' && !showRejectInput && (
-              <div className="flex gap-sm-token">
-                <button
-                  onClick={() => onApprove(application._id)}
-                  disabled={isActing}
-                  className={`flex-1 ${successBtn}`}
-                >
-                  {isActing ? 'Processing…' : 'Approve'}
-                </button>
-                <button
-                  onClick={() => setShowRejectInput(true)}
-                  disabled={isActing}
-                  className={`flex-1 ${dangerBtn}`}
-                >
-                  Reject
-                </button>
+            {/* Action buttons (hidden in read-only mode for ended expos) */}
+            {readOnly ? (
+              <div className="p-sm-token rounded-md-token text-xs text-center font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                This expo has ended. Actions are disabled.
               </div>
-            )}
+            ) : (
+              <>
+                {application.status === 'pending' && !showRejectInput && (
+                  <div className="flex gap-sm-token">
+                    <button
+                      onClick={() => onApprove(application._id)}
+                      disabled={isActing}
+                      className={`flex-1 ${successBtn}`}
+                    >
+                      {isActing ? 'Processing…' : 'Approve'}
+                    </button>
+                    <button
+                      onClick={() => setShowRejectInput(true)}
+                      disabled={isActing}
+                      className={`flex-1 ${dangerBtn}`}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                )}
 
-            {/* Reject with reason input */}
-            {application.status === 'pending' && showRejectInput && (
-              <div className="flex flex-col gap-sm-token">
-                <label htmlFor="reject-reason" className={labelClass}>
-                  Rejection reason (optional)
-                </label>
-                <textarea
-                  id="reject-reason"
-                  rows={2}
-                  value={rejectReason}
-                  onChange={(e) => setRejectReason(e.target.value)}
-                  placeholder="Provide a reason for the exhibitor…"
-                  maxLength={300}
-                  className={`w-full rounded-md-token border px-sm-token py-xs-token text-sm-token outline-none resize-none ${
-                    isDarkMode
-                      ? 'bg-bg-surface-dark border-border-base-dark text-text-primary-dark placeholder:text-text-secondary-dark'
-                      : 'bg-bg-surface-light border-border-base-light text-text-primary-light placeholder:text-text-secondary-light'
-                  }`}
-                />
-                <div className="flex gap-sm-token">
-                  <button
-                    onClick={() => onReject(application._id)}
-                    disabled={isActing}
-                    className={`flex-1 ${dangerBtn}`}
-                  >
-                    {isActing ? 'Processing…' : 'Confirm Reject'}
-                  </button>
-                  <button
-                    onClick={() => { setShowRejectInput(false); setRejectReason(''); }}
-                    disabled={isActing}
-                    className={`px-md-token py-xs-token rounded-md-token text-sm-token font-medium border transition-colors ${
-                      isDarkMode
-                        ? 'border-border-base-dark text-text-primary-dark hover:bg-bg-hover-dark'
-                        : 'border-border-base-light text-text-primary-light hover:bg-bg-hover-light'
-                    }`}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
+                {/* Reject with reason input */}
+                {application.status === 'pending' && showRejectInput && (
+                  <div className="flex flex-col gap-sm-token">
+                    <label htmlFor="reject-reason" className={labelClass}>
+                      Rejection reason (optional)
+                    </label>
+                    <textarea
+                      id="reject-reason"
+                      rows={2}
+                      value={rejectReason}
+                      onChange={(e) => setRejectReason(e.target.value)}
+                      placeholder="Provide a reason for the exhibitor…"
+                      maxLength={300}
+                      className={`w-full rounded-md-token border px-sm-token py-xs-token text-sm-token outline-none resize-none ${
+                        isDarkMode
+                          ? 'bg-bg-surface-dark border-border-base-dark text-text-primary-dark placeholder:text-text-secondary-dark'
+                          : 'bg-bg-surface-light border-border-base-light text-text-primary-light placeholder:text-text-secondary-light'
+                      }`}
+                    />
+                    <div className="flex gap-sm-token">
+                      <button
+                        onClick={() => onReject(application._id)}
+                        disabled={isActing}
+                        className={`flex-1 ${dangerBtn}`}
+                      >
+                        {isActing ? 'Processing…' : 'Confirm Reject'}
+                      </button>
+                      <button
+                        onClick={() => { setShowRejectInput(false); setRejectReason(''); }}
+                        disabled={isActing}
+                        className={`px-md-token py-xs-token rounded-md-token text-sm-token font-medium border transition-colors ${
+                          isDarkMode
+                            ? 'border-border-base-dark text-text-primary-dark hover:bg-bg-hover-dark'
+                            : 'border-border-base-light text-text-primary-light hover:bg-bg-hover-light'
+                        }`}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
 
-            {/* Revoke for approved */}
-            {application.status === 'approved' && (
-              <button
-                onClick={() => onRevoke(application._id)}
-                disabled={isActing}
-                className={`w-full ${warningBtn}`}
-              >
-                {isActing ? 'Processing…' : 'Revoke Approval'}
-              </button>
+                {/* Revoke for approved */}
+                {application.status === 'approved' && (
+                  <button
+                    onClick={() => onRevoke(application._id)}
+                    disabled={isActing}
+                    className={`w-full ${warningBtn}`}
+                  >
+                    {isActing ? 'Processing…' : 'Revoke Approval'}
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>

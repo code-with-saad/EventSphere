@@ -357,6 +357,7 @@ export default function ApplicationsPage() {
             setMessageApp(selectedApp);
           }}
           isActing={isActing}
+          readOnly={expo?.status === 'completed' || expo?.status === 'archived'}
         />
       )}
 

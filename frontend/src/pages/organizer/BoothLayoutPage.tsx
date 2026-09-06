@@ -225,6 +225,7 @@ export default function BoothLayoutPage() {
               zones={expo?.zones}
               onSave={handleSaveSpatialLayout}
               saving={saving}
+              readOnly={expo?.status === 'completed' || expo?.status === 'archived'}
             />
           )}
 

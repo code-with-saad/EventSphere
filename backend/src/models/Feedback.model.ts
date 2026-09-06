@@ -202,6 +202,67 @@ class FeedbackModelClass {
     return result || null;
   }
 
+  /**
+   * Aggregates ratings for a list of targetIds (applications / exhibitors).
+   * Computes per-submission average of 5 rating dimensions, then calculates the
+   * overall average rating and review count per targetId.
+   */
+  async getExhibitorRatingAggregates(
+    targetIds: (ObjectId | string)[]
+  ): Promise<Record<string, { averageRating: number; reviewCount: number }>> {
+    if (!targetIds || targetIds.length === 0) return {};
+
+    const objIds = targetIds.map((id) => (typeof id === 'string' ? new ObjectId(id) : id));
+
+    const pipeline = [
+      {
+        $match: {
+          targetId: { $in: objIds },
+          ratings: { $exists: true, $ne: null },
+        },
+      },
+      {
+        $project: {
+          targetId: 1,
+          submissionAvg: {
+            $avg: [
+              '$ratings.overallExperience',
+              '$ratings.staffOrSpeakerQuality',
+              '$ratings.contentRelevance',
+              '$ratings.engagementLevel',
+              '$ratings.likelihoodToRecommend',
+            ],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: '$targetId',
+          averageRating: { $avg: '$submissionAvg' },
+          reviewCount: { $sum: 1 },
+        },
+      },
+    ];
+
+    const results = await this.collection.aggregate<{
+      _id: ObjectId;
+      averageRating: number;
+      reviewCount: number;
+    }>(pipeline).toArray();
+
+    const aggregateMap: Record<string, { averageRating: number; reviewCount: number }> = {};
+    for (const r of results) {
+      if (r._id) {
+        aggregateMap[r._id.toString()] = {
+          averageRating: Math.round((r.averageRating || 0) * 10) / 10,
+          reviewCount: r.reviewCount || 0,
+        };
+      }
+    }
+
+    return aggregateMap;
+  }
+
   getCollection(): Collection<IFeedback> {
     return this.collection;
   }

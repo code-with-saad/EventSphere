@@ -13,6 +13,33 @@ const router = Router();
 // ── Route ordering: more-specific paths before wildcard params ─────────────────
 
 /**
+ * GET /organizer/overview
+ * (Mounted at /api/applications -> GET /api/applications/organizer/overview)
+ *
+ * Cross-expo rollup table for an organizer with rating aggregates.
+ *
+ * Access: Organizer only
+ */
+router.get(
+  '/organizer/overview',
+  authenticate,
+  authorize('organizer'),
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const { expoId, status } = req.query as { expoId?: string; status?: string };
+    const result = await ApplicationService.listAllForOrganizer(req.user!.userId, {
+      expoId,
+      status,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Organizer applications overview retrieved successfully',
+      data: result,
+    });
+  })
+);
+
+/**
  * GET /:expoId/applications/mine
  *
  * Returns the authenticated exhibitor's own application for the given expo,

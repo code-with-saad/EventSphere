@@ -20,6 +20,7 @@ interface Props {
   zones?: IExpoZone[];
   onSave: (layout: IExpoSpatialLayout) => Promise<void>;
   saving?: boolean;
+  readOnly?: boolean;
 }
 
 const SHAPE_TEMPLATES: { type: IReferenceShape['type']; label: string; width: number; height: number; color: string }[] = [
@@ -37,6 +38,7 @@ export default function SpatialFloorPlanEditor({
   zones = [],
   onSave,
   saving = false,
+  readOnly = false,
 }: Props) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -178,6 +180,7 @@ export default function SpatialFloorPlanEditor({
   };
 
   const handleAddBooth = () => {
+    if (readOnly) return;
     const nextIdx = booths.length + 1;
     const zoneName = zones[0]?.name || 'Main Hall';
     const prefix = zoneName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 2).toUpperCase() || 'B';
@@ -186,9 +189,9 @@ export default function SpatialFloorPlanEditor({
     const newBooth: IBoothSpatialItem = {
       boothLabel: label,
       x: snap(canvasWidth / 2 - 35),
-      y: snap(canvasHeight / 2 - 30),
+      y: snap(40),
       width: 70,
-      height: 60,
+      height: 50,
       zoneName,
     };
     setBooths((p) => [...p, newBooth]);
@@ -196,6 +199,7 @@ export default function SpatialFloorPlanEditor({
   };
 
   const handleAddShape = (tmpl: (typeof SHAPE_TEMPLATES)[0]) => {
+    if (readOnly) return;
     const newShape: IReferenceShape = {
       id: `shape-${Date.now()}`,
       label: tmpl.label,
@@ -210,7 +214,7 @@ export default function SpatialFloorPlanEditor({
   };
 
   const handleDeleteSelected = () => {
-    if (!selectedItem) return;
+    if (readOnly || !selectedItem) return;
     if (selectedItem.type === 'booth') {
       setBooths((p) => p.filter((b) => b.boothLabel !== selectedItem.id));
     } else {
@@ -220,6 +224,7 @@ export default function SpatialFloorPlanEditor({
   };
 
   const handleSave = async () => {
+    if (readOnly) return;
     const payload: IExpoSpatialLayout = {
       canvasWidth,
       canvasHeight,
@@ -230,7 +235,6 @@ export default function SpatialFloorPlanEditor({
     await onSave(payload);
   };
 
-  // Mouse drag & resize handlers
   const handleMouseDown = (
     e: React.MouseEvent,
     type: 'booth' | 'shape',
@@ -239,6 +243,7 @@ export default function SpatialFloorPlanEditor({
   ) => {
     e.stopPropagation();
     setSelectedItem({ type, id });
+    if (readOnly) return;
 
     if (isResizeHandle) {
       const item =
@@ -249,51 +254,57 @@ export default function SpatialFloorPlanEditor({
         setResizing({
           type,
           id,
-          startX: e.clientX,
-          startY: e.clientY,
           initialWidth: item.width,
           initialHeight: item.height,
+          startX: e.clientX,
+          startY: e.clientY,
         });
       }
     } else {
-      const item =
+      const dragItem =
         type === 'booth'
           ? booths.find((b) => b.boothLabel === id)
           : referenceShapes.find((s) => s.id === id);
-      if (item) {
-        setDragging({
-          type,
-          id,
-          startX: e.clientX,
-          startY: e.clientY,
-          initialItemX: item.x,
-          initialItemY: item.y,
-        });
-      }
+      setDragging({
+        type,
+        id,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialItemX: dragItem?.x ?? 0,
+        initialItemY: dragItem?.y ?? 0,
+      });
     }
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
+    if (readOnly) return;
+
     if (dragging) {
-      const dx = e.clientX - dragging.startX;
-      const dy = e.clientY - dragging.startY;
-      const nextX = Math.max(0, Math.min(canvasWidth - 40, snap(dragging.initialItemX + dx)));
-      const nextY = Math.max(0, Math.min(canvasHeight - 40, snap(dragging.initialItemY + dy)));
+      const rawX = dragging.initialItemX + (e.clientX - dragging.startX);
+      const rawY = dragging.initialItemY + (e.clientY - dragging.startY);
+
+      const newX = Math.max(0, Math.min(canvasWidth - 40, snap(rawX)));
+      const newY = Math.max(0, Math.min(canvasHeight - 40, snap(rawY)));
 
       if (dragging.type === 'booth') {
         setBooths((prev) =>
-          prev.map((b) => (b.boothLabel === dragging.id ? { ...b, x: nextX, y: nextY } : b))
+          prev.map((b) =>
+            b.boothLabel === dragging.id ? { ...b, x: newX, y: newY } : b
+          )
         );
       } else {
         setReferenceShapes((prev) =>
-          prev.map((s) => (s.id === dragging.id ? { ...s, x: nextX, y: nextY } : s))
+          prev.map((s) =>
+            s.id === dragging.id ? { ...s, x: newX, y: newY } : s
+          )
         );
       }
     } else if (resizing) {
-      const dx = e.clientX - resizing.startX;
-      const dy = e.clientY - resizing.startY;
-      const nextW = Math.max(40, snap(resizing.initialWidth + dx));
-      const nextH = Math.max(30, snap(resizing.initialHeight + dy));
+      const deltaX = e.clientX - resizing.startX;
+      const deltaY = e.clientY - resizing.startY;
+
+      const nextW = Math.max(40, snap(resizing.initialWidth + deltaX));
+      const nextH = Math.max(30, snap(resizing.initialHeight + deltaY));
 
       if (resizing.type === 'booth') {
         setBooths((prev) =>
@@ -334,79 +345,87 @@ export default function SpatialFloorPlanEditor({
           isDark ? 'bg-glass-dark border-glass-border-dark' : 'bg-glass-light border-glass-border-light'
         }`}
       >
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={handleAddBooth}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md-token text-xs-token font-semibold border cursor-pointer ${
-              isDark
-                ? 'bg-brand-primary-dark/20 text-brand-primary-dark border-brand-primary-dark/30 hover:bg-brand-primary-dark/30'
-                : 'bg-brand-primary-light/20 text-brand-primary-light border-brand-primary-light/30 hover:bg-brand-primary-light/30'
-            }`}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Add Booth</span>
-          </button>
-
-          {/* Add Template dropdown / buttons */}
-          <div className="flex items-center gap-1">
-            {SHAPE_TEMPLATES.map((tmpl) => (
-              <button
-                key={tmpl.type}
-                type="button"
-                onClick={() => handleAddShape(tmpl)}
-                className={`px-2.5 py-1.5 rounded-md-token text-xs-token font-medium border transition-colors cursor-pointer ${
-                  isDark
-                    ? 'border-border-base-dark text-text-secondary-dark hover:bg-bg-surface-dark'
-                    : 'border-border-base-light text-text-secondary-light hover:bg-bg-surface-light'
-                }`}
-                title={`Add ${tmpl.label}`}
-              >
-                + {tmpl.label}
-              </button>
-            ))}
+        {readOnly ? (
+          <div className="text-xs font-semibold text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-md-token border border-amber-500/20">
+            Past Event — Floor Plan is in View-Only Mode
           </div>
-
-          {booths.length === 0 && (
+        ) : (
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={handleAutoGenerate}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md-token text-xs-token font-medium border text-purple-400 border-purple-500/30 hover:bg-purple-500/10 cursor-pointer`}
+              onClick={handleAddBooth}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md-token text-xs-token font-semibold border cursor-pointer ${
+                isDark
+                  ? 'bg-brand-primary-dark/20 text-brand-primary-dark border-brand-primary-dark/30 hover:bg-brand-primary-dark/30'
+                  : 'bg-brand-primary-light/20 text-brand-primary-light border-brand-primary-light/30 hover:bg-brand-primary-light/30'
+              }`}
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Auto-Arrange All</span>
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Booth</span>
             </button>
-          )}
 
-          {selectedItem && (
-            <button
-              type="button"
-              onClick={handleDeleteSelected}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md-token text-xs-token font-medium text-red-500 border border-red-500/30 hover:bg-red-500/10 cursor-pointer"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Delete</span>
-            </button>
-          )}
-        </div>
+            {/* Add Template dropdown / buttons */}
+            <div className="flex items-center gap-1">
+              {SHAPE_TEMPLATES.map((tmpl) => (
+                <button
+                  key={tmpl.type}
+                  type="button"
+                  onClick={() => handleAddShape(tmpl)}
+                  className={`px-2.5 py-1.5 rounded-md-token text-xs-token font-medium border transition-colors cursor-pointer ${
+                    isDark
+                      ? 'border-border-base-dark text-text-secondary-dark hover:bg-bg-surface-dark'
+                      : 'border-border-base-light text-text-secondary-light hover:bg-bg-surface-light'
+                  }`}
+                  title={`Add ${tmpl.label}`}
+                >
+                  + {tmpl.label}
+                </button>
+              ))}
+            </div>
+
+            {booths.length === 0 && (
+              <button
+                type="button"
+                onClick={handleAutoGenerate}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md-token text-xs-token font-medium border text-purple-400 border-purple-500/30 hover:bg-purple-500/10 cursor-pointer`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Auto-Arrange All</span>
+              </button>
+            )}
+
+            {selectedItem && (
+              <button
+                type="button"
+                onClick={handleDeleteSelected}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md-token text-xs-token font-medium text-red-500 border border-red-500/30 hover:bg-red-500/10 cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete</span>
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="flex items-center gap-2">
           <span className={`text-xs-token ${isDark ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
             {booths.length} Booths Placed
           </span>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-md-token text-xs-token font-semibold shadow-md transition-all cursor-pointer ${
-              isDark
-                ? 'bg-brand-primary-dark text-text-on-primary-dark hover:bg-accent-hover-dark'
-                : 'bg-brand-primary-light text-text-on-primary-light hover:bg-accent-hover-light'
-            }`}
-          >
-            <Save className="w-3.5 h-3.5" />
-            <span>{saving ? 'Saving...' : 'Save Floor Plan'}</span>
-          </button>
+          {!readOnly && (
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-md-token text-xs-token font-semibold shadow-md transition-all cursor-pointer ${
+                isDark
+                  ? 'bg-brand-primary-dark text-text-on-primary-dark hover:bg-accent-hover-dark'
+                  : 'bg-brand-primary-light text-text-on-primary-light hover:bg-accent-hover-light'
+              }`}
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span>{saving ? 'Saving...' : 'Save Floor Plan'}</span>
+            </button>
+          )}
         </div>
       </div>
 

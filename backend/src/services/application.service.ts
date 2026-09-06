@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
 import ApplicationModel from '../models/Application.model';
 import ExpoModel from '../models/Expo.model';
+import FeedbackModel from '../models/Feedback.model';
 import type { IApplication, IApplicationCreate } from '../models/Application.model';
 
 /**
@@ -311,6 +312,15 @@ class ApplicationService {
       );
     }
 
+    // 3b. Expo status lock
+    if (expo.status === 'completed' || expo.status === 'archived') {
+      throw createError(
+        'Cannot approve applications for a completed or archived expo',
+        'EXPO_COMPLETED_LOCKED',
+        400
+      );
+    }
+
     // 4. Validate boothLabel
     if (!boothLabel || boothLabel.length < 1 || boothLabel.length > 20) {
       throw createError(
@@ -401,6 +411,15 @@ class ApplicationService {
       );
     }
 
+    // 3b. Expo status lock
+    if (expo.status === 'completed' || expo.status === 'archived') {
+      throw createError(
+        'Cannot reject applications for a completed or archived expo',
+        'EXPO_COMPLETED_LOCKED',
+        400
+      );
+    }
+
     // 4. Validate reason length
     if (reason !== undefined && reason.length > 300) {
       throw createError(
@@ -466,6 +485,15 @@ class ApplicationService {
         'You do not have permission to revoke this application',
         'APPLICATION_FORBIDDEN',
         403
+      );
+    }
+
+    // 3b. Expo status lock
+    if (expo.status === 'completed' || expo.status === 'archived') {
+      throw createError(
+        'Cannot revoke applications for a completed or archived expo',
+        'EXPO_COMPLETED_LOCKED',
+        400
       );
     }
 
@@ -581,6 +609,88 @@ class ApplicationService {
     });
 
     return Math.round((approvedCount / totalBooths) * 10000) / 100;
+  }
+
+  // -------------------------------------------------------------------------
+  // 15i — listAllForOrganizer()
+  // -------------------------------------------------------------------------
+
+  /**
+   * Cross-expo exhibitor applications rollup for an organizer.
+   * Returns all applications across all expos owned by the organizer,
+   * enriched with expoName, and query-time rating aggregates.
+   *
+   * @param organizerId — string from req.user.userId
+   * @param filters     — optional filters by expoId and status
+   */
+  async listAllForOrganizer(
+    organizerId: string,
+    filters?: { expoId?: string; status?: string }
+  ): Promise<{
+    applications: Array<
+      IApplication & {
+        expoName: string;
+        expoStatus: string;
+        averageRating?: number;
+        reviewCount?: number;
+      }
+    >;
+    expos: Array<{ _id: string; name: string; status: string }>;
+  }> {
+    // 1. Fetch all expos owned by this organizer
+    const expos = await ExpoModel.findByOrganizer(organizerId);
+    if (!expos || expos.length === 0) {
+      return { applications: [], expos: [] };
+    }
+
+    const expoMap = new Map(expos.map((e) => [e._id.toString(), e]));
+    let targetExpoIds = expos.map((e) => e._id);
+
+    if (filters?.expoId) {
+      targetExpoIds = targetExpoIds.filter((id) => id.toString() === filters.expoId);
+    }
+
+    if (targetExpoIds.length === 0) {
+      return {
+        applications: [],
+        expos: expos.map((e) => ({ _id: e._id.toString(), name: e.name, status: e.status })),
+      };
+    }
+
+    // 2. Query applications across these expos
+    const query: Record<string, unknown> = {
+      expoId: { $in: targetExpoIds },
+    };
+    if (filters?.status && filters.status !== 'all') {
+      query.status = filters.status;
+    }
+
+    const applications = await ApplicationModel.getCollection()
+      .find(query)
+      .sort({ submittedAt: -1 })
+      .toArray();
+
+    // 3. Compute rating aggregates for all retrieved applications
+    const appIds = applications.map((a) => a._id);
+    const ratingAggregates = await FeedbackModel.getExhibitorRatingAggregates(appIds);
+
+    // 4. Assemble enriched application records
+    const enriched = applications.map((app) => {
+      const exp = expoMap.get(app.expoId.toString());
+      const agg = ratingAggregates[app._id.toString()] || { averageRating: 0, reviewCount: 0 };
+      return {
+        ...app,
+        expoName: exp?.name || 'Unknown Expo',
+        expoStatus: exp?.status || 'draft',
+        averageRating: agg.averageRating,
+        reviewCount: agg.reviewCount,
+      };
+    });
+
+    return {
+      applications: enriched,
+      expos: expos.map((e) => ({ _id: e._id.toString(), name: e.name, status: e.status })),
+    };
   }
 }
 

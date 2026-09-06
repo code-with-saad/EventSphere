@@ -22,4 +22,7 @@ export const applicationService = {
 
   listAllMine: () =>
     api.get('/api/exhibitor/applications').then(r => r.data.data),
+
+  listOrganizerOverview: (filters?: { expoId?: string; status?: string }) =>
+    api.get('/api/applications/organizer/overview', { params: filters }).then(r => r.data.data),
 };

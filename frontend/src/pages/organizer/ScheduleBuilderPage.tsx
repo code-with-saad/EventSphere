@@ -259,6 +259,8 @@ export default function ScheduleBuilderPage() {
   const textSecondary = isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light';
   const bgBase = ''; // transparent — blobs from PageBackground show through
 
+  const isEnded = expo?.status === 'completed' || expo?.status === 'archived';
+
   return (
     <div className="dashboard-root">
       <Sidebar />
@@ -281,16 +283,25 @@ export default function ScheduleBuilderPage() {
                 </p>
               </div>
 
-              {/* Single primary CTA — "Add session" (REQ-6, one accent fill per view) */}
-              <button
-                onClick={openCreateModal}
-                disabled={!activeExpoId}
-                className="inline-flex items-center gap-xs-token px-md-token py-sm-token rounded-[8px] text-sm-token font-semibold transition-colors bg-[#FF4D2E] text-[#2C0B03] hover:bg-[#E8451F] disabled:opacity-50"
-              >
-                <Plus className="w-4 h-4" aria-hidden="true" />
-                Add session
-              </button>
+              {/* Single primary CTA — "Add session" (hidden/disabled if expo is ended) */}
+              {!isEnded && (
+                <button
+                  onClick={openCreateModal}
+                  disabled={!activeExpoId}
+                  className="inline-flex items-center gap-xs-token px-md-token py-sm-token rounded-[8px] text-sm-token font-semibold transition-colors bg-[#FF4D2E] text-[#2C0B03] hover:bg-[#E8451F] disabled:opacity-50"
+                >
+                  <Plus className="w-4 h-4" aria-hidden="true" />
+                  Add session
+                </button>
+              )}
             </div>
+
+            {/* Read-Only Notice for Ended Expos */}
+            {isEnded && (
+              <div className="mt-md-token p-md-token rounded-lg-token border text-xs-token font-medium bg-amber-500/10 border-amber-500/20 text-amber-500 flex items-center justify-between">
+                <span>This expo has ended ({expo?.status}). Schedule is in read-only mode.</span>
+              </div>
+            )}
 
             {/* Expo Selector when accessed directly */}
             {expos.length > 0 && (
@@ -307,7 +318,7 @@ export default function ScheduleBuilderPage() {
                 >
                   {expos.map((e) => (
                     <option key={e._id} value={e._id}>
-                      {e.name}
+                      {e.name} ({e.status})
                     </option>
                   ))}
                 </select>
@@ -338,18 +349,20 @@ export default function ScheduleBuilderPage() {
                   <Calendar className="w-10 h-10 opacity-40" aria-hidden="true" />
                   <p className={`text-base-token font-medium ${textPrimary}`}>No sessions yet</p>
                   <p className="text-sm-token">
-                    Add your first session to start building the schedule.
+                    {isEnded ? 'No sessions were scheduled for this event.' : 'Add your first session to start building the schedule.'}
                   </p>
-                  <button
-                    onClick={openCreateModal}
-                    className={`px-md-token py-xs-token rounded-[8px] text-sm-token font-medium border transition-colors ${
-                      isDarkMode
-                        ? 'border-[#3A3A3F] text-[#F2F1ED] bg-transparent hover:bg-bg-hover-dark'
-                        : 'border-[#3A3A3F] text-[#F2F1ED] bg-transparent hover:bg-bg-hover-light'
-                    }`}
-                  >
-                    Add session
-                  </button>
+                  {!isEnded && (
+                    <button
+                      onClick={openCreateModal}
+                      className={`px-md-token py-xs-token rounded-[8px] text-sm-token font-medium border transition-colors ${
+                        isDarkMode
+                          ? 'border-[#3A3A3F] text-[#F2F1ED] bg-transparent hover:bg-bg-hover-dark'
+                          : 'border-[#3A3A3F] text-[#F2F1ED] bg-transparent hover:bg-bg-hover-light'
+                      }`}
+                    >
+                      Add session
+                    </button>
+                  )}
                 </div>
               ) : (
                 <>
@@ -378,10 +391,10 @@ export default function ScheduleBuilderPage() {
                         ? sessionsForDay(sessions, days[safeDayIndex])
                         : sessions
                     }
-                    isOrganizer
+                    isOrganizer={!isEnded}
                     showBookmarks={false}
-                    onEditSession={openEditModal}
-                    onDeleteSession={handleDelete}
+                    onEditSession={isEnded ? undefined : openEditModal}
+                    onDeleteSession={isEnded ? undefined : handleDelete}
                   />
                 </>
               )}

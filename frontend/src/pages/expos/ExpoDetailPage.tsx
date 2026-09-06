@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, MapPin, Building2, Globe, Clock, CheckCircle2, AlertCircle, Heart } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -33,6 +33,7 @@ export default function ExpoDetailPage() {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
   const { user, isAuthenticated } = useAuth();
+  const location = useLocation();
 
   const [expo, setExpo] = useState<any | null>(null);
   const [sessions, setSessions] = useState<any[]>([]);
@@ -82,7 +83,7 @@ export default function ExpoDetailPage() {
       })
       .catch((err: any) => setError(err?.response?.data?.message || err?.message || 'Failed to load expo'))
       .finally(() => setLoading(false));
-  }, [id, isAuthenticated, user?.role]);
+  }, [id, isAuthenticated, user?.role, location.key]);
 
   // Load existing ratings once auth is known
   useEffect(() => {

@@ -39,7 +39,9 @@ import ExhibitorAnalyticsPage from './pages/analytics/ExhibitorAnalyticsPage';
 import ProfilePage from './pages/auth/ProfilePage';
 import MessagesPage from './pages/messages/MessagesPage';
 import BookmarksPage from './pages/attendee/BookmarksPage';
+import MySchedulePage from './pages/attendee/MySchedulePage';
 import MyFeedbackPage from './pages/feedback/MyFeedbackPage';
+import OrganizerExhibitorsPage from './pages/organizer/OrganizerExhibitorsPage';
 
 /**
  * Single source of truth for where an authenticated user should land.
@@ -131,6 +133,7 @@ function App() {
             <Route path="/organizer/messages" element={<ProtectedRoute allowedRoles={['organizer']}><MessagesPage /></ProtectedRoute>} />
             <Route path="/organizer/scanner" element={<ProtectedRoute allowedRoles={['organizer']}><ScannerPage /></ProtectedRoute>} />
             <Route path="/organizer/analytics" element={<ProtectedRoute allowedRoles={['organizer']}><OrganizerAnalyticsPage /></ProtectedRoute>} />
+            <Route path="/organizer/exhibitors" element={<ProtectedRoute allowedRoles={['organizer']}><OrganizerExhibitorsPage /></ProtectedRoute>} />
 
             {/* -- Phase 2: Exhibitor Routes -- */}
             <Route path="/exhibitor/applications" element={<ProtectedRoute allowedRoles={['exhibitor']}><MyApplicationsPage /></ProtectedRoute>} />
@@ -142,6 +145,7 @@ function App() {
             <Route path="/attendee/tickets" element={<ProtectedRoute allowedRoles={['attendee']}><MyTicketsPage /></ProtectedRoute>} />
             <Route path="/attendee/tickets/:ticketId" element={<ProtectedRoute allowedRoles={['attendee']}><TicketDetailPage /></ProtectedRoute>} />
             <Route path="/attendee/bookmarks" element={<ProtectedRoute allowedRoles={['attendee']}><BookmarksPage /></ProtectedRoute>} />
+            <Route path="/attendee/schedule" element={<ProtectedRoute allowedRoles={['attendee']}><MySchedulePage /></ProtectedRoute>} />
             
             {/* -- Common Authenticated Routes -- */}
             <Route path="/feedback/mine" element={<ProtectedRoute allowedRoles={['organizer', 'exhibitor', 'attendee']}><MyFeedbackPage /></ProtectedRoute>} />

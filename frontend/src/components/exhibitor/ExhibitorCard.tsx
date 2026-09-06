@@ -10,6 +10,8 @@ interface ExhibitorCardProps {
     category: string;
     logoUrl?: string;
     boothLabel?: string;
+    averageRating?: number;
+    reviewCount?: number;
   };
   onClick?: () => void;
   onRate?: (e: React.MouseEvent) => void;
@@ -23,6 +25,8 @@ function truncate(text: string, max: number): string {
 export default function ExhibitorCard({ exhibitor, onClick, onRate, isRated }: ExhibitorCardProps) {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
+
+  const hasRating = typeof exhibitor.reviewCount === 'number' && exhibitor.reviewCount > 0;
 
   return (
     <div
@@ -60,12 +64,29 @@ export default function ExhibitorCard({ exhibitor, onClick, onRate, isRated }: E
             >
               {exhibitor.companyName}
             </div>
-            <div
-              className={`text-xs-token ${
-                isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'
-              }`}
-            >
-              {exhibitor.category}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span
+                className={`text-xs-token ${
+                  isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'
+                }`}
+              >
+                {exhibitor.category}
+              </span>
+
+              {/* Rating aggregate summary */}
+              {hasRating ? (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-500">
+                  <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                  <span>{exhibitor.averageRating}</span>
+                  <span className={`text-[10px] font-normal ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                    ({exhibitor.reviewCount})
+                  </span>
+                </span>
+              ) : (
+                <span className={`text-[10px] ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'} opacity-50`}>
+                  No ratings yet
+                </span>
+              )}
             </div>
           </div>
         </div>

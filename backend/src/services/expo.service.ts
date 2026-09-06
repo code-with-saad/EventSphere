@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb';
 import ExpoModel from '../models/Expo.model';
 import ApplicationModel from '../models/Application.model';
 import TicketModel from '../models/Ticket.model';
+import FeedbackModel from '../models/Feedback.model';
 import type { IExpo, ExpoStatus, IExpoSpatialLayout } from '../models/Expo.model';
 
 /**
@@ -54,6 +55,8 @@ export interface ApprovedExhibitorDTO {
   logoUrl?: string;
   websiteUrl?: string;
   boothLabel?: string;
+  averageRating?: number;
+  reviewCount?: number;
 }
 
 export interface PaginationMeta {
@@ -277,6 +280,14 @@ class ExpoService {
   ): Promise<IExpo> {
     const expo = await this._requireExpo(expoId);
     this._requireOwnership(expo, organizerId);
+
+    if (expo.status === 'completed' || expo.status === 'archived') {
+      throw createError(
+        'Cannot edit details for a completed or archived expo',
+        'EXPO_COMPLETED_LOCKED',
+        400
+      );
+    }
 
     // If zones are provided, calculate totalBooths from zones
     let totalBooths = data.totalBooths;
@@ -680,15 +691,23 @@ class ExpoService {
       .find({ expoId: expo._id, status: 'approved' })
       .toArray();
 
-    const exhibitors: ApprovedExhibitorDTO[] = approvedApplications.map((app) => ({
-      _id: app._id.toString(),
-      companyName: app.companyName,
-      companyDescription: app.companyDescription,
-      category: app.category,
-      logoUrl: app.logoUrl,
-      websiteUrl: app.websiteUrl,
-      boothLabel: app.boothLabel,
-    }));
+    const appIds = approvedApplications.map((app) => app._id);
+    const ratingAggregates = await FeedbackModel.getExhibitorRatingAggregates(appIds);
+
+    const exhibitors: ApprovedExhibitorDTO[] = approvedApplications.map((app) => {
+      const agg = ratingAggregates[app._id.toString()] || { averageRating: 0, reviewCount: 0 };
+      return {
+        _id: app._id.toString(),
+        companyName: app.companyName,
+        companyDescription: app.companyDescription,
+        category: app.category,
+        logoUrl: app.logoUrl,
+        websiteUrl: app.websiteUrl,
+        boothLabel: app.boothLabel,
+        averageRating: agg.averageRating,
+        reviewCount: agg.reviewCount,
+      };
+    });
 
     return {
       _id: expo._id.toString(),
@@ -736,6 +755,14 @@ class ExpoService {
   ): Promise<IExpo> {
     const expo = await this._requireExpo(expoId);
     this._requireOwnership(expo, organizerId);
+
+    if (expo.status === 'completed' || expo.status === 'archived') {
+      throw createError(
+        'Cannot modify floor plan for a completed or archived expo',
+        'EXPO_COMPLETED_LOCKED',
+        400
+      );
+    }
 
     const updated = await ExpoModel.updateById(expoId, { spatialLayout });
     if (!updated) {

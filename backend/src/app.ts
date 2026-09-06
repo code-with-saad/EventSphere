@@ -48,6 +48,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/expos', expoRoutes);
 app.use('/api/organizer', expoRoutes);
 app.use('/api/expos', applicationRoutes);
+app.use('/api/applications', applicationRoutes);
 app.use('/api/exhibitor', applicationRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/expos', ticketRoutes);
