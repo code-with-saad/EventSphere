@@ -137,9 +137,9 @@ export default function ScanResultDisplay({
               />
             </svg>
           ),
-          headline: 'Already checked in today',
+          headline: 'Already checked in',
           detail: checkedInAt
-            ? `Last check-in at ${formatTimestamp(checkedInAt)}${canCheckInAt ? ` · Next check-in eligible after ${formatTimestamp(canCheckInAt)}` : ''}`
+            ? `First checked in at ${formatTimestamp(checkedInAt)}${canCheckInAt ? ` · Next check-in eligible after ${formatTimestamp(canCheckInAt)}` : ''}`
             : undefined,
         };
 

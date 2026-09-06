@@ -25,7 +25,7 @@ describe('Toast Utility Functions', () => {
       const message = 'Operation successful!';
       showSuccess(message);
       
-      expect(toast.success).toHaveBeenCalledWith(message);
+      expect(toast.success).toHaveBeenCalledWith(message, expect.any(Object));
       expect(toast.success).toHaveBeenCalledTimes(1);
     });
 
@@ -40,7 +40,7 @@ describe('Toast Utility Functions', () => {
       const message = 'An error occurred!';
       showError(message);
       
-      expect(toast.error).toHaveBeenCalledWith(message);
+      expect(toast.error).toHaveBeenCalledWith(message, expect.any(Object));
       expect(toast.error).toHaveBeenCalledTimes(1);
     });
 

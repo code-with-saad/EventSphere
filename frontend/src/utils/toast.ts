@@ -11,7 +11,7 @@ import { CheckCircle2, XCircle, AlertTriangle, Info } from 'lucide-react';
  * Validates Requirements 18.7, 18.8, 18.9
  */
 
-const isDark = () => document.documentElement.classList.contains('dark');
+const isDark = () => (typeof document !== 'undefined' ? document.documentElement.classList.contains('dark') : true);
 
 const BASE_STYLE = {
   borderRadius: '12px',
@@ -23,9 +23,9 @@ const BASE_STYLE = {
 
 export const showSuccess = (message: string) => {
   const dark = isDark();
-  return toast(message, {
+  return toast.success(message, {
     icon: React.createElement(CheckCircle2, {
-      size: 16,
+      size: 18,
       color: dark ? '#5DCAA5' : '#065F46',
     }),
     style: {
@@ -39,9 +39,9 @@ export const showSuccess = (message: string) => {
 
 export const showError = (message: string) => {
   const dark = isDark();
-  return toast(message, {
+  return toast.error(message, {
     icon: React.createElement(XCircle, {
-      size: 16,
+      size: 18,
       color: dark ? '#E24B4A' : '#991B1B',
     }),
     style: {
@@ -57,7 +57,7 @@ export const showWarning = (message: string) => {
   const dark = isDark();
   return toast(message, {
     icon: React.createElement(AlertTriangle, {
-      size: 16,
+      size: 18,
       color: dark ? '#EF9F27' : '#92400E',
     }),
     style: {
@@ -70,11 +70,11 @@ export const showWarning = (message: string) => {
 };
 
 export const showInfo = (message: string) => {
-  // No dedicated info token — uses brand-primary (app accent) tint
+  // Uses brand-primary (app accent) tint
   const dark = isDark();
   return toast(message, {
     icon: React.createElement(Info, {
-      size: 16,
+      size: 18,
       color: dark ? '#FF4D2E' : '#E8451F',
     }),
     style: {
@@ -86,11 +86,16 @@ export const showInfo = (message: string) => {
   });
 };
 
-export const dismissToast = (toastId: string) => {
-  toast.dismiss(toastId);
+export const dismissToast = (toastId?: string) => {
+  if (toastId) {
+    toast.dismiss(toastId);
+  } else {
+    toast.dismiss();
+  }
 };
 
 export const dismissAllToasts = () => {
   toast.dismiss();
 };
+
 

@@ -368,7 +368,11 @@ export default function ApplicationsPage() {
           expoId={activeExpoId ?? ''}
           totalBooths={totalBooths}
           assignedBooths={assignedBooths}
-          initialBooth={selectedApp.preferredBooth}
+          initialBooth={selectedApp.boothLabel}
+          preferredBooth={selectedApp.preferredBooth}
+          spatialLayout={expo?.spatialLayout}
+          zones={expo?.zones}
+          approvedApplications={approved}
           onConfirm={handleBoothConfirm}
           onCancel={() => setShowBoothModal(false)}
           isLoading={isActing}
