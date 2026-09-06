@@ -25,6 +25,7 @@ const NAV_LINKS: Record<string, NavLink[]> = {
     { label: 'Dashboard',  path: '/dashboard/superadmin', icon: LayoutDashboard },
     { label: 'Approvals',  path: '/admin/approvals',      icon: CheckCircle },
     { label: 'Organizers', path: '/admin/organizers',     icon: Users },
+    { label: 'Reports',    path: '/admin/reports',        icon: BarChart3 },
   ],
   organizer: [
     { label: 'Dashboard', path: '/dashboard/organizer', icon: BarChart3 },

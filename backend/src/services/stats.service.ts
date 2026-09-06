@@ -1,4 +1,5 @@
 import { ObjectId } from 'mongodb';
+import UserModel from '../models/User.model';
 import ExpoModel from '../models/Expo.model';
 import ApplicationModel from '../models/Application.model';
 import TicketModel from '../models/Ticket.model';
@@ -47,6 +48,48 @@ export interface SuperAdminDashboardDTO {
     organizerName: string;
     status: string;
     createdAt: Date;
+  }[];
+}
+
+export interface SuperAdminAnalyticsDTO {
+  totalUsers: number;
+  totalExpos: number;
+  totalApplications: number;
+  totalRegistrations: number;
+  totalCheckIns: number;
+  overallCheckInRate: number;
+  pendingOrganizersCount: number;
+  usersByRole: {
+    attendee: number;
+    exhibitor: number;
+    organizer: number;
+    superadmin: number;
+  };
+  usersOverTime: {
+    period: string;
+    attendees: number;
+    exhibitors: number;
+    organizers: number;
+    total: number;
+  }[];
+  exposByStatus: {
+    status: string;
+    count: number;
+  }[];
+  applicationsByStatus: {
+    pending: number;
+    approved: number;
+    rejected: number;
+  };
+  organizersRollup: {
+    organizerId: string;
+    fullName: string;
+    email: string;
+    status: string;
+    expoCount: number;
+    totalAttendees: number;
+    totalCheckIns: number;
+    checkInRate: number;
   }[];
 }
 
@@ -624,6 +667,248 @@ class StatsService {
       categoryDistribution,
     };
   }
+
+  /**
+   * Generates platform-wide analytics for SuperAdmin Reports & Analytics
+   */
+  async getSuperAdminAnalytics(): Promise<SuperAdminAnalyticsDTO> {
+    const userColl = UserModel.getCollection();
+    const expoColl = ExpoModel.getCollection();
+    const appColl = ApplicationModel.getCollection();
+    const ticketColl = TicketModel.getCollection();
+
+    // 1. Total counts
+    const [
+      totalUsers,
+      totalExpos,
+      totalApplications,
+      totalRegistrations,
+      totalCheckIns,
+      pendingOrganizersCount,
+    ] = await Promise.all([
+      userColl.countDocuments({}),
+      expoColl.countDocuments({}),
+      appColl.countDocuments({}),
+      ticketColl.countDocuments({ status: { $ne: 'cancelled' } }),
+      ticketColl.countDocuments({
+        $or: [{ status: 'checked_in' }, { checkedInAt: { $exists: true } }],
+      } as any),
+      userColl.countDocuments({ role: 'organizer', status: 'pending' }),
+    ]);
+
+    const overallCheckInRate =
+      totalRegistrations > 0
+        ? Math.round((totalCheckIns / totalRegistrations) * 10000) / 100
+        : 0;
+
+    // 2. Users by role
+    const usersByRoleAgg = await userColl
+      .aggregate<{ _id: string; count: number }>([
+        { $group: { _id: '$role', count: { $sum: 1 } } },
+      ])
+      .toArray();
+
+    const usersByRole = {
+      attendee: 0,
+      exhibitor: 0,
+      organizer: 0,
+      superadmin: 0,
+    };
+    usersByRoleAgg.forEach(({ _id, count }) => {
+      if (_id in usersByRole) {
+        usersByRole[_id as keyof typeof usersByRole] = count;
+      }
+    });
+
+    // 3. User signups over time (by month and role)
+    const usersOverTimeAgg = await userColl
+      .aggregate<{
+        _id: {
+          period: string;
+          role: string;
+        };
+        count: number;
+      }>([
+        {
+          $project: {
+            role: '$role',
+            period: {
+              $dateToString: { format: '%Y-%m', date: '$createdAt' },
+            },
+          },
+        },
+        {
+          $group: {
+            _id: { period: '$period', role: '$role' },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { '_id.period': 1 } },
+      ])
+      .toArray();
+
+    const timeMap = new Map<
+      string,
+      { period: string; attendees: number; exhibitors: number; organizers: number; total: number }
+    >();
+
+    usersOverTimeAgg.forEach(({ _id: { period, role }, count }) => {
+      if (!period) return;
+      if (!timeMap.has(period)) {
+        timeMap.set(period, {
+          period,
+          attendees: 0,
+          exhibitors: 0,
+          organizers: 0,
+          total: 0,
+        });
+      }
+      const entry = timeMap.get(period)!;
+      entry.total += count;
+      if (role === 'attendee') entry.attendees += count;
+      else if (role === 'exhibitor') entry.exhibitors += count;
+      else if (role === 'organizer') entry.organizers += count;
+    });
+
+    const usersOverTime = Array.from(timeMap.values());
+
+    // 4. Expos by status
+    const exposByStatusAgg = await expoColl
+      .aggregate<{ _id: string; count: number }>([
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ])
+      .toArray();
+
+    const exposByStatus = exposByStatusAgg.map(({ _id, count }) => ({
+      status: _id || 'draft',
+      count,
+    }));
+
+    // 5. Applications by status
+    const appByStatusAgg = await appColl
+      .aggregate<{ _id: string; count: number }>([
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ])
+      .toArray();
+
+    const applicationsByStatus = {
+      pending: 0,
+      approved: 0,
+      rejected: 0,
+    };
+    appByStatusAgg.forEach(({ _id, count }) => {
+      if (_id in applicationsByStatus) {
+        applicationsByStatus[_id as keyof typeof applicationsByStatus] = count;
+      }
+    });
+
+    // 6. Organizers Rollup
+    const organizers = await userColl
+      .find({ role: 'organizer' })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    const allExpos = await expoColl.find({}).toArray();
+    const expoToOrganizer = new Map<string, string>();
+    const organizerExposMap = new Map<string, ObjectId[]>();
+
+    allExpos.forEach((expo) => {
+      const orgId = expo.organizerId?.toString();
+      if (orgId) {
+        expoToOrganizer.set(expo._id.toString(), orgId);
+        if (!organizerExposMap.has(orgId)) {
+          organizerExposMap.set(orgId, []);
+        }
+        organizerExposMap.get(orgId)!.push(expo._id);
+      }
+    });
+
+    // Ticket metrics by expo
+    const ticketMetricsAgg = await ticketColl
+      .aggregate<{
+        _id: ObjectId;
+        totalTickets: number;
+        checkedInCount: number;
+      }>([
+        {
+          $group: {
+            _id: '$expoId',
+            totalTickets: {
+              $sum: { $cond: [{ $ne: ['$status', 'cancelled'] }, 1, 0] },
+            },
+            checkedInCount: {
+              $sum: {
+                $cond: [
+                  {
+                    $or: [
+                      { $eq: ['$status', 'checked_in'] },
+                      { $ifNull: ['$checkedInAt', false] },
+                    ],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+          },
+        },
+      ])
+      .toArray();
+
+    const expoTicketStats = new Map<string, { totalTickets: number; checkedInCount: number }>();
+    ticketMetricsAgg.forEach(({ _id, totalTickets, checkedInCount }) => {
+      if (_id) {
+        expoTicketStats.set(_id.toString(), { totalTickets, checkedInCount });
+      }
+    });
+
+    const organizersRollup = organizers.map((org) => {
+      const orgId = org._id.toString();
+      const expoIds = organizerExposMap.get(orgId) || [];
+      let totalAttendees = 0;
+      let totalCheckIns = 0;
+
+      expoIds.forEach((eId) => {
+        const stats = expoTicketStats.get(eId.toString());
+        if (stats) {
+          totalAttendees += stats.totalTickets;
+          totalCheckIns += stats.checkedInCount;
+        }
+      });
+
+      const checkInRate =
+        totalAttendees > 0
+          ? Math.round((totalCheckIns / totalAttendees) * 10000) / 100
+          : 0;
+
+      return {
+        organizerId: orgId,
+        fullName: org.fullName,
+        email: org.email,
+        status: org.status,
+        expoCount: expoIds.length,
+        totalAttendees,
+        totalCheckIns,
+        checkInRate,
+      };
+    });
+
+    return {
+      totalUsers,
+      totalExpos,
+      totalApplications,
+      totalRegistrations,
+      totalCheckIns,
+      overallCheckInRate,
+      pendingOrganizersCount,
+      usersByRole,
+      usersOverTime,
+      exposByStatus,
+      applicationsByStatus,
+      organizersRollup,
+    };
+  }
 }
 
 export default new StatsService();
+

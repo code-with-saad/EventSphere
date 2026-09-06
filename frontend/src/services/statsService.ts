@@ -15,5 +15,9 @@ export const statsService = {
 
   getSuperAdminDashboard: () =>
     api.get('/api/dashboard/superadmin').then(r => r.data.data),
+
+  getSuperAdminAnalytics: () =>
+    api.get('/api/admin/analytics').then(r => r.data.data),
 };
+
 

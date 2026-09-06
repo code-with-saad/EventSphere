@@ -21,6 +21,7 @@ import {
   Layers,
   Clock,
   HelpCircle,
+  User,
 } from 'lucide-react';
 
 export interface NavLink {
@@ -34,7 +35,9 @@ export const ROLE_NAV_LINKS: Record<string, NavLink[]> = {
     { label: 'Dashboard',           path: '/dashboard/superadmin', icon: LayoutDashboard },
     { label: 'Organizer Approvals', path: '/admin/approvals',      icon: CheckCircle },
     { label: 'All Organizers',      path: '/admin/organizers',     icon: Users },
+    { label: 'Reports & Analytics', path: '/admin/reports',        icon: BarChart3 },
     { label: 'Feedback & Issues',   path: '/admin/feedback',       icon: MessageSquare },
+    { label: 'Profile & Settings',  path: '/profile',              icon: User },
   ],
   organizer: [
     { label: 'Dashboard',           path: '/dashboard/organizer',     icon: LayoutDashboard },

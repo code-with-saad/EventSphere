@@ -425,6 +425,15 @@ router.post('/login', authLimiter, asyncHandler(async (req: Request, res: Respon
     });
   }
 
+  // Block suspended accounts
+  if (user.status === 'suspended') {
+    return res.status(403).json({
+      success: false,
+      message: 'Your account has been suspended. Please contact platform support.',
+      code: 'ACCOUNT_SUSPENDED'
+    });
+  }
+
   // Check email verification: return 403 if not verified (Requirement 8.4)
   // Applies to Exhibitor/Attendee roles
   if (!user.isEmailVerified && (user.role === 'exhibitor' || user.role === 'attendee')) {

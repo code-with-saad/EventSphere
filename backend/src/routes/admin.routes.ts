@@ -1,4 +1,4 @@
-﻿import { Router, Response } from 'express';
+import { Router, Response } from 'express';
 import asyncHandler from '../utils/asyncHandler';
 import UserModel from '../models/User.model';
 import { authenticate, AuthRequest } from '../middleware/auth.middleware';
@@ -57,7 +57,7 @@ router.get(
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const { status } = req.query;
 
-    const validStatuses = ['pending', 'active', 'rejected'];
+    const validStatuses = ['pending', 'active', 'suspended', 'rejected'];
 
     // Validate status filter if provided
     if (status !== undefined && !validStatuses.includes(status as string)) {
@@ -205,4 +205,123 @@ router.patch(
   })
 );
 
+/**
+ * PATCH /api/admin/organizers/:id/suspend
+ *
+ * Suspends an organizer account by setting status to 'suspended' and revoking all refresh tokens.
+ *
+ * Access: SuperAdmin only
+ */
+router.patch(
+  '/organizers/:id/suspend',
+  authenticate,
+  authorize('superadmin'),
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const id = req.params.id as string;
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Organizer not found',
+      });
+    }
+
+    const user = await UserModel.findById(id);
+
+    if (!user || user.role !== 'organizer') {
+      return res.status(404).json({
+        success: false,
+        message: 'Organizer not found',
+      });
+    }
+
+    const updatedUser = await UserModel.updateById(id, { status: 'suspended' });
+    await invalidateAllUserRefreshTokens(new ObjectId(user._id));
+
+    return res.status(200).json({
+      success: true,
+      message: 'Organizer suspended successfully',
+      data: {
+        organizer: {
+          id: updatedUser?._id.toString() || id,
+          email: updatedUser?.email || user.email,
+          fullName: updatedUser?.fullName || user.fullName,
+          status: 'suspended',
+        },
+      },
+    });
+  })
+);
+
+/**
+ * PATCH /api/admin/organizers/:id/reactivate
+ *
+ * Reactivates a suspended/rejected organizer by setting status back to 'active'.
+ *
+ * Access: SuperAdmin only
+ */
+router.patch(
+  '/organizers/:id/reactivate',
+  authenticate,
+  authorize('superadmin'),
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const id = req.params.id as string;
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Organizer not found',
+      });
+    }
+
+    const user = await UserModel.findById(id);
+
+    if (!user || user.role !== 'organizer') {
+      return res.status(404).json({
+        success: false,
+        message: 'Organizer not found',
+      });
+    }
+
+    const updatedUser = await UserModel.updateById(id, { status: 'active' });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Organizer reactivated successfully',
+      data: {
+        organizer: {
+          id: updatedUser?._id.toString() || id,
+          email: updatedUser?.email || user.email,
+          fullName: updatedUser?.fullName || user.fullName,
+          status: 'active',
+        },
+      },
+    });
+  })
+);
+
+/**
+ * GET /api/admin/analytics
+ *
+ * Returns comprehensive platform-wide analytics for SuperAdmin Reports & Analytics.
+ *
+ * Access: SuperAdmin only
+ */
+router.get(
+  '/analytics',
+  authenticate,
+  authorize('superadmin'),
+  asyncHandler(async (_req: AuthRequest, res: Response) => {
+    const statsService = (await import('../services/stats.service')).default;
+    const analytics = await statsService.getSuperAdminAnalytics();
+
+    return res.status(200).json({
+      success: true,
+      message: 'SuperAdmin analytics retrieved successfully',
+      data: analytics,
+    });
+  })
+);
+
 export default router;
+
