@@ -17,7 +17,6 @@ export default function MyTicketsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'checked_in' | 'cancelled'>('all');
 
   useEffect(() => {
     let cancelled = false;
@@ -80,11 +79,14 @@ export default function MyTicketsPage() {
     };
   }, []);
 
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'checked_in' | 'expired' | 'cancelled'>('all');
+
   const statusCounts = useMemo(() => {
     return {
       all: tickets.length,
-      active: tickets.filter((t) => t.status === 'active').length,
+      active: tickets.filter((t) => t.status === 'active' && !t.isExpoCompleted).length,
       checked_in: tickets.filter((t) => t.status === 'checked_in').length,
+      expired: tickets.filter((t) => t.status === 'active' && t.isExpoCompleted).length,
       cancelled: tickets.filter((t) => t.status === 'cancelled').length,
     };
   }, [tickets]);
@@ -93,29 +95,49 @@ export default function MyTicketsPage() {
     { key: 'all' as const, label: 'All' },
     { key: 'active' as const, label: 'Active' },
     { key: 'checked_in' as const, label: 'Checked In' },
+    { key: 'expired' as const, label: 'Expired' },
     { key: 'cancelled' as const, label: 'Cancelled' },
   ];
 
   const filteredAndSortedTickets = useMemo(() => {
-    const statusOrder: Record<string, number> = {
-      active: 1,
-      checked_in: 2,
-      cancelled: 3,
-    };
-
     return [...tickets]
       .filter((ticket) => {
-        if (statusFilter !== 'all' && ticket.status !== statusFilter) {
-          return false;
+        if (statusFilter === 'active') {
+          return ticket.status === 'active' && !ticket.isExpoCompleted;
         }
+        if (statusFilter === 'expired') {
+          return ticket.status === 'active' && ticket.isExpoCompleted;
+        }
+        if (statusFilter === 'checked_in') {
+          return ticket.status === 'checked_in';
+        }
+        if (statusFilter === 'cancelled') {
+          return ticket.status === 'cancelled';
+        }
+        // 'all'
+        if (!searchTerm.trim()) return true;
+        const name = (ticket.expoName || '').toLowerCase();
+        return name.includes(searchTerm.toLowerCase().trim());
+      })
+      .filter((ticket) => {
+        if (statusFilter === 'all') return true; // already filtered
         if (!searchTerm.trim()) return true;
         const name = (ticket.expoName || '').toLowerCase();
         return name.includes(searchTerm.toLowerCase().trim());
       })
       .sort((a, b) => {
-        const orderA = statusOrder[a.status] ?? 99;
-        const orderB = statusOrder[b.status] ?? 99;
-        if (orderA !== orderB) return orderA - orderB;
+        // Sort order: Active (1) -> Checked In (2) -> Expired (3) -> Cancelled (4)
+        const getRank = (t: any) => {
+          if (t.status === 'active' && !t.isExpoCompleted) return 1;
+          if (t.status === 'checked_in') return 2;
+          if (t.status === 'active' && t.isExpoCompleted) return 3;
+          return 4; // cancelled
+        };
+
+        const rankA = getRank(a);
+        const rankB = getRank(b);
+        if (rankA !== rankB) return rankA - rankB;
+
         // Secondary sort: most recent registration first
         const dateA = new Date(a.registeredAt || 0).getTime();
         const dateB = new Date(b.registeredAt || 0).getTime();

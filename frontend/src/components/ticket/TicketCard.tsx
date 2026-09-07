@@ -34,6 +34,7 @@ export default function TicketCard({ ticket }: TicketCardProps) {
 
   const isCancelled = ticket.status === 'cancelled';
   const isCheckedIn = ticket.status === 'checked_in';
+  const isExpired = ticket.status === 'active' && ticket.isExpoCompleted;
 
   return (
     <Link
@@ -43,8 +44,8 @@ export default function TicketCard({ ticket }: TicketCardProps) {
           ? 'bg-glass-dark border-glass-border-dark hover:border-brand-primary-dark shadow-elevation-1-dark hover:shadow-elevation-2-dark'
           : 'bg-glass-light border-glass-border-light hover:border-brand-primary-light shadow-elevation-1-light hover:shadow-elevation-2-light'
       } ${
-        isCancelled
-          ? 'opacity-55 grayscale-[30%] hover:opacity-80'
+        isCancelled || isExpired
+          ? 'opacity-65 grayscale-[20%] hover:opacity-85'
           : isCheckedIn
           ? isDarkMode
             ? 'border-l-4 border-l-text-success-dark'
@@ -111,7 +112,7 @@ export default function TicketCard({ ticket }: TicketCardProps) {
             isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'
           }`}
         >
-          {isCancelled ? 'Details →' : 'View Pass →'}
+          {isCancelled || isExpired ? 'Details →' : 'View Pass →'}
         </span>
       </div>
     </Link>

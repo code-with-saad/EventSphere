@@ -94,6 +94,8 @@ export default function TicketDetailPage() {
   );
 
   const isCancelled = ticket.status === 'cancelled';
+  const isExpoEnded = expo?.status === 'completed' || expo?.status === 'archived';
+  const isExpired = ticket.status === 'active' && isExpoEnded;
   const expoName = ticket.expoName || expo?.name || 'Expo Ticket';
   const startDate = expo?.startDate || ticket.startDate;
   const endDate = expo?.endDate || ticket.endDate;
@@ -142,7 +144,7 @@ export default function TicketDetailPage() {
                     </div>
                     <TicketStatusBadge
                       status={ticket.status}
-                      isExpoCompleted={expo?.status === 'completed' || expo?.status === 'archived'}
+                      isExpoCompleted={isExpoEnded}
                     />
                   </div>
 
@@ -207,8 +209,20 @@ export default function TicketDetailPage() {
                   </div>
                 )}
 
-                {/* Cancel registration action (active only) */}
-                {ticket.status === 'active' && (
+                {/* Expired notice */}
+                {isExpired && (
+                  <div className={`p-md-token rounded-lg-token text-sm-token flex items-center gap-2.5 border ${
+                    isDarkMode
+                      ? 'bg-bg-warning-dark/20 text-text-warning-dark border-text-warning-dark/40'
+                      : 'bg-bg-warning-light/20 text-text-warning-light border-text-warning-light/40'
+                  }`}>
+                    <AlertTriangle className="w-5 h-5 shrink-0" />
+                    <span>This event has concluded. Unused tickets are expired and can no longer be cancelled or downloaded.</span>
+                  </div>
+                )}
+
+                {/* Cancel registration action (active and non-expired only) */}
+                {ticket.status === 'active' && !isExpoEnded && (
                   <div className="p-md-token rounded-lg-token border border-border-base-dark/20 flex flex-col sm:flex-row sm:items-center justify-between gap-sm-token">
                     <div>
                       <h4 className={`text-xs-token font-semibold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
@@ -238,7 +252,7 @@ export default function TicketDetailPage() {
               {/* RIGHT — QR Code & Admission Pass (5 cols, elevated weight) */}
               <div className="md:col-span-5">
                 <BentoCard className={`p-md-token md:p-lg-token border-2 ${
-                  isCancelled
+                  isCancelled || isExpired
                     ? 'opacity-60'
                     : isDarkMode
                     ? 'border-brand-primary-dark/40 shadow-elevation-2-dark'
@@ -251,7 +265,7 @@ export default function TicketDetailPage() {
                     </h3>
                   </div>
 
-                  {!isCancelled ? (
+                  {!isCancelled && !isExpired ? (
                     <div className="flex flex-col gap-md-token">
                       {qrDataUrl ? (
                         <QRTicketDisplay ticketId={ticket.ticketId} qrCodeDataUrl={qrDataUrl} />
@@ -266,6 +280,10 @@ export default function TicketDetailPage() {
                       <div className="pt-xs-token border-t border-border-base-dark/20">
                         <PDFDownloadButton ticketId={ticket.ticketId} />
                       </div>
+                    </div>
+                  ) : isExpired ? (
+                    <div className={`text-center py-lg-token text-xs-token ${isDarkMode ? 'text-text-warning-dark' : 'text-text-warning-light'}`}>
+                      Event concluded. Ticket is expired and pass downloads are disabled.
                     </div>
                   ) : (
                     <div className={`text-center py-lg-token text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
