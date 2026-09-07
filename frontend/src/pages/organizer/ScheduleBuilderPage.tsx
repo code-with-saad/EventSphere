@@ -410,6 +410,7 @@ export default function ScheduleBuilderPage() {
         isOpen={isModalOpen}
         mode={modalMode}
         initialData={editInitialData}
+        expo={expo}
         conflictError={conflictError}
         isSubmitting={isSubmitting}
         onSubmit={handleSubmit}

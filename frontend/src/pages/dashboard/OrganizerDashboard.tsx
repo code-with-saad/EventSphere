@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalendarDays, ScanLine, BarChart3 } from 'lucide-react';
-import { RadialBarChart, RadialBar, ResponsiveContainer } from 'recharts';
+import { CalendarDays, ScanLine, BarChart3, ArrowRight } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOrganizerStats } from '../../hooks/useOrganizerStats';
@@ -146,50 +146,149 @@ export default function OrganizerDashboard() {
             <OrganizerStatsPanel />
           </div>
 
-          {/* 2b. Aggregate Booth Fill Rate Radial Gauge */}
+          {/* 2b. Aggregate Booth Occupancy Donut Chart */}
           {stats && (
-            <div className="mb-xl-token max-w-xl">
+            <div className="mb-xl-token max-w-2xl">
               <ChartWrapper
                 title="Overall Booth Occupancy"
-                subtitle="Aggregate booth fill-rate across all active expos"
-                minHeight={220}
+                subtitle="Aggregate booth allocation across all active expos"
+                minHeight={260}
               >
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-md-token h-full">
-                  <div className="w-full sm:w-1/2 h-[180px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RadialBarChart
-                        cx="50%"
-                        cy="50%"
-                        innerRadius="65%"
-                        outerRadius="90%"
-                        barSize={14}
-                        data={[
-                          {
-                            name: 'Fill Rate',
-                            value: Math.min(100, Math.max(0, stats.aggregateBoothFillRate || 0)),
-                            fill: '#FF4D2E',
-                          },
-                        ]}
-                        startAngle={180}
-                        endAngle={0}
-                      >
-                        <RadialBar background dataKey="value" cornerRadius={10} />
-                      </RadialBarChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="flex flex-col justify-center items-center sm:items-start sm:w-1/2 gap-xs-token text-center sm:text-left">
-                    <span className={`text-3xl-token font-bold ${
-                      isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
-                    }`}>
-                      {stats.aggregateBoothFillRate.toFixed(1)}%
-                    </span>
-                    <span className={`text-xs-token ${
-                      isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
-                    }`}>
-                      Booths Occupied Across {stats.activeExpoCount} Active Expos
-                    </span>
-                  </div>
-                </div>
+                {(() => {
+                  const total = stats.totalBooths ?? 0;
+                  const occupied = stats.occupiedBooths ?? Math.round((total * (stats.aggregateBoothFillRate || 0)) / 100);
+                  const available = Math.max(0, total - occupied);
+
+                  const chartData = [
+                    { name: 'Occupied', value: occupied, color: isDarkMode ? '#FF4D2E' : '#E03D1E' },
+                    { name: 'Available', value: available, color: isDarkMode ? '#2A2A30' : '#E2E0D8' },
+                  ];
+
+                  return (
+                    <div className="flex flex-col gap-md-token">
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-lg-token">
+                        {/* Donut Chart */}
+                        <div className="w-full sm:w-1/2 h-[180px] relative flex items-center justify-center">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Tooltip
+                                contentStyle={{
+                                  backgroundColor: isDarkMode ? '#1C1C20' : '#FFFFFF',
+                                  borderColor: isDarkMode ? '#3A3A42' : '#E2E0D8',
+                                  borderRadius: '8px',
+                                  fontSize: '12px',
+                                }}
+                              />
+                              <Pie
+                                data={chartData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={52}
+                                outerRadius={76}
+                                paddingAngle={total > 0 ? 3 : 0}
+                                dataKey="value"
+                              >
+                                {chartData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                              </Pie>
+                            </PieChart>
+                          </ResponsiveContainer>
+                          {/* Inner Centered Percentage */}
+                          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <span
+                              className={`text-xl-token font-bold leading-none ${
+                                isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+                              }`}
+                            >
+                              {stats.aggregateBoothFillRate.toFixed(0)}%
+                            </span>
+                            <span
+                              className={`text-[10px] uppercase font-semibold tracking-wider mt-0.5 ${
+                                isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                              }`}
+                            >
+                              Filled
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Breakdown & Legend */}
+                        <div className="flex flex-col justify-center sm:w-1/2 gap-sm-token w-full">
+                          <div className="flex items-center justify-between p-xs-token px-sm-token rounded-md-token border border-border-base-dark/30">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className="w-3 h-3 rounded-full shrink-0"
+                                style={{ backgroundColor: chartData[0].color }}
+                              />
+                              <span
+                                className={`text-xs-token font-medium ${
+                                  isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+                                }`}
+                              >
+                                Occupied
+                              </span>
+                            </div>
+                            <span
+                              className={`text-xs-token font-bold ${
+                                isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+                              }`}
+                            >
+                              {occupied} booths
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between p-xs-token px-sm-token rounded-md-token border border-border-base-dark/30">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className="w-3 h-3 rounded-full shrink-0"
+                                style={{ backgroundColor: chartData[1].color }}
+                              />
+                              <span
+                                className={`text-xs-token font-medium ${
+                                  isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                                }`}
+                              >
+                                Available
+                              </span>
+                            </div>
+                            <span
+                              className={`text-xs-token font-bold ${
+                                isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                              }`}
+                            >
+                              {available} booths
+                            </span>
+                          </div>
+
+                          <span
+                            className={`text-[11px] text-center sm:text-left ${
+                              isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                            }`}
+                          >
+                            Across {stats.activeExpoCount} active expo{stats.activeExpoCount === 1 ? '' : 's'} ({total} total booths)
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Link to Full Reports & Analytics */}
+                      <div className="pt-sm-token border-t border-border-base-dark/20 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => navigate('/organizer/analytics')}
+                          className={`inline-flex items-center gap-1.5 text-xs-token font-semibold transition-colors ${
+                            isDarkMode
+                              ? 'text-brand-primary-dark hover:underline'
+                              : 'text-brand-primary-light hover:underline'
+                          }`}
+                        >
+                          <span>View Full Reports & Analytics</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
               </ChartWrapper>
             </div>
           )}

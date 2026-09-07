@@ -21,6 +21,8 @@ export interface OrganizerDashboardDTO {
   activeExpoCount: number;
   totalAttendees: number;
   totalCheckIns: number;
+  totalBooths: number;
+  occupiedBooths: number;
   aggregateBoothFillRate: number;
   recentExpos: {
     _id: string;
@@ -207,6 +209,8 @@ class StatsService {
         activeExpoCount: 0,
         totalAttendees: 0,
         totalCheckIns: 0,
+        totalBooths: 0,
+        occupiedBooths: 0,
         aggregateBoothFillRate: 0,
         recentExpos: recentExposRaw.map((e: any) => ({
           _id: e._id.toString(),
@@ -259,6 +263,8 @@ class StatsService {
       activeExpoCount: activeExpos.length,
       totalAttendees,
       totalCheckIns,
+      totalBooths,
+      occupiedBooths: totalApproved,
       aggregateBoothFillRate,
       recentExpos: recentExposRaw.map((e: any) => ({
         _id: e._id.toString(),

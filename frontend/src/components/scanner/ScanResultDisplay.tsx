@@ -6,6 +6,7 @@ export type ScanResult =
   | 'invalid_ticket'
   | 'cancelled_ticket'
   | 'wrong_event'
+  | 'event_ended'
   | null;
 
 interface ScanResultDisplayProps {
@@ -225,6 +226,34 @@ export default function ScanResultDisplay({
             </svg>
           ),
           headline: 'Wrong event',
+        };
+
+      case 'event_ended':
+        return {
+          role: 'alert' as const,
+          ariaLive: 'assertive' as const,
+          borderColorClass: 'border-l-text-warning-dark',
+          textColorClass: 'text-text-warning-dark',
+          bgColorClass: 'bg-bg-warning-dark',
+          icon: (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-8 h-8 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          ),
+          headline: 'Event has ended',
+          detail: 'Check-ins are closed because this expo is completed or archived.',
         };
     }
   })();

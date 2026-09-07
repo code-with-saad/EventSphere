@@ -140,7 +140,10 @@ export default function TicketDetailPage() {
                         General Admission Pass
                       </p>
                     </div>
-                    <TicketStatusBadge status={ticket.status} />
+                    <TicketStatusBadge
+                      status={ticket.status}
+                      isExpoCompleted={expo?.status === 'completed' || expo?.status === 'archived'}
+                    />
                   </div>
 
                   {/* Schedule & Venue information */}

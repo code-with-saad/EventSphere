@@ -35,7 +35,8 @@ export type CheckInResult =
   | 'already_checked_in'
   | 'invalid_ticket'
   | 'cancelled_ticket'
-  | 'wrong_event';
+  | 'wrong_event'
+  | 'event_ended';
 
 export interface CheckInResponse {
   result: CheckInResult;
@@ -274,6 +275,15 @@ class TicketService {
       throw createError('Expo not found', 'EXPO_NOT_FOUND', 404);
     }
 
+    // 3b. Validate expo has not ended (expired)
+    if (expo.status === 'completed' || expo.status === 'archived') {
+      throw createError(
+        'This expo has ended. PDF ticket download is no longer available.',
+        'EXPO_ENDED',
+        400
+      );
+    }
+
     // 4. Look up attendee
     const attendee = await UserModel.findById(ticket.attendeeId);
     if (!attendee) {
@@ -413,6 +423,16 @@ class TicketService {
       );
     }
 
+    // 3b. Look up expo and verify event has not ended
+    const expo = await ExpoModel.findById(ticket.expoId);
+    if (expo && (expo.status === 'completed' || expo.status === 'archived')) {
+      throw createError(
+        'Cannot cancel ticket for an expo that has already ended',
+        'EXPO_ENDED',
+        400
+      );
+    }
+
     // 4. Persist cancellation
     const updated = await TicketModel.updateById(ticket._id, { status: 'cancelled' });
     if (!updated) {
@@ -475,6 +495,14 @@ class TicketService {
     // If explicit expoId was passed, verify it matches
     if (expoId && ticket.expoId.toString() !== expoId) {
       return { result: 'wrong_event' };
+    }
+
+    // 3b. Check if the expo has already concluded
+    if (expo.status === 'completed' || expo.status === 'archived') {
+      return {
+        result: 'event_ended',
+        expoName: expo.name,
+      };
     }
 
     // 4. Ticket is in checked_in status — check for 24-hour multi-day cooldown

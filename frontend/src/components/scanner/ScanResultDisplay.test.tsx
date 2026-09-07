@@ -169,6 +169,34 @@ describe('ScanResultDisplay', () => {
     });
   });
 
+  // ── event_ended ────────────────────────────────────────────────────────
+  describe('event_ended', () => {
+    it('renders "Event has ended" headline', () => {
+      render(<ScanResultDisplay result="event_ended" onDismiss={vi.fn()} />);
+      expect(screen.getByText('Event has ended')).toBeInTheDocument();
+    });
+
+    it('displays the detailed explanation', () => {
+      render(<ScanResultDisplay result="event_ended" onDismiss={vi.fn()} />);
+      expect(
+        screen.getByText('Check-ins are closed because this expo is completed or archived.')
+      ).toBeInTheDocument();
+    });
+
+    it('uses role="alert" and aria-live="assertive"', () => {
+      render(<ScanResultDisplay result="event_ended" onDismiss={vi.fn()} />);
+      const el = screen.getByRole('alert');
+      expect(el).toHaveAttribute('aria-live', 'assertive');
+    });
+
+    it('calls onDismiss after 3 seconds', () => {
+      const onDismiss = vi.fn();
+      render(<ScanResultDisplay result="event_ended" onDismiss={onDismiss} />);
+      act(() => vi.advanceTimersByTime(3000));
+      expect(onDismiss).toHaveBeenCalledTimes(1);
+    });
+  });
+
   // ── Timer reset on result change ─────────────────────────────────────────
   it('resets the 3-second timer when result changes before dismissal', () => {
     const onDismiss = vi.fn();
@@ -209,6 +237,7 @@ describe('ScanResultDisplay', () => {
     'invalid_ticket',
     'cancelled_ticket',
     'wrong_event',
+    'event_ended',
   ];
 
   it.each(allResults)('renders visible content for result "%s"', (result) => {

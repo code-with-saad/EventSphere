@@ -45,9 +45,13 @@ export default function MyTicketsPage() {
           const rawEid = typeof t.expoId === 'object' ? t.expoId?._id : t.expoId;
           const eid = rawEid ? rawEid.toString() : '';
           const expoInfo = exposMap[eid];
+          const expoStatus = t.expoStatus || expoInfo?.status;
+          const isExpoCompleted = expoStatus === 'completed' || expoStatus === 'archived';
           return {
             ...t,
             expoId: eid,
+            expoStatus,
+            isExpoCompleted,
             expoName: t.expoName || expoInfo?.name,
             startDate: t.startDate || expoInfo?.startDate,
             endDate: t.endDate || expoInfo?.endDate,

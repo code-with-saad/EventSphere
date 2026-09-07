@@ -11,6 +11,8 @@ interface TicketCardProps {
     registeredAt: string;
     expoId?: string;
     expoName?: string;
+    expoStatus?: string;
+    isExpoCompleted?: boolean;
     startDate?: string;
     endDate?: string;
     venueName?: string;
@@ -63,7 +65,7 @@ export default function TicketCard({ ticket }: TicketCardProps) {
           >
             {ticket.expoName ?? 'Expo Ticket'}
           </h3>
-          <TicketStatusBadge status={ticket.status} />
+          <TicketStatusBadge status={ticket.status} isExpoCompleted={ticket.isExpoCompleted} />
         </div>
 
         {/* Metadata: Date & Venue */}

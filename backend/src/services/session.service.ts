@@ -109,6 +109,15 @@ class SessionService {
       throw createError('endTime must be after startTime', 'INVALID_TIME_RANGE', 400);
     }
 
+    // 3c. Bounds check: Session must fall within the expo date range
+    if (data.startTime < expo.startDate || data.endTime > expo.endDate) {
+      throw createError(
+        'Session start and end times must fall within the expo dates',
+        'SESSION_OUTSIDE_EXPO_DATES',
+        400
+      );
+    }
+
     // 4. Room conflict check
     const conflicts = await this.checkRoomConflict(
       expoId,
@@ -191,6 +200,14 @@ class SessionService {
       const effectiveEnd = data.endTime ?? session.endTime;
       if (effectiveEnd <= effectiveStart) {
         throw createError('endTime must be after startTime', 'INVALID_TIME_RANGE', 400);
+      }
+      // Bounds check: Session must fall within the expo date range
+      if (effectiveStart < expo.startDate || effectiveEnd > expo.endDate) {
+        throw createError(
+          'Session start and end times must fall within the expo dates',
+          'SESSION_OUTSIDE_EXPO_DATES',
+          400
+        );
       }
     }
 
