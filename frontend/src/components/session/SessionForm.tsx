@@ -9,6 +9,7 @@ export interface SessionFormData {
   startTime: string;   // ISO datetime string
   endTime: string;     // ISO datetime string
   room: string;
+  capacity?: number;
   description?: string;
   track?: string;
 }
@@ -20,6 +21,7 @@ interface SessionFormErrors {
   startTime?: string;
   endTime?: string;
   room?: string;
+  capacity?: string;
 }
 
 interface ConflictingSession {
@@ -114,6 +116,7 @@ export default function SessionForm({
   const [endTimeStr, setEndTimeStr] = useState('10:00');
   const [room, setRoom] = useState('');
   const [isCustomRoom, setIsCustomRoom] = useState(false);
+  const [capacity, setCapacity] = useState<string>('');
   const [description, setDescription] = useState('');
   const [track, setTrack] = useState('');
   const [errors, setErrors] = useState<SessionFormErrors>({});
@@ -142,6 +145,7 @@ export default function SessionForm({
         setIsCustomRoom(false);
       }
 
+      setCapacity(initialData.capacity !== undefined ? String(initialData.capacity) : '');
       setDescription(initialData.description ?? '');
       setTrack(initialData.track ?? '');
     } else {
@@ -154,6 +158,7 @@ export default function SessionForm({
       const defaultRoom = expo?.zones && expo.zones.length > 0 ? expo.zones[0].name : '';
       setRoom(defaultRoom);
       setIsCustomRoom(false);
+      setCapacity('');
       setDescription('');
       setTrack('');
     }
@@ -222,6 +227,12 @@ export default function SessionForm({
     }
 
     if (!room.trim()) e.room = 'Room is required';
+    if (capacity.trim() !== '') {
+      const capNum = Number(capacity);
+      if (isNaN(capNum) || capNum <= 0 || !Number.isInteger(capNum)) {
+        e.capacity = 'Capacity must be a positive whole number';
+      }
+    }
     return e;
   };
 
@@ -240,6 +251,7 @@ export default function SessionForm({
       startTime: dates.start.toISOString(),
       endTime: dates.end.toISOString(),
       room: room.trim(),
+      capacity: capacity.trim() !== '' ? Number(capacity) : undefined,
       description: description.trim() || undefined,
       track: track.trim() || undefined,
     });
@@ -550,26 +562,58 @@ export default function SessionForm({
             )}
           </div>
 
-          {/* Track (optional) */}
-          <div>
-            <label htmlFor="session-track" className={labelClass}>
-              Track{' '}
-              <span
-                className={`font-regular ${
-                  isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
-                }`}
-              >
-                (optional)
-              </span>
-            </label>
-            <input
-              id="session-track"
-              type="text"
-              value={track}
-              onChange={(e) => setTrack(e.target.value)}
-              placeholder="e.g. Technical, Business, Workshop"
-              className={inputClass()}
-            />
+          {/* Capacity (optional) & Track (optional) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-md-token">
+            <div>
+              <label htmlFor="session-capacity" className={labelClass}>
+                Max Capacity{' '}
+                <span
+                  className={`font-regular ${
+                    isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                  }`}
+                >
+                  (optional)
+                </span>
+              </label>
+              <input
+                id="session-capacity"
+                type="number"
+                min="1"
+                step="1"
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
+                placeholder="e.g. 50 (unlimited if blank)"
+                className={inputClass(errors.capacity)}
+                aria-describedby={errors.capacity ? 'session-capacity-error' : undefined}
+                aria-invalid={!!errors.capacity}
+              />
+              {errors.capacity && (
+                <p id="session-capacity-error" role="alert" className={errorClass}>
+                  {errors.capacity}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="session-track" className={labelClass}>
+                Track{' '}
+                <span
+                  className={`font-regular ${
+                    isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                  }`}
+                >
+                  (optional)
+                </span>
+              </label>
+              <input
+                id="session-track"
+                type="text"
+                value={track}
+                onChange={(e) => setTrack(e.target.value)}
+                placeholder="e.g. Technical, Keynote"
+                className={inputClass()}
+              />
+            </div>
           </div>
 
           {/* Description (optional) */}

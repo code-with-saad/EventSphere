@@ -8,6 +8,10 @@ interface Session {
   startTime: string | Date;
   endTime: string | Date;
   room: string;
+  capacity?: number;
+  registrationCount?: number;
+  isRegistered?: boolean;
+  isFull?: boolean;
   track?: string;
   description?: string;
 }
@@ -17,6 +21,9 @@ interface ScheduleGridProps {
   bookmarkedSessionIds?: Set<string>;
   onBookmarkToggle?: (sessionId: string) => void;
   showBookmarks?: boolean;
+  onRegisterToggle?: (sessionId: string, isRegistered: boolean) => void;
+  showRegister?: boolean;
+  registerPendingIds?: Set<string>;
   onEditSession?: (session: Session) => void;
   onDeleteSession?: (sessionId: string) => void;
   isOrganizer?: boolean;
@@ -36,6 +43,9 @@ export default function ScheduleGrid({
   bookmarkedSessionIds = new Set(),
   onBookmarkToggle,
   showBookmarks = false,
+  onRegisterToggle,
+  showRegister = false,
+  registerPendingIds = new Set(),
   onEditSession,
   onDeleteSession,
   isOrganizer = false,
@@ -88,6 +98,9 @@ export default function ScheduleGrid({
               isBookmarked={bookmarkedSessionIds.has(session._id)}
               onBookmarkToggle={showBookmarks ? onBookmarkToggle : undefined}
               showBookmark={showBookmarks}
+              onRegisterToggle={showRegister ? onRegisterToggle : undefined}
+              showRegister={showRegister}
+              registerPending={registerPendingIds.has(session._id)}
               onRate={onRate}
               isRated={isRatedIds.has(session._id)}
             />

@@ -23,6 +23,7 @@ interface RegisterData {
   password: string;
   fullName: string;
   role: 'organizer' | 'exhibitor' | 'attendee';
+  consent: boolean;
 }
 
 interface LoginResponse {

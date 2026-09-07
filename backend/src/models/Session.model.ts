@@ -18,9 +18,11 @@ export interface ISession {
   expoId: ObjectId;       // ref: expos._id
   title: string;          // 1–120 chars
   speakerName: string;    // 1–100 chars
+  speakerId?: ObjectId;   // Optional ref to user/exhibitor
   startTime: Date;
   endTime: Date;
   room: string;           // 1–80 chars (location/room name)
+  capacity?: number;      // Optional maximum registration capacity
   description?: string;   // max 500 chars
   track?: string;         // e.g. Keynote, Workshop, Panel; max 30 chars
   createdAt: Date;
@@ -34,9 +36,11 @@ export interface ISessionCreate {
   expoId: ObjectId;
   title: string;
   speakerName: string;
+  speakerId?: ObjectId;
   startTime: Date;
   endTime: Date;
   room: string;
+  capacity?: number;
   description?: string;
   track?: string;
 }
@@ -83,6 +87,12 @@ export class SessionModel {
         { name: 'expo_room_time_idx' }
       );
 
+      // Speaker conflict detection index
+      await this.collection.createIndex(
+        { expoId: 1, speakerName: 1, startTime: 1, endTime: 1 },
+        { name: 'expo_speaker_time_idx' }
+      );
+
       console.log('✓ Session indexes created successfully');
     } catch (error) {
       console.error('✗ Failed to create session indexes:', error);
@@ -99,6 +109,14 @@ export class SessionModel {
   async findById(id: ObjectId | string): Promise<ISession | null> {
     const sessionId = typeof id === 'string' ? new ObjectId(id) : id;
     return this.collection.findOne({ _id: sessionId });
+  }
+
+  /**
+   * Find sessions by multiple IDs
+   */
+  async findByIds(ids: (ObjectId | string)[]): Promise<ISession[]> {
+    const objectIds = ids.map((id) => (typeof id === 'string' ? new ObjectId(id) : id));
+    return this.collection.find({ _id: { $in: objectIds } }).sort({ startTime: 1 }).toArray();
   }
 
   /**
@@ -139,6 +157,53 @@ export class SessionModel {
     const filter: Record<string, unknown> = {
       expoId: eid,
       room,
+      startTime: { $lt: endTime },
+      endTime: { $gt: startTime },
+    };
+
+    if (excludeId) {
+      const excId = typeof excludeId === 'string' ? new ObjectId(excludeId) : excludeId;
+      filter['_id'] = { $ne: excId };
+    }
+
+    return this.collection.find(filter).toArray();
+  }
+
+  /**
+   * Find sessions with the same speaker within an expo that overlap a time range.
+   *
+   * Prevents double-booking speakers across overlapping sessions.
+   *
+   * @param expoId Expo ID
+   * @param speakerName Speaker name (or speakerId if available)
+   * @param startTime Proposed session start time
+   * @param endTime Proposed session end time
+   * @param excludeId Optional session ID to exclude (for update conflict checks)
+   * @param speakerId Optional speaker ObjectId
+   * @returns Array of conflicting session documents
+   */
+  async findSpeakerConflicts(
+    expoId: ObjectId | string,
+    speakerName: string,
+    startTime: Date,
+    endTime: Date,
+    excludeId?: ObjectId | string,
+    speakerId?: ObjectId | string
+  ): Promise<ISession[]> {
+    const eid = typeof expoId === 'string' ? new ObjectId(expoId) : expoId;
+
+    const speakerConditions: Record<string, unknown>[] = [
+      { speakerName: { $regex: new RegExp(`^${speakerName.trim()}$`, 'i') } }
+    ];
+
+    if (speakerId) {
+      const spkId = typeof speakerId === 'string' ? new ObjectId(speakerId) : speakerId;
+      speakerConditions.push({ speakerId: spkId });
+    }
+
+    const filter: Record<string, unknown> = {
+      expoId: eid,
+      $or: speakerConditions,
       startTime: { $lt: endTime },
       endTime: { $gt: startTime },
     };

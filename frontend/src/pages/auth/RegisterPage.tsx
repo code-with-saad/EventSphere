@@ -35,6 +35,7 @@ export function RegisterPage() {
     password: '',
     fullName: '',
     role: '' as 'organizer' | 'exhibitor' | 'attendee' | '',
+    consent: false,
   });
 
   // Validation errors state
@@ -43,6 +44,7 @@ export function RegisterPage() {
     password: '',
     fullName: '',
     role: '',
+    consent: '',
   });
 
   // Loading state
@@ -93,8 +95,16 @@ export function RegisterPage() {
     return '';
   };
 
+  // Consent validation function
+  const validateConsent = (consent: boolean): string => {
+    if (!consent) {
+      return 'You must agree to the Terms of Service & Privacy Policy';
+    }
+    return '';
+  };
+
   // Handle input change with validation
-  const handleInputChange = (field: keyof typeof formData, value: string) => {
+  const handleInputChange = (field: keyof typeof formData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     // Clear error when user starts typing
@@ -108,6 +118,7 @@ export function RegisterPage() {
       password: validatePassword(formData.password),
       fullName: validateFullName(formData.fullName),
       role: validateRole(formData.role),
+      consent: validateConsent(formData.consent),
     };
 
     setErrors(newErrors);
@@ -133,6 +144,7 @@ export function RegisterPage() {
         password: formData.password,
         fullName: formData.fullName,
         role: formData.role as 'organizer' | 'exhibitor' | 'attendee',
+        consent: formData.consent,
       });
 
       // Handle success based on role
@@ -360,6 +372,42 @@ export function RegisterPage() {
                   }`}
                 >
                   {errors.role}
+                </p>
+              )}
+            </div>
+
+            {/* Terms of Service & Privacy Policy Consent Checkbox */}
+            <div>
+              <label className="flex items-start gap-3 cursor-pointer group select-none">
+                <input
+                  type="checkbox"
+                  checked={formData.consent}
+                  onChange={(e) => handleInputChange('consent', e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-border-base-light dark:border-border-base-dark text-brand-primary-light dark:text-brand-primary-dark focus:ring-brand-primary-light focus:ring-offset-0 transition-colors cursor-pointer"
+                />
+                <span
+                  className={`text-sm ${
+                    isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                  }`}
+                >
+                  I agree to the{' '}
+                  <span className={`font-semibold underline ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                    Terms of Service
+                  </span>{' '}
+                  and{' '}
+                  <span className={`font-semibold underline ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                    Privacy Policy
+                  </span>
+                  , and consent to EventSphere processing my event data.
+                </span>
+              </label>
+              {errors.consent && (
+                <p
+                  className={`mt-1.5 text-sm-token ${
+                    isDarkMode ? 'text-text-danger-dark' : 'text-text-danger-light'
+                  }`}
+                >
+                  {errors.consent}
                 </p>
               )}
             </div>

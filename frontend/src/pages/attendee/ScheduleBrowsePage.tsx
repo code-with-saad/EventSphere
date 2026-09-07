@@ -22,6 +22,10 @@ type Session = {
   startTime: string;
   endTime: string;
   room: string;
+  capacity?: number;
+  registrationCount?: number;
+  isRegistered?: boolean;
+  isFull?: boolean;
   track?: string;
   description?: string;
 };
@@ -67,7 +71,7 @@ function extractTracks(sessions: Session[]): string[] {
 
 // ── View filter type ─────────────────────────────────────────────────────────
 
-type ViewMode = 'all' | 'bookmarks';
+type ViewMode = 'all' | 'bookmarks' | 'registered';
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
@@ -93,6 +97,9 @@ export default function ScheduleBrowsePage() {
   // ── Bookmarks ──────────────────────────────────────────────────────────────
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
   const [bookmarkPending, setBookmarkPending] = useState<Set<string>>(new Set());
+
+  // ── Session Registrations (RSVP) ──────────────────────────────────────────
+  const [registerPending, setRegisterPending] = useState<Set<string>>(new Set());
 
   // ── Session ratings ────────────────────────────────────────────────────────
   const [ratingModalTarget, setRatingModalTarget] = useState<{ id: string; name: string; speakerName?: string } | null>(null);
@@ -221,10 +228,72 @@ export default function ScheduleBrowsePage() {
     // View mode filter
     if (viewMode === 'bookmarks') {
       list = list.filter((s) => bookmarkedIds.has(s._id));
+    } else if (viewMode === 'registered') {
+      list = list.filter((s) => s.isRegistered);
     }
 
     return list;
   }, [daySessions, selectedTrack, viewMode, bookmarkedIds]);
+
+  // ── Session Registration (RSVP) toggle ─────────────────────────────────────
+  const handleRegisterToggle = useCallback(
+    async (sessionId: string, isCurrentlyRegistered: boolean) => {
+      if (!expoId || registerPending.has(sessionId)) return;
+
+      // Optimistic update
+      setSessions((prev) =>
+        prev.map((s) => {
+          if (s._id === sessionId) {
+            const nextCount = isCurrentlyRegistered
+              ? Math.max(0, (s.registrationCount ?? 1) - 1)
+              : (s.registrationCount ?? 0) + 1;
+            return {
+              ...s,
+              isRegistered: !isCurrentlyRegistered,
+              registrationCount: nextCount,
+              isFull: s.capacity ? nextCount >= s.capacity : false,
+            };
+          }
+          return s;
+        })
+      );
+
+      setRegisterPending((prev) => new Set(prev).add(sessionId));
+
+      try {
+        if (isCurrentlyRegistered) {
+          await sessionService.unregister(expoId, sessionId);
+        } else {
+          await sessionService.register(expoId, sessionId);
+        }
+      } catch (err: any) {
+        // Revert optimistic update on failure
+        setSessions((prev) =>
+          prev.map((s) => {
+            if (s._id === sessionId) {
+              const prevCount = isCurrentlyRegistered
+                ? (s.registrationCount ?? 0) + 1
+                : Math.max(0, (s.registrationCount ?? 1) - 1);
+              return {
+                ...s,
+                isRegistered: isCurrentlyRegistered,
+                registrationCount: prevCount,
+                isFull: s.capacity ? prevCount >= s.capacity : false,
+              };
+            }
+            return s;
+          })
+        );
+      } finally {
+        setRegisterPending((prev) => {
+          const next = new Set(prev);
+          next.delete(sessionId);
+          return next;
+        });
+      }
+    },
+    [expoId, registerPending]
+  );
 
   // ── Bookmark toggle ────────────────────────────────────────────────────────
   const handleBookmarkToggle = useCallback(
@@ -435,6 +504,24 @@ export default function ScheduleBrowsePage() {
                         </span>
                       )}
                     </button>
+                    <button
+                      onClick={() => {
+                        if (!isAuthenticated || !hasQualifyingTicket) return;
+                        setViewMode('registered');
+                      }}
+                      aria-pressed={viewMode === 'registered'}
+                      disabled={!isAuthenticated || !hasQualifyingTicket}
+                      title={
+                        !isAuthenticated || !hasQualifyingTicket
+                          ? 'Register for this expo to RSVP for sessions'
+                          : undefined
+                      }
+                      className={`px-sm-token py-xs-token text-sm-token font-medium transition-colors border-l ${borderBase} disabled:opacity-40 disabled:cursor-not-allowed ${
+                        viewMode === 'registered' ? filterBtnActive : filterBtnInactive
+                      }`}
+                    >
+                      My RSVPs
+                    </button>
                   </div>
 
                   {/* Track filter (REQ-7.4 / REQ-7.6) */}
@@ -469,6 +556,8 @@ export default function ScheduleBrowsePage() {
                 <p className={`text-xs-token mb-md-token ${textSecondary}`}>
                   {viewMode === 'bookmarks'
                     ? `${displaySessions.length} bookmarked session${displaySessions.length === 1 ? '' : 's'}`
+                    : viewMode === 'registered'
+                    ? `${displaySessions.length} registered RSVP session${displaySessions.length === 1 ? '' : 's'}`
                     : days.length > 1
                     ? `${displaySessions.length} session${displaySessions.length === 1 ? '' : 's'} on this day`
                     : `${displaySessions.length} session${displaySessions.length === 1 ? '' : 's'}`}
@@ -495,6 +584,27 @@ export default function ScheduleBrowsePage() {
                   </div>
                 )}
 
+                {/* ── Empty registered state ─────────────────────────────────── */}
+                {viewMode === 'registered' && displaySessions.length === 0 && (
+                  <div
+                    className={`flex flex-col items-center text-center py-xl-token gap-sm-token ${textSecondary}`}
+                  >
+                    <Calendar className="w-8 h-8 opacity-40" aria-hidden="true" />
+                    <p className={`text-base-token font-medium ${textPrimary}`}>
+                      No session registrations yet
+                    </p>
+                    <p className="text-sm-token">
+                      Click "RSVP / Register" on any session to save your spot.
+                    </p>
+                    <button
+                      onClick={() => setViewMode('all')}
+                      className={`mt-xs-token px-md-token py-xs-token rounded-[8px] text-sm-token font-medium border transition-colors ${borderStrong} ${textPrimary} bg-transparent`}
+                    >
+                      Browse sessions
+                    </button>
+                  </div>
+                )}
+
                 {/* ── No sessions match track filter ─────────────────────────── */}
                 {viewMode === 'all' && displaySessions.length === 0 && (
                   <div className={`text-center py-xl-token text-sm-token ${textSecondary}`}>
@@ -509,6 +619,9 @@ export default function ScheduleBrowsePage() {
                     bookmarkedSessionIds={bookmarkedIds}
                     onBookmarkToggle={hasQualifyingTicket ? handleBookmarkToggle : undefined}
                     showBookmarks={hasQualifyingTicket}
+                    onRegisterToggle={hasQualifyingTicket ? handleRegisterToggle : undefined}
+                    showRegister={hasQualifyingTicket}
+                    registerPendingIds={registerPending}
                     isOrganizer={false}
                     onRate={isAuthenticated ? (sessionId) => {
                       const session = sessions.find(s => s._id === sessionId);

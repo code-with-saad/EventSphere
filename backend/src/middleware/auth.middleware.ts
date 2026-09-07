@@ -89,3 +89,31 @@ export async function authenticate(
     });
   }
 }
+
+/**
+ * Optional authentication middleware:
+ * Attaches req.user if a valid token is present, but doesn't fail if absent.
+ */
+export async function authenticateOptional(
+  req: AuthRequest,
+  _res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      const decoded: DecodedToken = verifyToken(token);
+      req.user = {
+        userId: decoded.userId,
+        email: decoded.email || '',
+        role: decoded.role || '',
+      };
+    }
+    next();
+  } catch {
+    // Silently continue without user context
+    next();
+  }
+}
+

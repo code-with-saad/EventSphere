@@ -23,6 +23,7 @@ type Session = {
   startTime: string;
   endTime: string;
   room: string;
+  capacity?: number;
   track?: string;
   description?: string;
 };
@@ -39,6 +40,7 @@ type SessionFormData = {
   startTime: string;
   endTime: string;
   room: string;
+  capacity?: number;
   description?: string;
   track?: string;
 };

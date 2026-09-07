@@ -2,13 +2,15 @@ import { ObjectId } from 'mongodb';
 import SessionModel from '../models/Session.model';
 import ExpoModel from '../models/Expo.model';
 import BookmarkModel from '../models/Bookmark.model';
+import SessionRegistrationModel, { ISessionRegistration } from '../models/SessionRegistration.model';
+import TicketModel from '../models/Ticket.model';
 import type { ISession, ISessionCreate } from '../models/Session.model';
 
 /**
  * SessionService
  *
  * Handles all session business logic: create, update, delete, list,
- * and room conflict detection.
+ * room & speaker conflict detection, and formal session registration.
  *
  * Requirements: REQ-6, REQ-6.1, REQ-6.5, REQ-6.7
  */
@@ -33,19 +35,12 @@ function createError(message: string, code: string, statusCode: number): Error {
 
 class SessionService {
   // -------------------------------------------------------------------------
-  // 23e — private checkRoomConflict()
+  // private checkRoomConflict()
   // -------------------------------------------------------------------------
 
   /**
    * Find room conflicts for the given expo + room + time range.
    * Optionally excludes a specific session ID (used during updates).
-   *
-   * @param expoId     Expo ID string
-   * @param room       Room/location name
-   * @param startTime  Proposed start time
-   * @param endTime    Proposed end time
-   * @param excludeId  Optional session ID to exclude from conflict check
-   * @returns Array of conflicting session documents
    */
   private async checkRoomConflict(
     expoId: string,
@@ -58,22 +53,30 @@ class SessionService {
   }
 
   // -------------------------------------------------------------------------
-  // 23a — create()
+  // private checkSpeakerConflict()
+  // -------------------------------------------------------------------------
+
+  /**
+   * Find speaker conflicts for the given expo + speakerName + time range.
+   * Optionally excludes a specific session ID (used during updates).
+   */
+  private async checkSpeakerConflict(
+    expoId: string,
+    speakerName: string,
+    startTime: Date,
+    endTime: Date,
+    excludeId?: string,
+    speakerId?: string
+  ): Promise<ISession[]> {
+    return SessionModel.findSpeakerConflicts(expoId, speakerName, startTime, endTime, excludeId, speakerId);
+  }
+
+  // -------------------------------------------------------------------------
+  // create()
   // -------------------------------------------------------------------------
 
   /**
    * Create a new session for an expo.
-   *
-   * Validates:
-   * 1. Expo exists (EXPO_NOT_FOUND 404)
-   * 2. Caller owns the expo (SESSION_FORBIDDEN 403)
-   * 3. endTime > startTime (INVALID_TIME_RANGE 400)
-   * 4. No room conflict during the proposed time slot (ROOM_CONFLICT 409)
-   *
-   * @param expoId       Expo ID string
-   * @param organizerId  Caller's user ID (must match expo.organizerId)
-   * @param data         Session fields (all except expoId)
-   * @returns The created ISession document
    */
   async create(
     expoId: string,
@@ -119,45 +122,52 @@ class SessionService {
     }
 
     // 4. Room conflict check
-    const conflicts = await this.checkRoomConflict(
+    const roomConflicts = await this.checkRoomConflict(
       expoId,
       data.room,
       data.startTime,
       data.endTime
     );
-    if (conflicts.length > 0) {
+    if (roomConflicts.length > 0) {
       const err: any = createError(
         'Room is already booked during this time slot',
         'ROOM_CONFLICT',
         409
       );
-      err.conflictingSession = conflicts[0];
+      err.conflictingSession = roomConflicts[0];
       throw err;
     }
 
-    // 5. Create session
+    // 5. Speaker conflict check
+    const speakerConflicts = await this.checkSpeakerConflict(
+      expoId,
+      data.speakerName,
+      data.startTime,
+      data.endTime,
+      undefined,
+      data.speakerId?.toString()
+    );
+    if (speakerConflicts.length > 0) {
+      const err: any = createError(
+        `Speaker "${data.speakerName}" is already scheduled for another session during this time slot`,
+        'SPEAKER_CONFLICT',
+        409
+      );
+      err.conflictingSession = speakerConflicts[0];
+      throw err;
+    }
+
+    // 6. Create session
     const session = await SessionModel.create({ ...data, expoId: new ObjectId(expoId) });
     return session;
   }
 
   // -------------------------------------------------------------------------
-  // 23b — update()
+  // update()
   // -------------------------------------------------------------------------
 
   /**
    * Update an existing session.
-   *
-   * Validates:
-   * 1. Session exists (SESSION_NOT_FOUND 404)
-   * 2. Expo exists (EXPO_NOT_FOUND 404)
-   * 3. Caller owns the expo (SESSION_FORBIDDEN 403)
-   * 4. Effective time range is valid if time fields changed (INVALID_TIME_RANGE 400)
-   * 5. No room conflict when room or times change, excluding self (ROOM_CONFLICT 409)
-   *
-   * @param sessionId    Session ID string
-   * @param organizerId  Caller's user ID (must match expo.organizerId)
-   * @param data         Partial session update payload
-   * @returns The updated ISession document
    */
   async update(
     sessionId: string,
@@ -195,9 +205,13 @@ class SessionService {
     }
 
     // 4. Time range validation (only if start or end time is being changed)
+    const effectiveStart = data.startTime ?? session.startTime;
+    const effectiveEnd = data.endTime ?? session.endTime;
+    const effectiveRoom = data.room ?? session.room;
+    const effectiveSpeakerName = data.speakerName ?? session.speakerName;
+    const effectiveSpeakerId = data.speakerId?.toString() ?? session.speakerId?.toString();
+
     if (data.startTime !== undefined || data.endTime !== undefined) {
-      const effectiveStart = data.startTime ?? session.startTime;
-      const effectiveEnd = data.endTime ?? session.endTime;
       if (effectiveEnd <= effectiveStart) {
         throw createError('endTime must be after startTime', 'INVALID_TIME_RANGE', 400);
       }
@@ -213,29 +227,51 @@ class SessionService {
 
     // 5. Room conflict check (if room or either time is changing)
     if (data.room !== undefined || data.startTime !== undefined || data.endTime !== undefined) {
-      const effectiveRoom = data.room ?? session.room;
-      const effectiveStart = data.startTime ?? session.startTime;
-      const effectiveEnd = data.endTime ?? session.endTime;
-
-      const conflicts = await this.checkRoomConflict(
+      const roomConflicts = await this.checkRoomConflict(
         session.expoId.toString(),
         effectiveRoom,
         effectiveStart,
         effectiveEnd,
         sessionId
       );
-      if (conflicts.length > 0) {
+      if (roomConflicts.length > 0) {
         const err: any = createError(
           'Room is already booked during this time slot',
           'ROOM_CONFLICT',
           409
         );
-        err.conflictingSession = conflicts[0];
+        err.conflictingSession = roomConflicts[0];
         throw err;
       }
     }
 
-    // 6. Apply update
+    // 6. Speaker conflict check (if speaker or either time is changing)
+    if (
+      data.speakerName !== undefined ||
+      data.speakerId !== undefined ||
+      data.startTime !== undefined ||
+      data.endTime !== undefined
+    ) {
+      const speakerConflicts = await this.checkSpeakerConflict(
+        session.expoId.toString(),
+        effectiveSpeakerName,
+        effectiveStart,
+        effectiveEnd,
+        sessionId,
+        effectiveSpeakerId
+      );
+      if (speakerConflicts.length > 0) {
+        const err: any = createError(
+          `Speaker "${effectiveSpeakerName}" is already scheduled for another session during this time slot`,
+          'SPEAKER_CONFLICT',
+          409
+        );
+        err.conflictingSession = speakerConflicts[0];
+        throw err;
+      }
+    }
+
+    // 7. Apply update
     const updated = await SessionModel.updateById(sessionId, data);
     if (!updated) {
       throw createError('Session not found', 'SESSION_NOT_FOUND', 404);
@@ -245,19 +281,11 @@ class SessionService {
   }
 
   // -------------------------------------------------------------------------
-  // 23c — delete()
+  // delete()
   // -------------------------------------------------------------------------
 
   /**
-   * Delete a session and cascade-delete all associated bookmarks (REQ-6.7).
-   *
-   * Validates:
-   * 1. Session exists (SESSION_NOT_FOUND 404)
-   * 2. Expo exists (EXPO_NOT_FOUND 404)
-   * 3. Caller owns the expo (SESSION_FORBIDDEN 403)
-   *
-   * @param sessionId    Session ID string
-   * @param organizerId  Caller's user ID (must match expo.organizerId)
+   * Delete a session and cascade-delete all associated bookmarks and registrations.
    */
   async delete(sessionId: string, organizerId: string): Promise<void> {
     // 1. Look up session
@@ -295,21 +323,127 @@ class SessionService {
 
     // 5. Cascade delete bookmarks (REQ-6.7)
     await BookmarkModel.deleteBySession(sessionId);
+
+    // 6. Cascade delete registrations
+    await SessionRegistrationModel.deleteBySession(sessionId);
   }
 
   // -------------------------------------------------------------------------
-  // 23d — listByExpo()
+  // listByExpo()
   // -------------------------------------------------------------------------
 
   /**
-   * Return all sessions for an expo, sorted by startTime ascending.
-   * Public read — no ownership check needed.
-   *
-   * @param expoId  Expo ID string
-   * @returns Array of ISession documents sorted by startTime ascending
+   * Return all sessions for an expo with registration counts and optional user status.
    */
-  async listByExpo(expoId: string): Promise<ISession[]> {
-    return SessionModel.findByExpo(expoId);
+  async listByExpo(expoId: string, attendeeId?: string): Promise<any[]> {
+    const sessions = await SessionModel.findByExpo(expoId);
+    if (sessions.length === 0) return [];
+
+    // Fetch registered session IDs for attendee if provided
+    let myRegisteredSet = new Set<string>();
+    if (attendeeId) {
+      const myRegs = await SessionRegistrationModel.findByAttendeeAndExpo(attendeeId, expoId);
+      myRegisteredSet = new Set(myRegs.map((r) => r.sessionId.toString()));
+    }
+
+    // Attach registration counts and registration status
+    const enriched = await Promise.all(
+      sessions.map(async (s) => {
+        const registrationCount = await SessionRegistrationModel.countBySession(s._id);
+        const isRegistered = myRegisteredSet.has(s._id.toString());
+        return {
+          ...s,
+          registrationCount,
+          isRegistered,
+          isFull: s.capacity ? registrationCount >= s.capacity : false,
+        };
+      })
+    );
+
+    return enriched;
+  }
+
+  // -------------------------------------------------------------------------
+  // Session Registration Methods
+  // -------------------------------------------------------------------------
+
+  /**
+   * Register an attendee for a session.
+   */
+  async registerSession(sessionId: string, attendeeId: string): Promise<ISessionRegistration> {
+    const session = await SessionModel.findById(sessionId);
+    if (!session) {
+      throw createError('Session not found', 'SESSION_NOT_FOUND', 404);
+    }
+
+    const expo = await ExpoModel.findById(session.expoId);
+    if (!expo) {
+      throw createError('Expo not found', 'EXPO_NOT_FOUND', 404);
+    }
+
+    // Verify attendee has an active/valid ticket for this expo
+    const activeTicket = await TicketModel.findByExpoAndAttendee(session.expoId, attendeeId);
+    if (!activeTicket || (activeTicket.status !== 'active' && activeTicket.status !== 'checked_in')) {
+      throw createError(
+        'You must have a valid ticket for this expo to register for sessions',
+        'TICKET_REQUIRED',
+        403
+      );
+    }
+
+    // Check if already registered
+    const existing = await SessionRegistrationModel.findBySessionAndAttendee(sessionId, attendeeId);
+    if (existing) {
+      return existing;
+    }
+
+    // Check capacity limit
+    if (session.capacity && session.capacity > 0) {
+      const currentCount = await SessionRegistrationModel.countBySession(sessionId);
+      if (currentCount >= session.capacity) {
+        throw createError('This session has reached full capacity', 'SESSION_CAPACITY_FULL', 409);
+      }
+    }
+
+    return SessionRegistrationModel.create({
+      sessionId: session._id,
+      expoId: session.expoId,
+      attendeeId: new ObjectId(attendeeId),
+    });
+  }
+
+  /**
+   * Cancel an attendee's registration for a session.
+   */
+  async unregisterSession(sessionId: string, attendeeId: string): Promise<boolean> {
+    return SessionRegistrationModel.deleteBySessionAndAttendee(sessionId, attendeeId);
+  }
+
+  /**
+   * Get all sessions an attendee is registered for in an expo.
+   */
+  async getMyRegisteredSessions(expoId: string, attendeeId: string): Promise<ISession[]> {
+    const regs = await SessionRegistrationModel.findByAttendeeAndExpo(attendeeId, expoId);
+    if (regs.length === 0) return [];
+    const sessionIds = regs.map((r) => r.sessionId);
+    return SessionModel.findByIds(sessionIds);
+  }
+
+  /**
+   * List attendees registered for a session (Organizer only).
+   */
+  async listSessionRegistrations(sessionId: string, organizerId: string): Promise<ISessionRegistration[]> {
+    const session = await SessionModel.findById(sessionId);
+    if (!session) {
+      throw createError('Session not found', 'SESSION_NOT_FOUND', 404);
+    }
+
+    const expo = await ExpoModel.findById(session.expoId);
+    if (!expo || expo.organizerId.toString() !== organizerId) {
+      throw createError('You do not have permission to view registrations for this session', 'SESSION_FORBIDDEN', 403);
+    }
+
+    return SessionRegistrationModel.findBySession(sessionId);
   }
 }
 

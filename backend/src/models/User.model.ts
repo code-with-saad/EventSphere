@@ -32,6 +32,7 @@ export interface IUser {
   role: UserRole;
   status: UserStatus;
   isEmailVerified: boolean;   // true for Exhibitor/Attendee after OTP, always false for Organizer
+  consentAcceptedAt?: Date;   // User terms & privacy consent timestamp
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,6 +48,7 @@ export interface IUserCreate {
   role: UserRole;
   status?: UserStatus;        // Optional, defaults based on role
   isEmailVerified?: boolean;  // Optional, defaults to false
+  consentAcceptedAt?: Date;   // Optional consent acceptance timestamp
 }
 
 /**

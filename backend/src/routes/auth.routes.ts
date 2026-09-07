@@ -31,13 +31,21 @@ const router = Router();
  * - 5.9: Return appropriate success message based on role
  */
 router.post('/register', authLimiter, asyncHandler(async (req: Request, res: Response) => {
-  const { email, password, fullName, role } = req.body;
+  const { email, password, fullName, role, consent } = req.body;
 
   // Validate required fields
   if (!email || !password || !fullName || !role) {
     return res.status(400).json({
       success: false,
       message: 'Missing required fields: email, password, fullName, role'
+    });
+  }
+
+  // Validate user consent / terms acceptance
+  if (consent !== true && consent !== 'true') {
+    return res.status(400).json({
+      success: false,
+      message: 'You must agree to the Terms of Service and Privacy Policy to create an account'
     });
   }
 
@@ -98,7 +106,8 @@ router.post('/register', authLimiter, asyncHandler(async (req: Request, res: Res
       fullName,
       role: normalizedRole,
       status: 'pending',
-      isEmailVerified: false
+      isEmailVerified: false,
+      consentAcceptedAt: new Date()
     });
 
     return res.status(201).json({
@@ -120,7 +129,8 @@ router.post('/register', authLimiter, asyncHandler(async (req: Request, res: Res
       fullName,
       role: normalizedRole,
       status: 'active',
-      isEmailVerified: false
+      isEmailVerified: false,
+      consentAcceptedAt: new Date()
     });
 
     // Generate and send OTP

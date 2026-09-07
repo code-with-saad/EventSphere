@@ -9,6 +9,7 @@ import BookmarkModel from './models/Bookmark.model';
 import MessageModel from './models/Message.model';
 import FeedbackModel from './models/Feedback.model';
 import FavoriteModel from './models/Favorite.model';
+import SessionRegistrationModel from './models/SessionRegistration.model';
 import app from './app';
 
 const PORT = env.PORT;
@@ -36,6 +37,7 @@ async function startServer() {
     await TicketModel.createIndexes();
     await SessionModel.createIndexes();
     await BookmarkModel.createIndexes();
+    await SessionRegistrationModel.createIndexes();
     await MessageModel.createIndexes();
     await FeedbackModel.createIndexes();
     await FavoriteModel.createIndexes();
