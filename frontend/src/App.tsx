@@ -44,6 +44,7 @@ import MySchedulePage from './pages/attendee/MySchedulePage';
 import MyFeedbackPage from './pages/feedback/MyFeedbackPage';
 import OrganizerExhibitorsPage from './pages/organizer/OrganizerExhibitorsPage';
 import OrganizerAttendeesPage from './pages/organizer/OrganizerAttendeesPage';
+import EventHistoryPage from './pages/attendee/EventHistoryPage';
 
 /**
  * Single source of truth for where an authenticated user should land.
@@ -149,6 +150,7 @@ function App() {
             {/* -- Phase 2: Attendee Routes -- */}
             <Route path="/attendee/tickets" element={<ProtectedRoute allowedRoles={['attendee']}><MyTicketsPage /></ProtectedRoute>} />
             <Route path="/attendee/tickets/:ticketId" element={<ProtectedRoute allowedRoles={['attendee']}><TicketDetailPage /></ProtectedRoute>} />
+            <Route path="/attendee/history" element={<ProtectedRoute allowedRoles={['attendee']}><EventHistoryPage /></ProtectedRoute>} />
             <Route path="/attendee/bookmarks" element={<ProtectedRoute allowedRoles={['attendee']}><BookmarksPage /></ProtectedRoute>} />
             <Route path="/attendee/schedule" element={<ProtectedRoute allowedRoles={['attendee']}><MySchedulePage /></ProtectedRoute>} />
             

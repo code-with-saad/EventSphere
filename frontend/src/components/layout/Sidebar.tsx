@@ -22,6 +22,7 @@ import {
   Clock,
   HelpCircle,
   User,
+  History,
 } from 'lucide-react';
 
 export interface NavLink {
@@ -64,6 +65,7 @@ export const ROLE_NAV_LINKS: Record<string, NavLink[]> = {
   attendee: [
     { label: 'Dashboard',              path: '/dashboard/attendee',  icon: LayoutDashboard },
     { label: 'My Tickets',             path: '/attendee/tickets',    icon: Ticket },
+    { label: 'Events Attended',        path: '/attendee/history',    icon: History },
     { label: 'My Schedule',            path: '/attendee/schedule',   icon: Clock },
     { label: 'Bookmarks & Favorites',  path: '/attendee/bookmarks',  icon: Bookmark },
     { label: 'My Feedback',            path: '/feedback/mine',       icon: HelpCircle },

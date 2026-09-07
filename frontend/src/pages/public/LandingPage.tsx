@@ -17,7 +17,10 @@ import {
   ShieldCheck, 
   Users, 
   ChevronRight,
-  Zap
+  Zap,
+  Image as ImageIcon,
+  Info,
+  Award
 } from 'lucide-react';
 
 function formatDate(iso: string): string {
@@ -36,6 +39,7 @@ export default function LandingPage() {
 
   const [liveExpos, setLiveExpos] = useState<any[]>([]);
   const [upcomingExpos, setUpcomingExpos] = useState<any[]>([]);
+  const [completedExpos, setCompletedExpos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // If user is already authenticated, redirect to their home dashboard
@@ -49,12 +53,14 @@ export default function LandingPage() {
     async function loadExpos() {
       try {
         setLoading(true);
-        const [ongoingRes, upcomingRes] = await Promise.all([
+        const [ongoingRes, upcomingRes, completedRes] = await Promise.all([
           expoService.list({ status: 'ongoing', limit: 3 }),
           expoService.list({ status: 'upcoming', limit: 6 }),
+          expoService.list({ status: 'completed', limit: 4 }),
         ]);
         setLiveExpos(ongoingRes?.expos ?? []);
         setUpcomingExpos(upcomingRes?.expos ?? []);
+        setCompletedExpos(completedRes?.expos ?? []);
       } catch (err) {
         console.error('Failed to load landing page expos:', err);
       } finally {
@@ -337,7 +343,246 @@ export default function LandingPage() {
           )}
         </section>
 
-        {/* ── 4. How It Works (Role-Based Journey) ──────────────────── */}
+        {/* ── 4. Expo Visual Gallery Showcase ────────────────────────── */}
+        {(() => {
+          const galleryExpos = [...liveExpos, ...upcomingExpos, ...completedExpos]
+            .filter((e) => Boolean(e.bannerUrl))
+            .slice(0, 6);
+
+          return (
+            <section className="max-w-6xl mx-auto px-md-token md:px-lg-token mb-xl-token md:mb-xxl-token">
+              <div className="flex items-center justify-between gap-sm-token mb-md-token">
+                <div>
+                  <h2 className={`text-lg-token md:text-xl-token font-bold flex items-center gap-2 ${
+                    isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+                  }`}>
+                    <ImageIcon className="w-5 h-5 text-brand-primary-dark" />
+                    Expo Moments & Visual Showcase
+                  </h2>
+                  <p className={`text-xs-token md:text-sm-token ${
+                    isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                  }`}>
+                    Experience highlights from our live, upcoming, and featured exhibition events
+                  </p>
+                </div>
+                <Link
+                  to="/expos"
+                  className={`text-xs-token md:text-sm-token font-semibold inline-flex items-center gap-1 shrink-0 ${
+                    isDarkMode ? 'text-brand-primary-dark hover:underline' : 'text-brand-primary-light hover:underline'
+                  }`}
+                >
+                  Explore gallery <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+
+              {galleryExpos.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-md-token">
+                  {galleryExpos.map((expo) => (
+                    <Link
+                      key={`gallery-${expo._id}`}
+                      to={`/expos/${expo._id}`}
+                      className="group relative rounded-xl-token overflow-hidden border transition-all duration-300 hover:shadow-xl hover:scale-[1.02] block aspect-[16/10]"
+                      style={{
+                        borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+                      }}
+                    >
+                      <img
+                        src={expo.bannerUrl}
+                        alt={expo.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex flex-col justify-end p-md-token text-white">
+                        <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-brand-primary-dark/80 text-white w-fit mb-1">
+                          {expo.category || 'Featured'}
+                        </span>
+                        <h3 className="text-sm-token font-bold line-clamp-1 group-hover:text-brand-primary-dark transition-colors">
+                          {expo.name}
+                        </h3>
+                        <p className="text-[11px] text-gray-300 flex items-center gap-1 mt-0.5 truncate">
+                          <MapPin className="w-3 h-3 text-brand-primary-dark shrink-0" />
+                          {expo.venueName || 'Convention Hall'}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <BentoCard className="p-lg-token text-center">
+                  <p className={`text-xs-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                    Visual exhibition showcases and floor highlights will populate automatically as organizers publish new events.
+                  </p>
+                </BentoCard>
+              )}
+            </section>
+          );
+        })()}
+
+        {/* ── 5. About EventSphere ──────────────────────────────────── */}
+        <section className="max-w-6xl mx-auto px-md-token md:px-lg-token mb-xl-token md:mb-xxl-token">
+          <BentoCard className="p-lg-token md:p-xl-token border">
+            <div className="flex flex-col lg:flex-row gap-lg-token lg:gap-xl-token items-center">
+              <div className="lg:w-5/12">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs-token font-semibold mb-sm-token bg-brand-primary-dark/10 text-brand-primary-dark border border-brand-primary-dark/20">
+                  <Info className="w-3.5 h-3.5" />
+                  <span>About EventSphere</span>
+                </div>
+                <h2 className={`text-xl-token md:text-2xl-token font-bold leading-tight-token mb-sm-token ${
+                  isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+                }`}>
+                  The All-In-One Modern Exhibition & Expo Ecosystem
+                </h2>
+                <p className={`text-xs-token md:text-sm-token leading-normal-token mb-md-token ${
+                  isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                }`}>
+                  EventSphere bridges the gap between event organizers, innovative exhibitor companies, and enthusiastic attendees. Designed with speed, crystal-clear spatial layouts, and verified attendance tracking at its core.
+                </p>
+                <div className="flex items-center gap-sm-token">
+                  <Link
+                    to="/register"
+                    className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-md-token text-xs-token font-semibold transition-colors ${
+                      isDarkMode
+                        ? 'bg-brand-primary-dark text-text-on-primary-dark hover:bg-accent-hover-dark'
+                        : 'bg-brand-primary-light text-text-on-primary-light hover:bg-accent-hover-light'
+                    }`}
+                  >
+                    Get Started Free <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                  <Link
+                    to="/expos"
+                    className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-md-token text-xs-token font-medium border transition-colors ${
+                      isDarkMode
+                        ? 'border-border-strong-dark text-text-primary-dark hover:bg-bg-hover-dark'
+                        : 'border-border-strong-light text-text-primary-light hover:bg-bg-hover-light'
+                    }`}
+                  >
+                    Browse Expos
+                  </Link>
+                </div>
+              </div>
+
+              {/* Pillars Grid */}
+              <div className="lg:w-7/12 grid grid-cols-1 sm:grid-cols-3 gap-md-token">
+                <div className={`p-md-token rounded-xl-token border ${
+                  isDarkMode ? 'bg-bg-surface-dark/70 border-border-base-dark' : 'bg-white border-border-base-light'
+                }`}>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-500/10 text-blue-500 mb-2">
+                    <Ticket className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-sm-token font-bold mb-1">For Attendees</h3>
+                  <p className={`text-[11px] leading-relaxed ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                    One-click digital QR passes, personalized session bookmarks, and verified multi-day check-in histories.
+                  </p>
+                </div>
+
+                <div className={`p-md-token rounded-xl-token border ${
+                  isDarkMode ? 'bg-bg-surface-dark/70 border-border-base-dark' : 'bg-white border-border-base-light'
+                }`}>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-purple-500/10 text-purple-500 mb-2">
+                    <Store className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-sm-token font-bold mb-1">For Exhibitors</h3>
+                  <p className={`text-[11px] leading-relaxed ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                    Intuitive booth reservation applications, live organizer communications, and attendee rating showcases.
+                  </p>
+                </div>
+
+                <div className={`p-md-token rounded-xl-token border ${
+                  isDarkMode ? 'bg-bg-surface-dark/70 border-border-base-dark' : 'bg-white border-border-base-light'
+                }`}>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-emerald-500/10 text-emerald-500 mb-2">
+                    <QrCode className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-sm-token font-bold mb-1">For Organizers</h3>
+                  <p className={`text-[11px] leading-relaxed ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
+                    Full 2D spatial floorplan builder, track scheduler, ultra-fast camera scanner check-ins, and performance analytics.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </BentoCard>
+        </section>
+
+        {/* ── 6. Completed Events Showcase (if any) ───────────────────── */}
+        {completedExpos.length > 0 && (
+          <section className="max-w-6xl mx-auto px-md-token md:px-lg-token mb-xl-token md:mb-xxl-token">
+            <div className="flex items-center justify-between gap-sm-token mb-md-token">
+              <div className="flex items-center gap-2">
+                <Award className="w-5 h-5 text-blue-400" />
+                <div>
+                  <h2 className={`text-lg-token md:text-xl-token font-bold ${
+                    isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+                  }`}>
+                    Past & Completed Expos
+                  </h2>
+                  <p className={`text-xs-token md:text-sm-token ${
+                    isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                  }`}>
+                    Review successful past exhibitions, speaker archives, and exhibitor directories
+                  </p>
+                </div>
+              </div>
+              <Link
+                to="/expos?status=completed"
+                className={`text-xs-token md:text-sm-token font-semibold inline-flex items-center gap-1 shrink-0 ${
+                  isDarkMode ? 'text-brand-primary-dark hover:underline' : 'text-brand-primary-light hover:underline'
+                }`}
+              >
+                View all past <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md-token">
+              {completedExpos.map((expo) => (
+                <Link
+                  key={`completed-${expo._id}`}
+                  to={`/expos/${expo._id}`}
+                  className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-dark rounded-lg-token"
+                >
+                  <BentoCard className="h-full p-md-token transition-all hover:border-brand-primary-dark/40 hover:-translate-y-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-xs-token">
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30 uppercase tracking-wider">
+                          Completed
+                        </span>
+                        <span className={`text-[11px] ${isDarkMode ? 'text-text-tertiary-dark' : 'text-text-tertiary-light'}`}>
+                          {expo.category || 'Exhibition'}
+                        </span>
+                      </div>
+
+                      <h3 className={`text-sm-token font-bold mb-xs-token group-hover:text-brand-primary-dark transition-colors line-clamp-1 ${
+                        isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
+                      }`}>
+                        {expo.name}
+                      </h3>
+
+                      <p className={`text-[11px] leading-normal-token line-clamp-2 mb-sm-token ${
+                        isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
+                      }`}>
+                        {expo.description || 'Successful exhibition concluded with high visitor turnout.'}
+                      </p>
+                    </div>
+
+                    <div className={`pt-xs-token border-t flex flex-col gap-1 text-[11px] ${
+                      isDarkMode ? 'border-border-base-dark text-text-secondary-dark' : 'border-border-base-light text-text-secondary-light'
+                    }`}>
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="w-3 h-3 shrink-0 text-brand-primary-dark" />
+                        <span>{formatDate(expo.endDate || expo.startDate)}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <MapPin className="w-3 h-3 shrink-0 text-brand-primary-dark" />
+                        <span className="truncate">{expo.venueName || 'Convention Hall'}</span>
+                      </div>
+                    </div>
+                  </BentoCard>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── 7. How It Works (Role-Based Journey) ──────────────────── */}
         <section className="max-w-6xl mx-auto px-md-token md:px-lg-token mb-xl-token md:mb-xxl-token">
           <div className="text-center max-w-2xl mx-auto mb-lg-token">
             <h2 className={`text-display-token font-bold mb-xs-token ${
