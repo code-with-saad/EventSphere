@@ -187,6 +187,12 @@ export function ExpoStatCard({ expoId, expoName }: ExpoStatCardProps) {
       valueClass: brandVal,
       isDarkMode,
     },
+    {
+      label: 'Estimated Value',
+      value: `$${((stats.confirmedCheckIns ?? 0) * 5).toLocaleString()}`,
+      valueClass: successVal,
+      isDarkMode,
+    },
   ];
 
   return (

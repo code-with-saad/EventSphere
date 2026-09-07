@@ -7,6 +7,12 @@ import SessionModel from '../models/Session.model';
 import BookmarkModel from '../models/Bookmark.model';
 import expoService from './expo.service';
 
+/**
+ * Provisional estimated value generated per attendee check-in ($5/check-in placeholder rate).
+ * Single named constant for platform metrics pending real payment/ticket-pricing integration.
+ */
+export const PROVISIONAL_VALUE_PER_CHECKIN = 5;
+
 // ---------------------------------------------------------------------------
 // Types / DTOs
 // ---------------------------------------------------------------------------
@@ -35,6 +41,7 @@ export interface ExpoStatsDTO {
   totalAttendees: number;
   confirmedCheckIns: number;
   boothFillRate: number;
+  estimatedValue: number;
 }
 
 export interface SuperAdminDashboardDTO {
@@ -57,6 +64,7 @@ export interface SuperAdminAnalyticsDTO {
   totalApplications: number;
   totalRegistrations: number;
   totalCheckIns: number;
+  totalEstimatedValue: number;
   overallCheckInRate: number;
   pendingOrganizersCount: number;
   usersByRole: {
@@ -90,6 +98,7 @@ export interface SuperAdminAnalyticsDTO {
     totalAttendees: number;
     totalCheckIns: number;
     checkInRate: number;
+    estimatedValue: number;
   }[];
 }
 
@@ -321,6 +330,7 @@ class StatsService {
       totalAttendees,
       confirmedCheckIns,
       boothFillRate,
+      estimatedValue: confirmedCheckIns * PROVISIONAL_VALUE_PER_CHECKIN,
     };
   }
 
@@ -890,6 +900,7 @@ class StatsService {
         totalAttendees,
         totalCheckIns,
         checkInRate,
+        estimatedValue: totalCheckIns * PROVISIONAL_VALUE_PER_CHECKIN,
       };
     });
 
@@ -899,6 +910,7 @@ class StatsService {
       totalApplications,
       totalRegistrations,
       totalCheckIns,
+      totalEstimatedValue: totalCheckIns * PROVISIONAL_VALUE_PER_CHECKIN,
       overallCheckInRate,
       pendingOrganizersCount,
       usersByRole,

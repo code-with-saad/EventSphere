@@ -112,9 +112,10 @@ export default function ScheduleBuilderPage() {
     expoService
       .listMine()
       .then((list: any[]) => {
-        setExpos(list || []);
-        if (!selectedExpoId && list && list.length > 0) {
-          setSelectedExpoId(list[0]._id);
+        const available = (list || []).filter((e) => e.status !== 'archived');
+        setExpos(available);
+        if (!selectedExpoId && available.length > 0) {
+          setSelectedExpoId(available[0]._id);
         }
       })
       .catch(() => {});

@@ -441,12 +441,26 @@ export default function BoothAssignmentModal({
                   }
                 }}
               />
+              {hasSpatialLayout && customBooth.trim() && !spatialLayout?.booths?.some(b => b.boothLabel.trim().toUpperCase() === customBooth.trim().toUpperCase()) && (
+                <div
+                  className={`mt-2 p-2 rounded-md-token text-xs-token flex items-start gap-1.5 border ${
+                    isDarkMode
+                      ? 'bg-amber-950/40 border-amber-800 text-amber-300'
+                      : 'bg-amber-50 border-amber-200 text-amber-800'
+                  }`}
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>
+                    This code doesn&apos;t match a booth on your floor plan. It won&apos;t appear as reserved on the visual layout.
+                  </span>
+                </div>
+              )}
               <p
-                className={`mt-1 text-[11px] ${
+                className={`mt-1.5 text-[11px] ${
                   isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'
                 }`}
               >
-                ⚠️ Custom codes not on the spatial layout will not highlight on the interactive map until added in Booth Layout editor.
+                Custom codes can be used for overflow or temporary spaces not on the visual diagram.
               </p>
             </div>
           )}

@@ -18,7 +18,8 @@ import {
   RefreshCw,
   Clock,
   Ban,
-  UserCheck
+  UserCheck,
+  DollarSign
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -140,7 +141,7 @@ export default function SuperAdminAnalyticsPage() {
             ) : data ? (
               <div className="space-y-8">
                 {/* Top Row: KPI Bento Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                   <BentoCard>
                     <div className="flex items-center justify-between">
                       <span className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -209,6 +210,25 @@ export default function SuperAdminAnalyticsPage() {
                     </div>
                     <div className="mt-2 flex items-center gap-2 text-xs text-gray-400">
                       <span>Out of {data.totalRegistrations.toLocaleString()} registered tickets</span>
+                    </div>
+                  </BentoCard>
+
+                  <BentoCard>
+                    <div className="flex items-center justify-between">
+                      <span className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                        Estimated Value
+                      </span>
+                      <div className={`p-2 rounded-lg ${isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                        <DollarSign className="w-5 h-5" />
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-baseline gap-2">
+                      <span className="text-3xl font-bold">
+                        ${(data.totalEstimatedValue ?? (data.totalCheckIns * 5)).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex items-center gap-2 text-xs text-gray-400">
+                      <span>$5/check-in — provisional</span>
                     </div>
                   </BentoCard>
                 </div>
@@ -434,19 +454,21 @@ export default function SuperAdminAnalyticsPage() {
                           <th className="pb-3 font-semibold text-center">Expos Hosted</th>
                           <th className="pb-3 font-semibold text-center">Total Attendees</th>
                           <th className="pb-3 font-semibold text-center">Total Check-Ins</th>
+                          <th className="pb-3 font-semibold text-center">Estimated Value</th>
                           <th className="pb-3 font-semibold text-right">Check-In Turnout Rate</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                         {data.organizersRollup.length === 0 ? (
                           <tr>
-                            <td colSpan={6} className="py-8 text-center text-sm text-gray-400">
+                            <td colSpan={7} className="py-8 text-center text-sm text-gray-400">
                               No organizers registered yet.
                             </td>
                           </tr>
                         ) : (
                           data.organizersRollup.map((org) => {
                             const rate = org.checkInRate;
+                            const estValue = org.estimatedValue ?? (org.totalCheckIns * 5);
 
                             return (
                               <tr key={org.organizerId} className={`hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors`}>
@@ -478,6 +500,9 @@ export default function SuperAdminAnalyticsPage() {
                                 </td>
                                 <td className="py-3.5 text-center font-semibold text-emerald-600 dark:text-emerald-400">
                                   {org.totalCheckIns.toLocaleString()}
+                                </td>
+                                <td className="py-3.5 text-center font-semibold text-gray-900 dark:text-gray-100">
+                                  ${estValue.toLocaleString()}
                                 </td>
                                 <td className="py-3.5 text-right">
                                   <div className="inline-flex items-center gap-2 justify-end">

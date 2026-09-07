@@ -14,6 +14,7 @@ export interface SuperAdminAnalyticsData {
   totalApplications: number;
   totalRegistrations: number;
   totalCheckIns: number;
+  totalEstimatedValue?: number;
   overallCheckInRate: number;
   pendingOrganizersCount: number;
   usersByRole: {
@@ -47,6 +48,7 @@ export interface SuperAdminAnalyticsData {
     totalAttendees: number;
     totalCheckIns: number;
     checkInRate: number;
+    estimatedValue?: number;
   }[];
 }
 

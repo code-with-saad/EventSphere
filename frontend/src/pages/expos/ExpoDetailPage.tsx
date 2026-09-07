@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Calendar, MapPin, Building2, Globe, Clock, CheckCircle2, AlertCircle, Heart } from 'lucide-react';
+import { Calendar, MapPin, Building2, Globe, Clock, CheckCircle2, AlertCircle, Heart, Map, Tag } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { expoService } from '../../services/expoService';
@@ -222,6 +222,23 @@ export default function ExpoDetailPage() {
                     }`}>
                       {expo.category}
                     </span>
+                  )}
+                  {expo.tags && expo.tags.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {expo.tags.map((tag: string) => (
+                        <span
+                          key={tag}
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${
+                            isDarkMode
+                              ? 'bg-brand-primary-dark/10 border-brand-primary-dark/30 text-brand-primary-dark'
+                              : 'bg-brand-primary-light/10 border-brand-primary-light/30 text-brand-primary-light'
+                          }`}
+                        >
+                          <Tag className="w-3 h-3" />
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </div>
 
@@ -520,6 +537,24 @@ export default function ExpoDetailPage() {
                           className={`text-sm-token font-medium underline break-all ${isDarkMode ? 'text-brand-primary-dark hover:opacity-80' : 'text-brand-primary-light hover:opacity-80'}`}
                         >
                           Visit Official Site
+                        </a>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Venue Map */}
+                  {expo.venueMapUrl && (
+                    <div className="flex items-start gap-sm-token">
+                      <Map className={`w-5 h-5 mt-0.5 shrink-0 ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`} aria-hidden="true" />
+                      <div>
+                        <span className={`block text-xs-token font-medium ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>Venue Map</span>
+                        <a
+                          href={expo.venueMapUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`text-sm-token font-medium underline break-all ${isDarkMode ? 'text-brand-primary-dark hover:opacity-80' : 'text-brand-primary-light hover:opacity-80'}`}
+                        >
+                          View Venue Map
                         </a>
                       </div>
                     </div>

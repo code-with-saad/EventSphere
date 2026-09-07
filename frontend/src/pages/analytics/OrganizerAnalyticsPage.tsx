@@ -20,6 +20,7 @@ import {
   Store,
   Layers,
   Sparkles,
+  DollarSign,
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -197,7 +198,7 @@ export default function OrganizerAnalyticsPage() {
           )}
 
           {/* Metric Bento Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-md-token mb-xl-token">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-md-token mb-xl-token">
             <BentoCard>
               <div className="flex flex-col gap-sm-token">
                 <div className="flex items-center gap-xs-token text-xs-token text-text-secondary-dark">
@@ -247,6 +248,19 @@ export default function OrganizerAnalyticsPage() {
                   {loading ? '...' : `${analytics?.boothFillRate ?? 0}%`}
                 </span>
                 <span className="text-[11px] text-text-secondary-dark">Overall capacity</span>
+              </div>
+            </BentoCard>
+
+            <BentoCard>
+              <div className="flex flex-col gap-sm-token">
+                <div className="flex items-center gap-xs-token text-xs-token text-text-secondary-dark">
+                  <DollarSign className="w-4 h-4 text-brand-primary-dark" />
+                  <span>Estimated Value</span>
+                </div>
+                <span className="text-2xl font-bold">
+                  {loading ? '...' : `$${((analytics?.totalCheckIns ?? 0) * 5).toLocaleString()}`}
+                </span>
+                <span className="text-[11px] text-text-secondary-dark">$5/check-in — provisional</span>
               </div>
             </BentoCard>
           </div>
