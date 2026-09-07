@@ -5,6 +5,7 @@ import ExpoService from '../services/expo.service';
 import StatsService from '../services/stats.service';
 import TicketModel from '../models/Ticket.model';
 import UserModel from '../models/User.model';
+import ApplicationModel from '../models/Application.model';
 import { authenticate, AuthRequest } from '../middleware/auth.middleware';
 import { authorize } from '../middleware/authorize.middleware';
 import type { ExpoListStatusFilter } from '../services/expo.service';
@@ -403,6 +404,155 @@ router.get(
       message: 'Expo stats retrieved successfully',
       data: stats,
     });
+  })
+);
+
+/**
+ * GET /api/expos/:id/export/attendees.csv
+ *
+ * Export all registered attendees for an expo as CSV.
+ *
+ * Access: Organizer only (must own the expo)
+ */
+router.get(
+  '/:id/export/attendees.csv',
+  authenticate,
+  authorize('organizer'),
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const expo = await ExpoService.getById(req.params.id as string, req.user!.userId);
+    if (!expo) return res.status(404).json({ success: false, message: 'Expo not found' });
+
+    const tickets = await TicketModel.getCollection()
+      .find({ expoId: expo._id, status: { $ne: 'cancelled' } })
+      .toArray();
+
+    const attendeeIds = tickets.map((t) => t.attendeeId);
+    const attendees = await UserModel.getCollection()
+      .find({ _id: { $in: attendeeIds } })
+      .toArray();
+    const attendeeMap = new Map(attendees.map((u) => [u._id.toString(), u]));
+
+    const rows = [
+      ['Ticket ID', 'Attendee Name', 'Email', 'Status', 'Registered At', 'Latest Check-in At']
+    ];
+
+    tickets.forEach((t) => {
+      const u = attendeeMap.get(t.attendeeId.toString());
+      rows.push([
+        t.ticketId,
+        `"${(u?.fullName || '').replace(/"/g, '""')}"`,
+        u?.email || '',
+        t.status,
+        t.registeredAt ? new Date(t.registeredAt).toISOString() : '',
+        t.checkedInAt ? new Date(t.checkedInAt).toISOString() : 'Not Checked In',
+      ]);
+    });
+
+    const csvContent = rows.map((r) => r.join(',')).join('\n');
+    const filename = `${expo.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_attendees.csv`;
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.status(200).send(csvContent);
+  })
+);
+
+/**
+ * GET /api/expos/:id/export/exhibitors.csv
+ *
+ * Export all exhibitor applications for an expo as CSV.
+ *
+ * Access: Organizer only (must own the expo)
+ */
+router.get(
+  '/:id/export/exhibitors.csv',
+  authenticate,
+  authorize('organizer'),
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const expo = await ExpoService.getById(req.params.id as string, req.user!.userId);
+    if (!expo) return res.status(404).json({ success: false, message: 'Expo not found' });
+
+    const apps = await ApplicationModel.getCollection()
+      .find({ expoId: expo._id, status: { $ne: 'withdrawn' } })
+      .toArray();
+
+    const rows = [
+      ['Company Name', 'Category', 'Status', 'Booth Label', 'Phone Number', 'Website', 'View Count', 'Submitted At']
+    ];
+
+    apps.forEach((a) => {
+      rows.push([
+        `"${(a.companyName || '').replace(/"/g, '""')}"`,
+        `"${(a.category || '').replace(/"/g, '""')}"`,
+        a.status,
+        a.boothLabel || 'Unassigned',
+        a.phoneNumber || '',
+        a.websiteUrl || '',
+        String(a.viewCount || 0),
+        a.submittedAt ? new Date(a.submittedAt).toISOString() : '',
+      ]);
+    });
+
+    const csvContent = rows.map((r) => r.join(',')).join('\n');
+    const filename = `${expo.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_exhibitors.csv`;
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.status(200).send(csvContent);
+  })
+);
+
+/**
+ * GET /api/expos/:id/export/checkins.csv
+ *
+ * Export all check-in log records for an expo as CSV.
+ *
+ * Access: Organizer only (must own the expo)
+ */
+router.get(
+  '/:id/export/checkins.csv',
+  authenticate,
+  authorize('organizer'),
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const expo = await ExpoService.getById(req.params.id as string, req.user!.userId);
+    if (!expo) return res.status(404).json({ success: false, message: 'Expo not found' });
+
+    const tickets = await TicketModel.getCollection()
+      .find({
+        expoId: expo._id,
+        $or: [{ status: 'checked_in' }, { checkedInAt: { $exists: true } }, { checkIns: { $exists: true, $ne: [] } }],
+      } as any)
+      .toArray();
+
+    const attendeeIds = tickets.map((t) => t.attendeeId);
+    const attendees = await UserModel.getCollection()
+      .find({ _id: { $in: attendeeIds } })
+      .toArray();
+    const attendeeMap = new Map(attendees.map((u) => [u._id.toString(), u]));
+
+    const rows = [
+      ['Ticket ID', 'Attendee Name', 'Attendee Email', 'Check-in Timestamp']
+    ];
+
+    tickets.forEach((t) => {
+      const u = attendeeMap.get(t.attendeeId.toString());
+      const records = t.checkIns && t.checkIns.length > 0 ? t.checkIns : [{ checkedInAt: t.checkedInAt || t.updatedAt }];
+      records.forEach((r) => {
+        rows.push([
+          t.ticketId,
+          `"${(u?.fullName || 'Unknown Attendee').replace(/"/g, '""')}"`,
+          u?.email || '',
+          new Date(r.checkedInAt).toISOString(),
+        ]);
+      });
+    });
+
+    const csvContent = rows.map((r) => r.join(',')).join('\n');
+    const filename = `${expo.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_checkins.csv`;
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.status(200).send(csvContent);
   })
 );
 

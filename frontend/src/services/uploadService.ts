@@ -1,8 +1,8 @@
 import api from './api';
 
-// purpose: 'expo_banner' | 'company_logo'
+// purpose: 'expo_banner' | 'company_logo' | 'avatar' | 'message_attachment'
 export const uploadService = {
-  uploadImage: (file: File, purpose: 'expo_banner' | 'company_logo') => {
+  uploadImage: (file: File, purpose: 'expo_banner' | 'company_logo' | 'avatar' | 'message_attachment' = 'company_logo') => {
     const formData = new FormData();
     formData.append('image', file);
     formData.append('purpose', purpose);

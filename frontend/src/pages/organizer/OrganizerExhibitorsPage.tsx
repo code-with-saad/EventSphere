@@ -2,10 +2,12 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { applicationService } from '../../services/applicationService';
+import { expoService } from '../../services/expoService';
 import { Sidebar } from '../../components/layout/Sidebar';
 import { Header } from '../../components/layout/Header';
 import { BottomNav } from '../../components/layout/BottomNav';
 import { BentoCard } from '../../components/common/BentoCard';
+import toast from 'react-hot-toast';
 import {
   Store,
   Star,
@@ -13,6 +15,7 @@ import {
   CheckCircle2,
   Clock,
   ExternalLink,
+  Download,
 } from 'lucide-react';
 
 interface ExhibitorOverviewItem {
@@ -93,6 +96,29 @@ export default function OrganizerExhibitorsPage() {
   const approvedCount = applications.filter((a) => a.status === 'approved').length;
   const pendingCount = applications.filter((a) => a.status === 'pending').length;
 
+  const [exporting, setExporting] = useState(false);
+
+  const handleExportExhibitors = async () => {
+    if (selectedExpoId === 'all') {
+      toast.error('Please select a specific expo from the dropdown to export its exhibitor list');
+      return;
+    }
+    setExporting(true);
+    try {
+      const selectedExpo = expos.find(e => e._id === selectedExpoId);
+      const expoName = selectedExpo ? selectedExpo.name.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'expo';
+      await expoService.downloadCsv(
+        expoService.exportExhibitorsCsvUrl(selectedExpoId),
+        `${expoName}_exhibitors.csv`
+      );
+      toast.success('Exhibitor report downloaded');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to export exhibitor CSV');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const bgCard = isDarkMode
     ? 'bg-glass-dark border-glass-border-dark'
     : 'bg-glass-light border-glass-border-light';
@@ -114,6 +140,21 @@ export default function OrganizerExhibitorsPage() {
                 Overview of all exhibitors, booth allocations, and attendee feedback ratings across your expos
               </p>
             </div>
+
+            {/* Export Button */}
+            <button
+              onClick={handleExportExhibitors}
+              disabled={exporting}
+              title="Export exhibitor applications as CSV for the selected expo"
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg-token text-xs-token font-semibold border transition-all ${
+                isDarkMode
+                  ? 'border-border-base-dark bg-bg-surface-dark hover:bg-bg-hover-dark text-text-primary-dark'
+                  : 'border-border-base-light bg-white hover:bg-gray-50 text-text-primary-light'
+              }`}
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>{exporting ? 'Exporting…' : 'Export Exhibitors CSV'}</span>
+            </button>
           </div>
 
           {/* Metrics summary */}

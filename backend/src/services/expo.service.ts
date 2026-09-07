@@ -49,6 +49,7 @@ export interface ExpoDetailDTO extends Omit<IExpo, '_id' | 'organizerId'> {
 
 export interface ApprovedExhibitorDTO {
   _id: string;
+  exhibitorId: string;
   companyName: string;
   companyDescription: string;
   category: string;
@@ -719,6 +720,7 @@ class ExpoService {
       const agg = ratingAggregates[app._id.toString()] || { averageRating: 0, reviewCount: 0 };
       return {
         _id: app._id.toString(),
+        exhibitorId: app.exhibitorId.toString(),
         companyName: app.companyName,
         companyDescription: app.companyDescription,
         category: app.category,

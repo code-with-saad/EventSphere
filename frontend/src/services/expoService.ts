@@ -98,5 +98,27 @@ export const expoService = {
 
   listMine: () =>
     api.get('/api/organizer/expos').then(r => r.data.data.expos),
+
+  exportAttendeesCsvUrl: (expoId: string) =>
+    `/api/expos/${expoId}/export/attendees.csv`,
+
+  exportExhibitorsCsvUrl: (expoId: string) =>
+    `/api/expos/${expoId}/export/exhibitors.csv`,
+
+  exportCheckinsCsvUrl: (expoId: string) =>
+    `/api/expos/${expoId}/export/checkins.csv`,
+
+  downloadCsv: async (url: string, defaultFilename: string) => {
+    const response = await api.get(url, { responseType: 'blob' });
+    const blob = new Blob([response.data], { type: 'text/csv' });
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.setAttribute('download', defaultFilename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+  },
 };
 

@@ -25,4 +25,14 @@ export const applicationService = {
 
   listOrganizerOverview: (filters?: { expoId?: string; status?: string }) =>
     api.get('/api/applications/organizer/overview', { params: filters }).then(r => r.data.data),
+
+  /**
+   * Fire-and-forget view tracking — silently increments the viewCount on the
+   * application document whenever an exhibitor booth profile is opened.
+   */
+  trackView: (applicationId: string): void => {
+    api.post(`/api/applications/${applicationId}/view`).catch(() => {
+      // Intentionally swallowed — view tracking must never block or error the UI
+    });
+  },
 };

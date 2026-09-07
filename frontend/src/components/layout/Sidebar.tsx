@@ -69,6 +69,7 @@ export const ROLE_NAV_LINKS: Record<string, NavLink[]> = {
     { label: 'My Schedule',            path: '/attendee/schedule',   icon: Clock },
     { label: 'Bookmarks & Favorites',  path: '/attendee/bookmarks',  icon: Bookmark },
     { label: 'My Feedback',            path: '/feedback/mine',       icon: HelpCircle },
+    { label: 'Messages',               path: '/messages',            icon: MessageSquare },
     { label: 'Browse Expos',           path: '/expos',               icon: Compass },
   ],
 };

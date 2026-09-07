@@ -148,6 +148,7 @@ export default function OrganizerAnalyticsPage() {
   const boothsByExpoData = analytics?.boothsByExpo ?? [];
 
   const sessionPopularityData = engagement?.sessionPopularity ?? [];
+  const boothTrafficData = engagement?.boothTraffic ?? [];
   const categoryDistributionData = engagement?.categoryDistribution ?? [];
 
   // Custom tooltip styling
@@ -258,7 +259,7 @@ export default function OrganizerAnalyticsPage() {
                   <span>Estimated Value</span>
                 </div>
                 <span className="text-2xl font-bold">
-                  {loading ? '...' : `$${((analytics?.totalCheckIns ?? 0) * 5).toLocaleString()}`}
+                  {loading ? '...' : `$${(analytics?.totalEstimatedValue ?? 0).toLocaleString()}`}
                 </span>
                 <span className="text-[11px] text-text-secondary-dark">$5/check-in — provisional</span>
               </div>
@@ -681,6 +682,69 @@ export default function OrganizerAnalyticsPage() {
                       />
                     </BarChart>
                   </ResponsiveContainer>
+                </div>
+              </ChartWrapper>
+            </div>
+
+            {/* Booth Traffic & Profile Views Table */}
+            <div className="mt-lg-token">
+              <ChartWrapper
+                title="Booth Traffic & Page Views"
+                subtitle="Exhibitor booth profile views and attendee engagement"
+                loading={engagementLoading}
+                isEmpty={!engagementLoading && boothTrafficData.length === 0}
+                emptyMessage="No exhibitor booths recorded for this expo"
+                minHeight={200}
+              >
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className={`border-b text-xs font-semibold uppercase tracking-wider ${
+                        isDarkMode ? 'border-white/10 text-text-secondary-dark' : 'border-black/10 text-text-secondary-light'
+                      }`}>
+                        <th className="py-2.5 px-3">Company / Exhibitor</th>
+                        <th className="py-2.5 px-3">Category</th>
+                        <th className="py-2.5 px-3">Booth Space</th>
+                        <th className="py-2.5 px-3">Status</th>
+                        <th className="py-2.5 px-3 text-right">Page Views</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border-base-light dark:divide-border-base-dark text-xs">
+                      {boothTrafficData.map((b: any) => (
+                        <tr key={b.applicationId} className={`hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors`}>
+                          <td className="py-3 px-3 font-semibold text-text-primary-light dark:text-text-primary-dark">
+                            {b.companyName}
+                          </td>
+                          <td className="py-3 px-3 text-text-secondary-light dark:text-text-secondary-dark">
+                            {b.category}
+                          </td>
+                          <td className="py-3 px-3 font-mono">
+                            {b.boothLabel ? (
+                              <span className="px-2 py-0.5 rounded bg-brand-primary-light/10 dark:bg-brand-primary-dark/10 text-brand-primary-light dark:text-brand-primary-dark font-medium">
+                                {b.boothLabel}
+                              </span>
+                            ) : (
+                              <span className="text-text-secondary-light dark:text-text-secondary-dark opacity-60">Unassigned</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-3">
+                            <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium uppercase tracking-wide ${
+                              b.status === 'approved'
+                                ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                                : b.status === 'pending'
+                                ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                                : 'bg-red-500/10 text-red-500 border border-red-500/20'
+                            }`}>
+                              {b.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-right font-bold text-sm text-text-primary-light dark:text-text-primary-dark">
+                            {b.viewCount.toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </ChartWrapper>
             </div>

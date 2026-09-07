@@ -157,8 +157,10 @@ function App() {
             <Route path="/attendee/history" element={<ProtectedRoute allowedRoles={['attendee']}><EventHistoryPage /></ProtectedRoute>} />
             <Route path="/attendee/bookmarks" element={<ProtectedRoute allowedRoles={['attendee']}><BookmarksPage /></ProtectedRoute>} />
             <Route path="/attendee/schedule" element={<ProtectedRoute allowedRoles={['attendee']}><MySchedulePage /></ProtectedRoute>} />
+            <Route path="/attendee/messages" element={<ProtectedRoute allowedRoles={['attendee']}><MessagesPage /></ProtectedRoute>} />
             
             {/* -- Common Authenticated Routes -- */}
+            <Route path="/messages" element={<ProtectedRoute allowedRoles={['superadmin', 'organizer', 'exhibitor', 'attendee']}><MessagesPage /></ProtectedRoute>} />
             <Route path="/feedback/mine" element={<ProtectedRoute allowedRoles={['organizer', 'exhibitor', 'attendee']}><MyFeedbackPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute allowedRoles={['superadmin','organizer','exhibitor','attendee']}><ProfilePage /></ProtectedRoute>} />
 

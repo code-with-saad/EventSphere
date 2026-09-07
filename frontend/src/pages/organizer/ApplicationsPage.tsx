@@ -12,7 +12,7 @@ import ReviewPanel from '../../components/application/ReviewPanel';
 import BoothAssignmentModal from '../../components/application/BoothAssignmentModal';
 import ApplicationMessageThread from '../../components/application/ApplicationMessageThread';
 import { BentoCard } from '../../components/common/BentoCard';
-import { Users, Clock, CheckCircle2, XCircle, Store } from 'lucide-react';
+import { Users, Clock, CheckCircle2, XCircle, Store, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
@@ -198,7 +198,7 @@ export default function ApplicationsPage() {
           </div>
 
           {/* Page header with expo context */}
-          <div className="mb-xl-token">
+          <div className="mb-xl-token flex flex-wrap items-center justify-between gap-md-token">
             <div>
               <h1 className={`text-xl-token font-semibold leading-tight-token ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
                 {expo ? `${expo.name} — Applications` : 'Manage Applications'}
@@ -207,6 +207,32 @@ export default function ApplicationsPage() {
                 Review, filter, and action exhibitor booth applications
               </p>
             </div>
+
+            {activeExpoId && (
+              <button
+                onClick={async () => {
+                  try {
+                    const expoName = expo?.name ? expo.name.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'expo';
+                    await expoService.downloadCsv(
+                      expoService.exportExhibitorsCsvUrl(activeExpoId),
+                      `${expoName}_exhibitors.csv`
+                    );
+                    toast.success('Exhibitor applications report downloaded');
+                  } catch (err: any) {
+                    toast.error(err?.response?.data?.message || 'Failed to export exhibitors CSV');
+                  }
+                }}
+                title="Download all exhibitor applications for this expo as CSV"
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg-token text-xs-token font-semibold border transition-all ${
+                  isDarkMode
+                    ? 'border-border-base-dark bg-bg-surface-dark hover:bg-bg-hover-dark text-text-primary-dark'
+                    : 'border-border-base-light bg-white hover:bg-gray-50 text-text-primary-light'
+                }`}
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export Exhibitors CSV</span>
+              </button>
+            )}
           </div>
 
           {/* BentoCard Stats & Capacity Summary Panel */}

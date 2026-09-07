@@ -109,6 +109,7 @@ export interface OrganizerAnalyticsDTO {
   totalApplications: number;
   totalAttendees: number;
   totalCheckIns: number;
+  totalEstimatedValue: number;
   boothFillRate: number;
   applicationsByStatus: {
     pending: number;
@@ -124,6 +125,7 @@ export interface OrganizerAnalyticsDTO {
     expoName: string;
     totalTickets: number;
     checkedInTickets: number;
+    estimatedValue: number;
   }[];
   boothsByExpo: {
     expoId: string;
@@ -145,6 +147,15 @@ export interface SessionPopularityItem {
   capacityFillRate: number | null; // null = no attendee data
 }
 
+export interface BoothTrafficItem {
+  applicationId: string;
+  companyName: string;
+  category: string;
+  boothLabel?: string;
+  viewCount: number;
+  status: string;
+}
+
 export interface CategoryDistributionItem {
   category: string;
   totalApplications: number;
@@ -157,6 +168,7 @@ export interface EngagementDepthDTO {
   expoId: string;
   expoName: string;
   sessionPopularity: SessionPopularityItem[];
+  boothTraffic: BoothTrafficItem[];
   categoryDistribution: CategoryDistributionItem[];
 }
 
@@ -428,6 +440,7 @@ class StatsService {
         totalApplications: 0,
         totalAttendees: 0,
         totalCheckIns: 0,
+        totalEstimatedValue: 0,
         boothFillRate: 0,
         applicationsByStatus: { pending: 0, approved: 0, rejected: 0 },
         applicationsByDate: [],
@@ -541,6 +554,7 @@ class StatsService {
         expoName: e.name,
         totalTickets: stats.totalTickets,
         checkedInTickets: stats.checkedInTickets,
+        estimatedValue: stats.checkedInTickets * PROVISIONAL_VALUE_PER_CHECKIN,
       };
     });
 
@@ -571,11 +585,14 @@ class StatsService {
         ? Math.round((totalAllApproved / totalAllBooths) * 10000) / 100
         : 0;
 
+    const totalEstimatedValue = totalCheckIns * PROVISIONAL_VALUE_PER_CHECKIN;
+
     return {
       totalExpos: expos.length,
       totalApplications,
       totalAttendees,
       totalCheckIns,
+      totalEstimatedValue,
       boothFillRate,
       applicationsByStatus,
       applicationsByDate,
@@ -589,7 +606,7 @@ class StatsService {
   // -------------------------------------------------------------------------
 
   /**
-   * Return session bookmark popularity and exhibitor category distribution
+   * Return session bookmark popularity, booth traffic view counts, and exhibitor category distribution
    * for a single expo owned by the organizer.
    */
   async getEngagementDepth(expoId: string, organizerId: string): Promise<EngagementDepthDTO> {
@@ -647,6 +664,21 @@ class StatsService {
       };
     });
 
+    // ── Booth Traffic: view counts for approved / applied exhibitors ────────
+    const apps = await ApplicationModel.getCollection()
+      .find({ expoId: expoObjectId, status: { $ne: 'withdrawn' } })
+      .sort({ viewCount: -1, companyName: 1 })
+      .toArray();
+
+    const boothTraffic: BoothTrafficItem[] = apps.map((app) => ({
+      applicationId: app._id.toString(),
+      companyName: app.companyName,
+      category: app.category,
+      boothLabel: app.boothLabel,
+      viewCount: app.viewCount || 0,
+      status: app.status,
+    }));
+
     // ── Category distribution: group applications by category ────────────────
     const categoryAgg = await ApplicationModel.getCollection()
       .aggregate<{ _id: { category: string; status: string }; count: number }>([
@@ -680,6 +712,7 @@ class StatsService {
       expoId: expo._id.toString(),
       expoName: expo.name,
       sessionPopularity,
+      boothTraffic,
       categoryDistribution,
     };
   }

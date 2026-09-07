@@ -33,6 +33,7 @@ export interface IApplication {
   preferredBooth?: string;        // requested booth label during application
   boothLabel?: string;            // 1–20 chars, set on approval
   rejectionReason?: string;       // max 300 chars, set on rejection
+  viewCount?: number;             // Booth profile page view count
   submittedAt: Date;
   updatedAt: Date;
 }
@@ -267,6 +268,17 @@ export class ApplicationModel {
     const appId = typeof id === 'string' ? new ObjectId(id) : id;
     const result = await this.collection.deleteOne({ _id: appId });
     return result.deletedCount > 0;
+  }
+
+  /**
+   * Increment the view count for a specific booth / application
+   */
+  async incrementViewCount(id: ObjectId | string): Promise<void> {
+    const appId = typeof id === 'string' ? new ObjectId(id) : id;
+    await this.collection.updateOne(
+      { _id: appId },
+      { $inc: { viewCount: 1 } }
+    );
   }
 
   /**

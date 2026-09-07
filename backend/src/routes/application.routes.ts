@@ -40,6 +40,29 @@ router.get(
 );
 
 /**
+ * POST /:id/view
+ * (Mounted at /api/applications/:id/view)
+ *
+ * Increments viewCount for a booth profile page. Public access.
+ */
+router.post(
+  '/:id/view',
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const id = req.params.id as string;
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid application ID' });
+    }
+
+    await ApplicationModel.incrementViewCount(id);
+
+    return res.status(200).json({
+      success: true,
+      message: 'View tracked successfully',
+    });
+  })
+);
+
+/**
  * GET /:expoId/applications/mine
  *
  * Returns the authenticated exhibitor's own application for the given expo,

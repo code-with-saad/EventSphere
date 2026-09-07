@@ -24,6 +24,10 @@ const PURPOSE_CONFIG = {
     maxBytes: 2 * 1024 * 1024, // 2 MB
     folder: 'eventsphere/avatars',
   },
+  message_attachment: {
+    maxBytes: 5 * 1024 * 1024, // 5 MB
+    folder: 'eventsphere/messages',
+  },
 } as const;
 
 /**
@@ -111,7 +115,7 @@ class UploadService {
     buffer: Buffer,
     _mimeType: string,
     sizeBytes: number,
-    purpose: 'expo_banner' | 'company_logo' | 'avatar'
+    purpose: 'expo_banner' | 'company_logo' | 'avatar' | 'message_attachment'
   ): Promise<{ url: string; publicId: string }> {
     // --- 9a: Magic-byte MIME validation ---
     const detectedMime = detectMimeType(buffer);

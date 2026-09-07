@@ -8,6 +8,7 @@ import { sessionService } from '../../services/sessionService';
 import { ticketService } from '../../services/ticketService';
 import { favoriteService } from '../../services/favoriteService';
 import { feedbackService, MyRatingItem } from '../../services/feedbackService';
+import { applicationService } from '../../services/applicationService';
 import toast from 'react-hot-toast';
 import ExpoStatusBadge from '../../components/expo/ExpoStatusBadge';
 import ExhibitorCard from '../../components/exhibitor/ExhibitorCard';
@@ -351,7 +352,11 @@ export default function ExpoDetailPage() {
                       <ExhibitorCard
                         key={ex._id}
                         exhibitor={ex}
-                        onClick={() => setSelectedExhibitor(ex)}
+                        onClick={() => {
+                          setSelectedExhibitor(ex);
+                          // Fire-and-forget: increment booth profile view count
+                          applicationService.trackView(ex._id);
+                        }}
                         onRate={user?.role === 'attendee' ? () => setRatingTarget({ id: ex._id, name: ex.companyName, boothLabel: ex.boothLabel }) : undefined}
                         isRated={ratedExhibitorIds.has(ex._id)}
                       />
@@ -582,7 +587,21 @@ export default function ExpoDetailPage() {
         </div>
       </div>
 
-      <ExhibitorDetailModal exhibitor={selectedExhibitor} onClose={() => setSelectedExhibitor(null)} />
+      <ExhibitorDetailModal
+        exhibitor={selectedExhibitor}
+        onClose={() => setSelectedExhibitor(null)}
+        onRate={user?.role === 'attendee' && selectedExhibitor ? () => setRatingTarget({ id: selectedExhibitor._id, name: selectedExhibitor.companyName, boothLabel: selectedExhibitor.boothLabel }) : undefined}
+        isRated={selectedExhibitor ? ratedExhibitorIds.has(selectedExhibitor._id) : false}
+        onMessage={
+          selectedExhibitor && (user?.role === 'attendee' || user?.role === 'exhibitor' || user?.role === 'organizer')
+            ? () => {
+                const targetUserId = selectedExhibitor.exhibitorId || selectedExhibitor._id;
+                const baseRoute = user?.role === 'organizer' ? '/organizer/messages' : user?.role === 'exhibitor' ? '/exhibitor/messages' : '/messages';
+                navigate(`${baseRoute}?directUser=${targetUserId}&name=${encodeURIComponent(selectedExhibitor.companyName)}`);
+              }
+            : undefined
+        }
+      />
 
       {/* Attendee rating modal for exhibitors */}
       {ratingTarget && (

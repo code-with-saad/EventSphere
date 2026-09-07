@@ -12,7 +12,10 @@ import {
   Search,
   Ticket,
   ScanLine,
+  Download,
 } from 'lucide-react';
+import { expoService } from '../../services/expoService';
+import toast from 'react-hot-toast';
 
 interface AttendeeItem {
   _id: string;
@@ -77,6 +80,52 @@ export default function OrganizerAttendeesPage() {
   const checkedInCount = attendees.filter((a) => a.status === 'checked_in').length;
   const activeUncheckedCount = attendees.filter((a) => a.status === 'active').length;
 
+  const [exporting, setExporting] = useState(false);
+
+  const handleExportAttendees = async () => {
+    if (selectedExpoId === 'all') {
+      if (expos.length === 0) return toast.error('No expos available to export');
+      toast.error('Please select a specific expo from the dropdown to export its attendee list');
+      return;
+    }
+    setExporting(true);
+    try {
+      const selectedExpo = expos.find(e => e._id === selectedExpoId);
+      const expoName = selectedExpo ? selectedExpo.name.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'expo';
+      await expoService.downloadCsv(
+        expoService.exportAttendeesCsvUrl(selectedExpoId),
+        `${expoName}_attendees.csv`
+      );
+      toast.success('Attendee report downloaded');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to export attendee CSV');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleExportCheckins = async () => {
+    if (selectedExpoId === 'all') {
+      if (expos.length === 0) return toast.error('No expos available to export');
+      toast.error('Please select a specific expo from the dropdown to export its check-in records');
+      return;
+    }
+    setExporting(true);
+    try {
+      const selectedExpo = expos.find(e => e._id === selectedExpoId);
+      const expoName = selectedExpo ? selectedExpo.name.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'expo';
+      await expoService.downloadCsv(
+        expoService.exportCheckinsCsvUrl(selectedExpoId),
+        `${expoName}_checkins.csv`
+      );
+      toast.success('Check-in log downloaded');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to export check-in CSV');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const bgCard = isDarkMode
     ? 'bg-glass-dark border-glass-border-dark'
     : 'bg-glass-light border-glass-border-light';
@@ -97,6 +146,36 @@ export default function OrganizerAttendeesPage() {
               <p className={`text-xs-token md:text-sm-token mt-1 ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
                 Complete record of registered, checked-in, and active event attendees across your expos
               </p>
+            </div>
+
+            {/* Export Buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleExportAttendees}
+                disabled={exporting}
+                title="Export attendee registrations as CSV for the selected expo"
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg-token text-xs-token font-semibold border transition-all ${
+                  isDarkMode
+                    ? 'border-border-base-dark bg-bg-surface-dark hover:bg-bg-hover-dark text-text-primary-dark'
+                    : 'border-border-base-light bg-white hover:bg-gray-50 text-text-primary-light'
+                }`}
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export Attendees CSV</span>
+              </button>
+              <button
+                onClick={handleExportCheckins}
+                disabled={exporting}
+                title="Export timestamped check-in log as CSV for the selected expo"
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg-token text-xs-token font-semibold border transition-all ${
+                  isDarkMode
+                    ? 'border-brand-primary-dark/30 bg-brand-primary-dark/10 hover:bg-brand-primary-dark/20 text-brand-primary-dark'
+                    : 'border-brand-primary-light/30 bg-brand-primary-light/10 hover:bg-brand-primary-light/20 text-brand-primary-light'
+                }`}
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export Check-in Log</span>
+              </button>
             </div>
           </div>
 
