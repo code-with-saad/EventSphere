@@ -20,7 +20,7 @@ export function Header({ title }: HeaderProps) {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login', { replace: true });
+    navigate('/', { replace: true });
   };
 
   return (
@@ -36,14 +36,26 @@ export function Header({ title }: HeaderProps) {
           'border-b backdrop-blur-md',
         ].join(' ')}
       >
-        <h1
-          className={[
-            'text-lg-token font-semibold leading-tight-token truncate',
-            isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light',
-          ].join(' ')}
-        >
-          {title}
-        </h1>
+        {/* Left group: brand (mobile only) + page title */}
+        <div className="flex flex-col min-w-0">
+          {/* "EventSphere" visible only on mobile — Sidebar shows it on md+ */}
+          <span
+            className={[
+              'md:hidden text-[10px] font-bold uppercase tracking-widest leading-none mb-0.5',
+              isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light',
+            ].join(' ')}
+          >
+            EventSphere
+          </span>
+          <h1
+            className={[
+              'text-lg-token font-semibold leading-tight-token truncate',
+              isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light',
+            ].join(' ')}
+          >
+            {title}
+          </h1>
+        </div>
 
         <div className="flex items-center gap-sm-token md:gap-md-token shrink-0 ml-md-token">
           {/* Feedback button — visible when logged in */}

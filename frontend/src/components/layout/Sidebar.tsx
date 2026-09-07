@@ -94,7 +94,7 @@ export function Sidebar({ pageTitle: _pageTitle, isDrawer = false, onClose }: Si
   const handleLogout = async () => {
     await logout();
     if (onClose) onClose();
-    navigate('/login', { replace: true });
+    navigate('/', { replace: true });
   };
 
   const handleNavClick = (path: string) => {

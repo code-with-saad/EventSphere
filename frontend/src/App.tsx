@@ -10,6 +10,8 @@ import { RequestResetPage } from './pages/auth/ForgotPassword/RequestResetPage';
 import { VerifyResetOTPPage } from './pages/auth/ForgotPassword/VerifyResetOTPPage';
 import { ResetPasswordPage } from './pages/auth/ForgotPassword/ResetPasswordPage';
 import LandingPage from './pages/public/LandingPage';
+import AboutPage from './pages/public/AboutPage';
+import GalleryPage from './pages/public/GalleryPage';
 import SuperAdminDashboard from './pages/dashboard/SuperAdminDashboard';
 import AdminApprovalsPage from './pages/admin/AdminApprovalsPage';
 import AllOrganizersPage from './pages/admin/AllOrganizersPage';
@@ -102,6 +104,8 @@ function App() {
           <ToastContainer />
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/gallery" element={<GalleryPage />} />
             <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
             <Route path="/register" element={<PublicOnlyRoute><RegisterPage /></PublicOnlyRoute>} />
             <Route path="/verify-otp" element={<VerifyOTPPage />} />
