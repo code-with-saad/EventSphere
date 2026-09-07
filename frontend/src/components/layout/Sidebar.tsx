@@ -42,6 +42,7 @@ export const ROLE_NAV_LINKS: Record<string, NavLink[]> = {
   organizer: [
     { label: 'Dashboard',           path: '/dashboard/organizer',     icon: LayoutDashboard },
     { label: 'My Expos',            path: '/organizer/expos',         icon: CalendarDays },
+    { label: 'Attendees',           path: '/organizer/attendees',     icon: Users },
     { label: 'Exhibitors',          path: '/organizer/exhibitors',    icon: Store },
     { label: 'Applications',        path: '/organizer/applications',  icon: FileText },
     { label: 'Schedule Builder',    path: '/organizer/schedule',      icon: Clock },

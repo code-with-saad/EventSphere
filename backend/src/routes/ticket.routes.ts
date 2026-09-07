@@ -70,12 +70,45 @@ router.get(
 );
 
 /**
+ * GET /organizer/attendees
+ *
+ * Return all registered/checked-in attendees across the organizer's expos.
+ *
+ * Mounted at /api/tickets → resolves to GET /api/tickets/organizer/attendees
+ *
+ * Access: Organizer only
+ */
+router.get(
+  '/organizer/attendees',
+  authenticate,
+  authorize('organizer'),
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const { expoId, status, search } = req.query as {
+      expoId?: string;
+      status?: string;
+      search?: string;
+    };
+    const result = await TicketService.getOrganizerAttendees(req.user!.userId, {
+      expoId,
+      status,
+      search,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Organizer attendees retrieved successfully',
+      data: result,
+    });
+  })
+);
+
+/**
  * POST /checkin
  *
  * Process a QR scan check-in. Always returns HTTP 200 — the `result`
  * discriminator in the response body drives the scanner UI state.
  *
- * Body: { ticketId: string, expoId: string }
+ * Body: { ticketId: string, expoId?: string }
  *
  * Mounted at /api/tickets → resolves to POST /api/tickets/checkin
  *
@@ -90,8 +123,12 @@ router.post(
   authenticate,
   authorize('organizer'),
   asyncHandler(async (req: AuthRequest, res: Response) => {
-    const { ticketId, expoId } = req.body as { ticketId: string; expoId: string };
-    const checkInResponse = await TicketService.processCheckIn(ticketId, expoId);
+    const { ticketId, expoId } = req.body as { ticketId: string; expoId?: string };
+    const checkInResponse = await TicketService.processCheckIn(
+      ticketId,
+      req.user!.userId,
+      expoId
+    );
 
     // Always HTTP 200 — result discriminator handles UI state (never throws)
     return res.status(200).json({

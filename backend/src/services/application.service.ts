@@ -558,7 +558,7 @@ class ApplicationService {
     // 3. Fetch all applications for this expo
     const applications = await ApplicationModel.findByExpo(expoId);
 
-    // 4. Group by status
+    // 4. Group by status (withdrawn applications are soft-deleted, invisible to organizer)
     const pending = applications.filter(a => a.status === 'pending');
     const approved = applications.filter(a => a.status === 'approved');
     const rejected = applications.filter(a => a.status === 'rejected');
@@ -619,6 +619,7 @@ class ApplicationService {
    * Cross-expo exhibitor applications rollup for an organizer.
    * Returns all applications across all expos owned by the organizer,
    * enriched with expoName, and query-time rating aggregates.
+   * Excludes soft-deleted 'withdrawn' applications.
    *
    * @param organizerId — string from req.user.userId
    * @param filters     — optional filters by expoId and status
@@ -657,9 +658,10 @@ class ApplicationService {
       };
     }
 
-    // 2. Query applications across these expos
+    // 2. Query applications across these expos (exclude withdrawn)
     const query: Record<string, unknown> = {
       expoId: { $in: targetExpoIds },
+      status: { $ne: 'withdrawn' },
     };
     if (filters?.status && filters.status !== 'all') {
       query.status = filters.status;

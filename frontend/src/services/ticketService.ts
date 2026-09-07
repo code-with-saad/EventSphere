@@ -13,8 +13,11 @@ export const ticketService = {
   cancel: (ticketId: string) =>
     api.patch(`/api/tickets/${ticketId}/cancel`).then(r => r.data.data),
 
-  checkIn: (ticketId: string, expoId: string) =>
+  checkIn: (ticketId: string, expoId?: string) =>
     api.post('/api/tickets/checkin', { ticketId, expoId }).then(r => r.data.data),
+
+  getOrganizerAttendees: (params?: { expoId?: string; status?: string; search?: string }) =>
+    api.get('/api/tickets/organizer/attendees', { params }).then(r => r.data.data),
 
   // Returns blob for PDF download — caller creates object URL
   downloadPDF: (ticketId: string) =>

@@ -22,6 +22,8 @@ export default function EditExpoPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
+  const isEnded = expo?.status === 'completed' || expo?.status === 'archived';
+
   useEffect(() => {
     if (!id) return;
     setLoading(true);
@@ -177,10 +179,29 @@ export default function EditExpoPage() {
               </div>
             )}
 
+            {isEnded && (
+              <div
+                role="alert"
+                className={`mb-lg-token p-md-token rounded-lg-token border ${
+                  isDarkMode
+                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                    : 'bg-amber-50 border-amber-200 text-amber-800'
+                }`}
+              >
+                <h4 className="text-sm-token font-semibold mb-1">
+                  This expo has ended ({expo.status})
+                </h4>
+                <p className="text-xs-token">
+                  Completed and archived expos are permanently locked and cannot be edited.
+                </p>
+              </div>
+            )}
+
             <ExpoForm
               initialData={initialData}
+              status={expo.status}
               onSubmit={handleSubmit}
-              submitLabel="Save Changes"
+              submitLabel={isEnded ? 'Expo Locked' : 'Save Changes'}
               isLoading={isSaving}
             />
           </div>

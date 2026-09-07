@@ -24,12 +24,13 @@ interface ScanResultDisplayProps {
   checkInCount?: number;
 }
 
-/** Formats an ISO timestamp into a readable local date/time string */
+/** Formats an ISO timestamp into a readable local date/time string in 12-hour format */
 function formatTimestamp(iso: string): string {
   try {
     return new Date(iso).toLocaleString(undefined, {
       dateStyle: 'medium',
       timeStyle: 'short',
+      hour12: true,
     });
   } catch {
     return iso;

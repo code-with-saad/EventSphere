@@ -1,21 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import QRScanner from '../../components/scanner/QRScanner';
 import ScanResultDisplay, { ScanResult } from '../../components/scanner/ScanResultDisplay';
-import { expoService } from '../../services/expoService';
 import { ticketService } from '../../services/ticketService';
 import { BentoCard } from '../../components/common/BentoCard';
-import { ScanLine, Calendar, AlertCircle } from 'lucide-react';
-
-interface OngoingExpo {
-  _id: string;
-  name: string;
-  status: string;
-}
+import { ScanLine, ArrowLeft, Activity, ShieldCheck } from 'lucide-react';
 
 interface CheckInLogItem {
   ticketId: string;
   attendeeName: string;
-  attendeeEmail: string;
+  expoName: string;
   checkedInAt: string;
   checkInCount: number;
 }
@@ -23,112 +17,82 @@ interface CheckInLogItem {
 /**
  * ScannerPage
  *
- * Organizer-only ticket check-in scanner page.
- * Always rendered in dark mode (REQ-8.10) — no ThemeContext dependency.
- * Mobile-first, card-structured layout with BentoCard containment.
+ * Fast-repeated organizer ticket scanner with automatic expo detection.
+ * Always rendered in dark mode (REQ-8.10).
  */
 export default function ScannerPage() {
-  // ── Expo list state ────────────────────────────────────────────────────────
-  const [expos, setExpos] = useState<OngoingExpo[]>([]);
-  const [exposLoading, setExposLoading] = useState(true);
-  const [exposError, setExposError] = useState<string | null>(null);
-
-  // ── Selection state ────────────────────────────────────────────────────────
-  const [selectedExpoId, setSelectedExpoId] = useState<string>('');
+  const navigate = useNavigate();
 
   // ── Scan result state ──────────────────────────────────────────────────────
   const [scanResult, setScanResult] = useState<ScanResult>(null);
   const [attendeeName, setAttendeeName] = useState<string | undefined>(undefined);
+  const [expoName, setExpoName] = useState<string | undefined>(undefined);
   const [checkedInAt, setCheckedInAt] = useState<string | undefined>(undefined);
   const [canCheckInAt, setCanCheckInAt] = useState<string | undefined>(undefined);
   const [checkInCount, setCheckInCount] = useState<number | undefined>(undefined);
 
   // ── Live Check-In Log state ─────────────────────────────────────────────────
   const [checkInLogs, setCheckInLogs] = useState<CheckInLogItem[]>([]);
-  const [logsLoading, setLogsLoading] = useState(false);
-
-  // ── In-flight guard (prevents double-submission during processing) ─────────
   const [isChecking, setIsChecking] = useState(false);
 
-  // ── Fetch organizer's expos on mount, filter to ongoing ───────────────────
-  useEffect(() => {
-    let cancelled = false;
-
-    const fetchExpos = async () => {
-      setExposLoading(true);
-      setExposError(null);
-      try {
-        const all: OngoingExpo[] = await expoService.listMine();
-        if (!cancelled) {
-          const live = all.filter((e) => e.status === 'ongoing');
-          setExpos(live);
-          if (live.length > 0 && !selectedExpoId) {
-            setSelectedExpoId(live[0]._id);
-          }
-        }
-      } catch {
-        if (!cancelled) {
-          setExposError('Failed to load expos. Please refresh the page.');
-        }
-      } finally {
-        if (!cancelled) {
-          setExposLoading(false);
-        }
-      }
-    };
-
-    fetchExpos();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Fetch check-in logs whenever selected expo changes
-  const fetchLogs = useCallback(async (expoId: string) => {
-    if (!expoId) return;
-    setLogsLoading(true);
+  // ── Fetch recent check-ins across organizer's expos on mount ───────────────
+  const fetchRecentLogs = useCallback(async () => {
     try {
-      const data = await expoService.getCheckIns(expoId);
-      setCheckInLogs(data?.checkIns || []);
+      const data = await ticketService.getOrganizerAttendees({ status: 'checked_in' });
+      const attendees: any[] = data?.attendees || [];
+      const logs: CheckInLogItem[] = attendees
+        .filter((a) => a.checkedInAt)
+        .slice(0, 30)
+        .map((a) => ({
+          ticketId: a.ticketId,
+          attendeeName: a.fullName,
+          expoName: a.expoName,
+          checkedInAt: a.checkedInAt,
+          checkInCount: a.checkInCount || 1,
+        }));
+      setCheckInLogs(logs);
     } catch {
-      // quiet fail for logs
-    } finally {
-      setLogsLoading(false);
+      // Quiet fail
     }
   }, []);
 
   useEffect(() => {
-    if (selectedExpoId) {
-      fetchLogs(selectedExpoId);
-    }
-  }, [selectedExpoId, fetchLogs]);
+    fetchRecentLogs();
+  }, [fetchRecentLogs]);
 
-  // ── Scan handler ───────────────────────────────────────────────────────────
+  // ── Scan handler (auto-detects expo) ────────────────────────────────────────
   const handleScan = useCallback(
     async (ticketId: string) => {
-      // Guard: ignore if no expo selected or another check-in is in flight
-      if (!selectedExpoId || isChecking) return;
+      if (isChecking) return;
 
       setIsChecking(true);
-      // Clear previous result before showing new one
       setScanResult(null);
       setAttendeeName(undefined);
+      setExpoName(undefined);
       setCheckedInAt(undefined);
       setCanCheckInAt(undefined);
       setCheckInCount(undefined);
 
       try {
-        const data = await ticketService.checkIn(ticketId, selectedExpoId);
+        const data = await ticketService.checkIn(ticketId);
         const result: ScanResult = data?.result ?? 'invalid_ticket';
         setAttendeeName(data?.attendeeName || undefined);
+        setExpoName(data?.expoName || undefined);
         setCheckedInAt(data?.checkedInAt || undefined);
         setCanCheckInAt(data?.canCheckInAt || undefined);
         setCheckInCount(data?.checkInCount || undefined);
         setScanResult(result);
 
-        // Refresh log feed on successful check-in
-        if (result === 'checked_in') {
-          fetchLogs(selectedExpoId);
+        // Prepend to live log feed if valid check-in
+        if (result === 'checked_in' && data?.attendeeName) {
+          const newLog: CheckInLogItem = {
+            ticketId,
+            attendeeName: data.attendeeName,
+            expoName: data.expoName || 'Event',
+            checkedInAt: new Date().toISOString(),
+            checkInCount: data.checkInCount || 1,
+          };
+          setCheckInLogs((prev) => [newLog, ...prev.slice(0, 29)]);
         }
       } catch (err: unknown) {
         setScanResult('invalid_ticket');
@@ -136,242 +100,134 @@ export default function ScannerPage() {
         setIsChecking(false);
       }
     },
-    [selectedExpoId, isChecking, fetchLogs]
+    [isChecking]
   );
 
-  // ── Derived values ─────────────────────────────────────────────────────────
-  const selectedExpo = expos.find((e) => e._id === selectedExpoId);
-
   return (
-    <div className="min-h-screen">
-      <div className="max-w-2xl mx-auto px-md-token py-lg-token md:py-xl-token flex flex-col gap-lg-token">
+    <div className="min-h-screen bg-bg-root-dark text-text-primary-dark">
+      <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 flex flex-col gap-6">
 
-        {/* Page Header Block */}
+        {/* Top Header Bar with Back Button */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-sm-token">
-            <div className="w-10 h-10 rounded-lg-token bg-brand-primary-dark/20 border border-brand-primary-dark/30 flex items-center justify-center text-brand-primary-dark">
-              <ScanLine className="w-5 h-5" aria-hidden="true" />
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border-base-dark text-text-secondary-dark hover:text-text-primary-dark hover:bg-bg-hover-dark transition-colors text-sm font-medium"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back</span>
+          </button>
+
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-brand-primary-dark/20 border border-brand-primary-dark/30 flex items-center justify-center text-brand-primary-dark">
+              <ScanLine className="w-4 h-4" aria-hidden="true" />
             </div>
-            <div>
-              <h1 className="text-xl-token md:text-2xl-token font-bold text-text-primary-dark leading-tight-token">
-                Ticket Scanner
-              </h1>
-              <p className="text-xs-token text-text-secondary-dark">
-                Validate attendee QR passes in real time
-              </p>
-            </div>
+            <span className="text-sm font-bold text-text-primary-dark">
+              EventSphere Scanner
+            </span>
           </div>
         </div>
 
-        {/* ── Expo selector section inside BentoCard ─────────────────────── */}
+        {/* Viewfinder Container */}
         <BentoCard>
-          <div className="flex flex-col gap-sm-token p-xs-token">
-            <label
-              htmlFor="expo-select"
-              className="text-xs-token font-semibold uppercase tracking-wider text-text-secondary-dark"
-            >
-              Select Active Event
-            </label>
+          <div className="flex flex-col gap-4 p-1">
+            <div className="flex items-center justify-between border-b border-glass-border-dark/60 pb-2">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-secondary-dark">
+                <ShieldCheck className="w-4 h-4 text-brand-primary-dark" />
+                <span>Auto-Detect Viewfinder</span>
+              </div>
+              <span className="text-xs text-text-muted-dark">
+                Ready for next pass
+              </span>
+            </div>
 
-            {/* Loading state */}
-            {exposLoading && (
-              <div className="flex items-center gap-sm-token py-sm-token">
+            {/* QR Scanner Component */}
+            <div className="rounded-lg overflow-hidden border border-border-base-dark">
+              <QRScanner isActive={true} onScan={handleScan} />
+            </div>
+
+            {/* In-flight verification indicator */}
+            {isChecking && (
+              <div
+                className="flex items-center justify-center gap-2 py-2 bg-brand-primary-dark/10 rounded-md border border-brand-primary-dark/20"
+                aria-live="polite"
+              >
                 <div
                   className="w-4 h-4 rounded-full border-2 border-brand-primary-dark border-t-transparent animate-spin"
                   role="progressbar"
-                  aria-label="Loading expos"
+                  aria-label="Processing check-in"
                 />
-                <span className="text-sm-token text-text-muted-dark">
-                  Loading active expos…
+                <span className="text-sm font-medium text-brand-primary-dark">
+                  Verifying pass…
                 </span>
               </div>
             )}
 
-            {/* Error state */}
-            {!exposLoading && exposError && (
-              <div className="p-sm-token rounded-md-token bg-bg-danger-dark border border-text-danger-dark/40 flex items-center gap-xs-token text-sm-token text-text-danger-dark">
-                <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
-                <span>{exposError}</span>
-              </div>
-            )}
-
-            {/* No ongoing expos empty state */}
-            {!exposLoading && !exposError && expos.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-lg-token gap-sm-token text-center">
-                <div className="w-12 h-12 rounded-xl-token bg-bg-hover-dark flex items-center justify-center text-text-muted-dark">
-                  <Calendar className="w-6 h-6" aria-hidden="true" />
-                </div>
-                <h3 className="text-base-token font-semibold text-text-primary-dark">
-                  No Live Expos Available
-                </h3>
-                <p className="text-xs-token text-text-secondary-dark max-w-xs">
-                  Only ongoing events are eligible for QR check-ins. Make sure your expo is set to 'Ongoing' status.
-                </p>
-              </div>
-            )}
-
-            {/* Expo select dropdown */}
-            {!exposLoading && !exposError && expos.length > 0 && (
-              <select
-                id="expo-select"
-                value={selectedExpoId}
-                onChange={(e) => {
-                  setSelectedExpoId(e.target.value);
-                  // Reset scan state when switching expos
-                  setScanResult(null);
-                  setAttendeeName(undefined);
-                  setCheckedInAt(undefined);
-                }}
-                className="
-                  bg-bg-surface-dark
-                  border border-border-base-dark
-                  text-text-primary-dark
-                  rounded-md-token
-                  px-md-token py-sm-token
-                  text-sm-token font-medium
-                  focus:border-brand-primary-dark focus:outline-none
-                  w-full transition-colors cursor-pointer
-                "
-              >
-                <option value="" disabled>
-                  Select an expo to activate viewfinder…
-                </option>
-                {expos.map((expo) => (
-                  <option key={expo._id} value={expo._id}>
-                    {expo.name}
-                  </option>
-                ))}
-              </select>
-            )}
+            {/* Result banner */}
+            <ScanResultDisplay
+              result={scanResult}
+              onDismiss={() => setScanResult(null)}
+              attendeeName={attendeeName}
+              checkedInAt={checkedInAt}
+              canCheckInAt={canCheckInAt}
+              checkInCount={checkInCount}
+              expoName={expoName}
+            />
           </div>
         </BentoCard>
 
-        {/* ── Scanner Viewfinder and Results Area inside BentoCard ───────── */}
-        {!exposLoading && !exposError && expos.length > 0 && (
-          <BentoCard>
-            <div className="flex flex-col gap-md-token p-xs-token">
-              
-              {/* Header inside card when active */}
-              {selectedExpo ? (
-                <div className="flex items-center justify-between border-b border-glass-border-dark/60 pb-sm-token">
-                  <span className="text-xs-token text-text-secondary-dark">
-                    Active Station
-                  </span>
-                  <span className="text-sm-token font-semibold text-brand-primary-dark truncate max-w-[280px]">
-                    {selectedExpo.name}
-                  </span>
-                </div>
-              ) : (
-                <div className="text-xs-token text-text-secondary-dark border-b border-glass-border-dark/60 pb-sm-token">
-                  Camera Viewfinder
-                </div>
-              )}
-
-              {/* Viewfinder or instruction placeholder */}
-              {!selectedExpoId ? (
-                <div className="flex flex-col items-center justify-center min-h-[300px] md:min-h-[360px] rounded-lg-token border border-dashed border-border-base-dark bg-bg-surface-dark/40 text-center p-lg-token gap-sm-token">
-                  <ScanLine className="w-10 h-10 text-text-muted-dark animate-pulse" aria-hidden="true" />
-                  <p className="text-sm-token font-medium text-text-secondary-dark">
-                    Camera is currently standby
-                  </p>
-                  <p className="text-xs-token text-text-muted-dark max-w-xs">
-                    Choose an ongoing expo from the dropdown above to initialize the QR camera reader.
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-md-token">
-                  {/* QR scanner viewfinder */}
-                  <div className="rounded-lg-token overflow-hidden border border-border-base-dark">
-                    <QRScanner
-                      isActive={!!selectedExpoId}
-                      onScan={handleScan}
-                    />
-                  </div>
-
-                  {/* Processing indicator */}
-                  {isChecking && (
-                    <div
-                      className="flex items-center justify-center gap-sm-token py-sm-token bg-brand-primary-dark/10 rounded-md-token border border-brand-primary-dark/20"
-                      aria-live="polite"
-                    >
-                      <div
-                        className="w-4 h-4 rounded-full border-2 border-brand-primary-dark border-t-transparent animate-spin"
-                        role="progressbar"
-                        aria-label="Processing check-in"
-                      />
-                      <span className="text-sm-token font-medium text-brand-primary-dark">
-                        Verifying ticket…
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Scan result feedback banner */}
-                  <ScanResultDisplay
-                    result={scanResult}
-                    onDismiss={() => setScanResult(null)}
-                    attendeeName={attendeeName}
-                    checkedInAt={checkedInAt}
-                    canCheckInAt={canCheckInAt}
-                    checkInCount={checkInCount}
-                    expoName={selectedExpo?.name}
-                  />
-                </div>
-              )}
-
-            </div>
-          </BentoCard>
-        )}
-
-        {/* ── Organizer Check-in Activity Feed inside BentoCard ─────────── */}
-        {!exposLoading && selectedExpoId && (
-          <BentoCard>
-            <div className="flex flex-col gap-sm-token p-xs-token">
-              <div className="flex items-center justify-between border-b border-glass-border-dark/60 pb-sm-token">
-                <span className="text-xs-token font-semibold uppercase tracking-wider text-text-secondary-dark">
-                  Live Check-in Activity Log
-                </span>
-                <span className="text-xs-token font-mono font-medium text-brand-primary-dark">
-                  {checkInLogs.length} total event{checkInLogs.length === 1 ? '' : 's'}
+        {/* Live rolling check-in activity stream */}
+        <BentoCard>
+          <div className="flex flex-col gap-2 p-1">
+            <div className="flex items-center justify-between border-b border-glass-border-dark/60 pb-2">
+              <div className="flex items-center gap-2">
+                <Activity className="w-4 h-4 text-emerald-400" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary-dark">
+                  Recent Check-In Stream
                 </span>
               </div>
-
-              {logsLoading && checkInLogs.length === 0 ? (
-                <div className="py-md-token text-center text-xs-token text-text-muted-dark">
-                  Loading activity log…
-                </div>
-              ) : checkInLogs.length === 0 ? (
-                <div className="py-lg-token text-center text-xs-token text-text-muted-dark">
-                  No attendees have checked in yet for this expo today.
-                </div>
-              ) : (
-                <div className="max-h-60 overflow-y-auto divide-y divide-border-base-dark/20 pr-1">
-                  {checkInLogs.map((log, idx) => (
-                    <div key={`${log.ticketId}-${idx}`} className="py-2 flex items-center justify-between gap-2 text-xs-token">
-                      <div className="flex flex-col truncate">
-                        <span className="font-semibold text-text-primary-dark truncate">
-                          {log.attendeeName}
-                        </span>
-                        <span className="text-[10px] text-text-muted-dark truncate">
-                          {log.attendeeEmail} · Pass: {log.ticketId.slice(0, 8)}…
-                        </span>
-                      </div>
-                      <div className="flex flex-col items-end shrink-0">
-                        <span className="font-mono text-[11px] text-emerald-400 font-medium">
-                          {new Date(log.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                        </span>
-                        {log.checkInCount > 1 && (
-                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 font-semibold mt-0.5">
-                            Day {log.checkInCount} Check-in
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <span className="text-xs font-mono text-brand-primary-dark">
+                {checkInLogs.length} logged
+              </span>
             </div>
-          </BentoCard>
-        )}
+
+            {checkInLogs.length === 0 ? (
+              <div className="py-6 text-center text-xs text-text-muted-dark">
+                No check-ins recorded yet. Scan a badge to begin.
+              </div>
+            ) : (
+              <div className="max-h-64 overflow-y-auto divide-y divide-border-base-dark/20 pr-1">
+                {checkInLogs.map((log, idx) => (
+                  <div key={`${log.ticketId}-${idx}`} className="py-2.5 flex items-center justify-between gap-2 text-xs">
+                    <div className="flex flex-col truncate">
+                      <span className="font-semibold text-text-primary-dark truncate">
+                        {log.attendeeName}
+                      </span>
+                      <span className="text-[11px] text-text-secondary-dark truncate">
+                        {log.expoName} · Pass: {log.ticketId.slice(0, 8)}…
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-end shrink-0">
+                      <span className="font-mono text-[11px] text-emerald-400 font-medium">
+                        {new Date(log.checkedInAt).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit',
+                          hour12: true,
+                        })}
+                      </span>
+                      {log.checkInCount > 1 && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-semibold mt-0.5">
+                          Day {log.checkInCount} Check-In
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </BentoCard>
 
       </div>
     </div>

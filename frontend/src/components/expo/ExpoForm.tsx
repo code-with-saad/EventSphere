@@ -39,6 +39,7 @@ interface ExpoFormErrors {
 
 interface ExpoFormProps {
   initialData?: Partial<ExpoFormData>;
+  status?: 'draft' | 'published' | 'ongoing' | 'completed' | 'archived';
   onSubmit: (data: Record<string, unknown>) => Promise<void>;
   submitLabel?: string;
   isLoading?: boolean;
@@ -62,6 +63,7 @@ const CATEGORIES = [
 
 export default function ExpoForm({
   initialData = {},
+  status,
   onSubmit,
   submitLabel = 'Save',
   isLoading = false,
@@ -69,6 +71,8 @@ export default function ExpoForm({
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isOngoing = status === 'ongoing';
 
   const initialZones: FormZone[] = initialData.zones && initialData.zones.length > 0
     ? initialData.zones.map(z => ({ name: z.name, boothCount: z.boothCount }))
@@ -104,6 +108,7 @@ export default function ExpoForm({
   );
 
   const handleAddZone = () => {
+    if (isOngoing) return;
     const nextChar = String.fromCharCode(65 + form.zones.length); // A, B, C...
     setForm((p) => ({
       ...p,
@@ -112,7 +117,7 @@ export default function ExpoForm({
   };
 
   const handleRemoveZone = (index: number) => {
-    if (form.zones.length <= 1) return;
+    if (isOngoing || form.zones.length <= 1) return;
     setForm((p) => ({
       ...p,
       zones: p.zones.filter((_, i) => i !== index),
@@ -120,6 +125,7 @@ export default function ExpoForm({
   };
 
   const handleZoneChange = (index: number, field: keyof FormZone, value: string | number) => {
+    if (isOngoing) return;
     setForm((p) => {
       const nextZones = [...p.zones];
       nextZones[index] = {
@@ -134,9 +140,13 @@ export default function ExpoForm({
     isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
   }`;
 
-  const inputClass = (hasError?: string) =>
+  const inputClass = (hasError?: string, disabled?: boolean) =>
     `w-full rounded-md-token border px-sm-token py-xs-token text-sm-token outline-none transition-colors ${
-      hasError
+      disabled
+        ? isDarkMode
+          ? 'bg-gray-800/60 border-gray-700/60 text-gray-400 cursor-not-allowed opacity-75'
+          : 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed opacity-75'
+        : hasError
         ? isDarkMode
           ? 'border-text-danger-dark'
           : 'border-text-danger-light'
@@ -144,7 +154,9 @@ export default function ExpoForm({
         ? 'border-border-base-dark focus:border-brand-primary-dark'
         : 'border-border-base-light focus:border-brand-primary-light'
     } ${
-      isDarkMode
+      disabled
+        ? ''
+        : isDarkMode
         ? 'bg-bg-surface-dark text-text-primary-dark placeholder:text-text-secondary-dark'
         : 'bg-bg-surface-light text-text-primary-light placeholder:text-text-secondary-light'
     }`;
@@ -168,10 +180,17 @@ export default function ExpoForm({
       errs.description = 'Description must not exceed 2000 characters.';
     }
 
-    if (!form.startDate) {
-      errs.startDate = 'Start date is required.';
-    } else if (new Date(form.startDate) <= new Date()) {
-      errs.startDate = 'Start date has already passed. Please select a time in the future.';
+    if (!isOngoing) {
+      if (!form.startDate) {
+        errs.startDate = 'Start date is required.';
+      } else {
+        const isStartDateChanged =
+          initialData.startDate &&
+          new Date(form.startDate).getTime() !== new Date(initialData.startDate).getTime();
+        if (isStartDateChanged && new Date(form.startDate) <= new Date()) {
+          errs.startDate = 'Start date has already passed. Please select a time in the future.';
+        }
+      }
     }
 
     if (!form.endDate) {
@@ -183,29 +202,31 @@ export default function ExpoForm({
       errs.endDate = 'End date must be strictly after start date.';
     }
 
-    if (!form.venueName.trim()) {
-      errs.venueName = 'Venue name is required.';
-    } else if (form.venueName.trim().length > 100) {
-      errs.venueName = 'Venue name must not exceed 100 characters.';
-    }
+    if (!isOngoing) {
+      if (!form.venueName.trim()) {
+        errs.venueName = 'Venue name is required.';
+      } else if (form.venueName.trim().length > 100) {
+        errs.venueName = 'Venue name must not exceed 100 characters.';
+      }
 
-    if (!form.venueAddress.trim()) {
-      errs.venueAddress = 'Venue address is required.';
-    } else if (form.venueAddress.trim().length > 200) {
-      errs.venueAddress = 'Venue address must not exceed 200 characters.';
-    }
+      if (!form.venueAddress.trim()) {
+        errs.venueAddress = 'Venue address is required.';
+      } else if (form.venueAddress.trim().length > 200) {
+        errs.venueAddress = 'Venue address must not exceed 200 characters.';
+      }
 
-    if (!form.zones || form.zones.length === 0) {
-      errs.zones = 'At least one zone is required.';
-    } else {
-      for (const z of form.zones) {
-        if (!z.name.trim()) {
-          errs.zones = 'All zones must have a name.';
-          break;
-        }
-        if (z.boothCount === '' || Number(z.boothCount) < 1) {
-          errs.zones = 'Each zone must have at least 1 booth.';
-          break;
+      if (!form.zones || form.zones.length === 0) {
+        errs.zones = 'At least one zone is required.';
+      } else {
+        for (const z of form.zones) {
+          if (!z.name.trim()) {
+            errs.zones = 'All zones must have a name.';
+            break;
+          }
+          if (z.boothCount === '' || Number(z.boothCount) < 1) {
+            errs.zones = 'Each zone must have at least 1 booth.';
+            break;
+          }
         }
       }
     }
@@ -261,29 +282,41 @@ export default function ExpoForm({
 
     setSubmitError(null);
     try {
-      const payload: Record<string, unknown> = {
-        name: form.name.trim(),
-        description: form.description.trim(),
-        startDate: new Date(form.startDate).toISOString(),
-        endDate: new Date(form.endDate).toISOString(),
-        venueName: form.venueName.trim(),
-        venueAddress: form.venueAddress.trim(),
-        totalBooths: computedTotalBooths,
-        zones: form.zones.map(z => ({
-          name: z.name.trim(),
-          boothCount: Number(z.boothCount),
-        })),
-      };
+      let payload: Record<string, unknown>;
 
-      if (form.bannerUrl) payload.bannerUrl = form.bannerUrl;
-      if (form.websiteUrl?.trim()) payload.websiteUrl = form.websiteUrl.trim();
-      if (form.category) payload.category = form.category;
-      if (form.tags?.trim())
-        payload.tags = form.tags
-          .split(',')
-          .map((t) => t.trim())
-          .filter(Boolean);
-      if (form.venueMapUrl?.trim()) payload.venueMapUrl = form.venueMapUrl.trim();
+      if (isOngoing) {
+        // When ongoing, ONLY unlocked fields are submitted
+        payload = {
+          name: form.name.trim(),
+          description: form.description.trim(),
+          endDate: new Date(form.endDate).toISOString(),
+        };
+        if (form.bannerUrl) payload.bannerUrl = form.bannerUrl;
+      } else {
+        payload = {
+          name: form.name.trim(),
+          description: form.description.trim(),
+          startDate: new Date(form.startDate).toISOString(),
+          endDate: new Date(form.endDate).toISOString(),
+          venueName: form.venueName.trim(),
+          venueAddress: form.venueAddress.trim(),
+          totalBooths: computedTotalBooths,
+          zones: form.zones.map(z => ({
+            name: z.name.trim(),
+            boothCount: Number(z.boothCount),
+          })),
+        };
+
+        if (form.bannerUrl) payload.bannerUrl = form.bannerUrl;
+        if (form.websiteUrl?.trim()) payload.websiteUrl = form.websiteUrl.trim();
+        if (form.category) payload.category = form.category;
+        if (form.tags?.trim())
+          payload.tags = form.tags
+            .split(',')
+            .map((t) => t.trim())
+            .filter(Boolean);
+        if (form.venueMapUrl?.trim()) payload.venueMapUrl = form.venueMapUrl.trim();
+      }
 
       await onSubmit(payload);
     } catch (err: unknown) {
@@ -302,25 +335,35 @@ export default function ExpoForm({
     label: string,
     type = 'text',
     placeholder = '',
-    required = false
+    required = false,
+    disabled = false
   ) => (
     <div>
-      <label htmlFor={id} className={labelClass}>
-        {label}
-        {required && (
-          <span aria-hidden="true" className="ml-xs-token text-text-danger-dark">
-            *
+      <div className="flex items-center justify-between mb-xs-token">
+        <label htmlFor={id} className={labelClass}>
+          {label}
+          {required && !disabled && (
+            <span aria-hidden="true" className="ml-xs-token text-text-danger-dark">
+              *
+            </span>
+          )}
+        </label>
+        {disabled && (
+          <span className="text-[10px] uppercase tracking-wider font-semibold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded">
+            Locked (Live Event)
           </span>
         )}
-      </label>
+      </div>
       <input
         id={id}
         name={id}
         type={type}
+        disabled={disabled}
+        readOnly={disabled}
         value={(form[id] as string) ?? ''}
         onChange={(e) => setForm((p) => ({ ...p, [id]: e.target.value }))}
         placeholder={placeholder}
-        className={inputClass(errors[id as keyof ExpoFormErrors])}
+        className={inputClass(errors[id as keyof ExpoFormErrors], disabled)}
         aria-describedby={
           errors[id as keyof ExpoFormErrors] ? `${id}-error` : undefined
         }
@@ -372,15 +415,23 @@ export default function ExpoForm({
           </div>
 
           <div>
-            <label htmlFor="category" className={labelClass}>
-              Category
-            </label>
+            <div className="flex items-center justify-between mb-xs-token">
+              <label htmlFor="category" className={labelClass}>
+                Category
+              </label>
+              {isOngoing && (
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded">
+                  Locked (Live Event)
+                </span>
+              )}
+            </div>
             <select
               id="category"
               name="category"
+              disabled={isOngoing}
               value={form.category}
               onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
-              className={inputClass()}
+              className={inputClass(undefined, isOngoing)}
             >
               <option value="">Select a category</option>
               {CATEGORIES.map((c) => (
@@ -468,13 +519,13 @@ export default function ExpoForm({
 
         <div className="flex flex-col gap-md-token">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-md-token">
-            {field('startDate', 'Start Date', 'datetime-local', '', true)}
-            {field('endDate', 'End Date', 'datetime-local', '', true)}
+            {field('startDate', 'Start Date', 'datetime-local', '', true, isOngoing)}
+            {field('endDate', 'End Date', 'datetime-local', '', true, false)}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-md-token">
-            {field('venueName', 'Venue Name', 'text', 'e.g. Convention Centre', true)}
-            {field('venueAddress', 'Venue Address', 'text', 'e.g. 123 Main St, City', true)}
+            {field('venueName', 'Venue Name', 'text', 'e.g. Convention Centre', true, isOngoing)}
+            {field('venueAddress', 'Venue Address', 'text', 'e.g. 123 Main St, City', true, isOngoing)}
           </div>
         </div>
       </BentoCard>
@@ -488,11 +539,18 @@ export default function ExpoForm({
               Exhibition Zones &amp; Booth Layout
             </h3>
           </div>
-          <span className={`text-xs-token font-semibold px-2.5 py-1 rounded-full ${
-            isDarkMode ? 'bg-brand-primary-dark/20 text-brand-primary-dark' : 'bg-brand-primary-light/20 text-brand-primary-light'
-          }`}>
-            Total Capacity: {computedTotalBooths} Booths
-          </span>
+          <div className="flex items-center gap-2">
+            {isOngoing && (
+              <span className="text-[10px] uppercase tracking-wider font-semibold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded">
+                Locked (Live Event)
+              </span>
+            )}
+            <span className={`text-xs-token font-semibold px-2.5 py-1 rounded-full ${
+              isDarkMode ? 'bg-brand-primary-dark/20 text-brand-primary-dark' : 'bg-brand-primary-light/20 text-brand-primary-light'
+            }`}>
+              Total Capacity: {computedTotalBooths} Booths
+            </span>
+          </div>
         </div>
 
         <p className={`text-xs-token mb-md-token ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
@@ -513,10 +571,12 @@ export default function ExpoForm({
                 </label>
                 <input
                   type="text"
+                  disabled={isOngoing}
+                  readOnly={isOngoing}
                   value={zone.name}
                   onChange={(e) => handleZoneChange(idx, 'name', e.target.value)}
                   placeholder="e.g. Hall A"
-                  className={inputClass()}
+                  className={inputClass(undefined, isOngoing)}
                 />
               </div>
 
@@ -527,9 +587,11 @@ export default function ExpoForm({
                 <input
                   type="number"
                   min={1}
+                  disabled={isOngoing}
+                  readOnly={isOngoing}
                   value={zone.boothCount}
                   onChange={(e) => handleZoneChange(idx, 'boothCount', e.target.value)}
-                  className={inputClass()}
+                  className={inputClass(undefined, isOngoing)}
                 />
               </div>
 
@@ -537,9 +599,9 @@ export default function ExpoForm({
                 <button
                   type="button"
                   onClick={() => handleRemoveZone(idx)}
-                  disabled={form.zones.length <= 1}
+                  disabled={isOngoing || form.zones.length <= 1}
                   className={`p-2 rounded-md-token transition-colors border ${
-                    form.zones.length <= 1
+                    isOngoing || form.zones.length <= 1
                       ? 'opacity-40 cursor-not-allowed border-transparent'
                       : isDarkMode
                       ? 'border-border-base-dark text-text-danger-dark hover:bg-bg-danger-dark/20'
@@ -560,18 +622,20 @@ export default function ExpoForm({
           </p>
         )}
 
-        <button
-          type="button"
-          onClick={handleAddZone}
-          className={`inline-flex items-center gap-1.5 px-md-token py-2 rounded-md-token text-xs-token font-semibold border transition-colors ${
-            isDarkMode
-              ? 'border-border-strong-dark text-brand-primary-dark hover:bg-bg-hover-dark'
-              : 'border-border-strong-light text-brand-primary-light hover:bg-bg-hover-light'
-          }`}
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Add Zone
-        </button>
+        {!isOngoing && (
+          <button
+            type="button"
+            onClick={handleAddZone}
+            className={`inline-flex items-center gap-1.5 px-md-token py-2 rounded-md-token text-xs-token font-semibold border transition-colors ${
+              isDarkMode
+                ? 'border-border-strong-dark text-brand-primary-dark hover:bg-bg-hover-dark'
+                : 'border-border-strong-light text-brand-primary-light hover:bg-bg-hover-light'
+            }`}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add Zone
+          </button>
+        )}
       </BentoCard>
 
       <BentoCard className="p-md-token md:p-lg-token">
@@ -583,9 +647,9 @@ export default function ExpoForm({
         </div>
 
         <div className="flex flex-col gap-md-token">
-          {field('websiteUrl', 'Website URL', 'url', 'https://…')}
-          {field('tags', 'Tags (comma-separated)', 'text', 'e.g. tech, innovation, AI')}
-          {field('venueMapUrl', 'Venue Map URL', 'url', 'https://maps.google.com/…')}
+          {field('websiteUrl', 'Website URL', 'url', 'https://…', false, isOngoing)}
+          {field('tags', 'Tags (comma-separated)', 'text', 'e.g. tech, innovation, AI', false, isOngoing)}
+          {field('venueMapUrl', 'Venue Map URL', 'url', 'https://maps.google.com/…', false, isOngoing)}
         </div>
       </BentoCard>
 

@@ -438,13 +438,18 @@ class TicketService {
    *  - 'already_checked_in'— ticket was already checked in (includes original timestamp)
    *  - 'invalid_ticket'    — no ticket found for this ticketId
    *  - 'cancelled_ticket'  — ticket exists but is cancelled
-   *  - 'wrong_event'       — ticket is for a different expo
+   *  - 'wrong_event'       — ticket is for an expo not owned by this organizer (or mismatch)
    *
-   * @param ticketId — UUID v4 string scanned from QR
-   * @param expoId   — string ID of the expo where the scanner is operating
+   * @param ticketId    — UUID v4 string scanned from QR
+   * @param organizerId — string ID of the organizer performing the scan (optional for backwards-compat)
+   * @param expoId      — optional string ID of the expo (if provided, must match ticket's expo)
    * @returns CheckInResponse (never throws)
    */
-  async processCheckIn(ticketId: string, expoId: string): Promise<CheckInResponse> {
+  async processCheckIn(
+    ticketId: string,
+    organizerId?: string,
+    expoId?: string
+  ): Promise<CheckInResponse> {
     // 1. Look up ticket
     const ticket = await TicketModel.findByTicketId(ticketId);
     if (!ticket) {
@@ -456,8 +461,19 @@ class TicketService {
       return { result: 'cancelled_ticket' };
     }
 
-    // 3. Wrong expo
-    if (ticket.expoId.toString() !== expoId) {
+    // 3. Look up expo to verify existence & organizer ownership
+    const expo = await ExpoModel.findById(ticket.expoId);
+    if (!expo) {
+      return { result: 'invalid_ticket' };
+    }
+
+    // If organizerId is provided, verify scanning organizer owns this expo
+    if (organizerId && expo.organizerId.toString() !== organizerId) {
+      return { result: 'wrong_event' };
+    }
+
+    // If explicit expoId was passed, verify it matches
+    if (expoId && ticket.expoId.toString() !== expoId) {
       return { result: 'wrong_event' };
     }
 
@@ -468,10 +484,7 @@ class TicketService {
       const now = new Date();
       const elapsedMs = now.getTime() - lastCheckIn.getTime();
 
-      const [attendee, expo] = await Promise.all([
-        UserModel.findById(ticket.attendeeId),
-        ExpoModel.findById(ticket.expoId),
-      ]);
+      const attendee = await UserModel.findById(ticket.attendeeId);
 
       if (elapsedMs < COOLDOWN_MS) {
         const canCheckInAt = new Date(lastCheckIn.getTime() + COOLDOWN_MS);
@@ -481,7 +494,7 @@ class TicketService {
           canCheckInAt,
           checkInCount: (ticket.checkIns?.length || 1),
           attendeeName: attendee?.fullName,
-          expoName: expo?.name,
+          expoName: expo.name,
         };
       }
 
@@ -499,7 +512,7 @@ class TicketService {
         checkedInAt: now,
         checkInCount: newHistory.length,
         attendeeName: attendee?.fullName,
-        expoName: expo?.name,
+        expoName: expo.name,
       };
     }
 
@@ -514,22 +527,127 @@ class TicketService {
         checkIns: [firstCheckIn],
       });
 
-      const [attendee, expo] = await Promise.all([
-        UserModel.findById(ticket.attendeeId),
-        ExpoModel.findById(ticket.expoId),
-      ]);
+      const attendee = await UserModel.findById(ticket.attendeeId);
 
       return {
         result: 'checked_in',
         checkedInAt: updated?.checkedInAt || now,
         checkInCount: 1,
         attendeeName: attendee?.fullName,
-        expoName: expo?.name,
+        expoName: expo.name,
       };
     }
 
-    // Fallback — should not be reached given current TicketStatus values
+    // Fallback
     return { result: 'invalid_ticket' };
+  }
+
+  // -------------------------------------------------------------------------
+  // 19g — getOrganizerAttendees()
+  // -------------------------------------------------------------------------
+
+  /**
+   * Return attendees and check-in records for all expos owned by an organizer.
+   */
+  async getOrganizerAttendees(
+    organizerId: string,
+    filters?: { expoId?: string; status?: string; search?: string }
+  ): Promise<{
+    attendees: Array<{
+      _id: string;
+      ticketId: string;
+      expoId: string;
+      expoName: string;
+      attendeeId: string;
+      fullName: string;
+      email: string;
+      status: string;
+      registeredAt: Date;
+      checkedInAt?: Date;
+      checkIns?: Array<{ checkedInAt: Date }>;
+      checkInCount: number;
+    }>;
+    expos: Array<{ _id: string; name: string; status: string }>;
+  }> {
+    // 1. Fetch expos belonging to organizer
+    const expos = await ExpoModel.findByOrganizer(organizerId);
+    if (!expos || expos.length === 0) {
+      return { attendees: [], expos: [] };
+    }
+
+    const expoMap = new Map(expos.map((e) => [e._id.toString(), e]));
+    let targetExpoIds = expos.map((e) => e._id);
+
+    if (filters?.expoId && filters.expoId !== 'all') {
+      targetExpoIds = targetExpoIds.filter((id) => id.toString() === filters.expoId);
+    }
+
+    if (targetExpoIds.length === 0) {
+      return {
+        attendees: [],
+        expos: expos.map((e) => ({ _id: e._id.toString(), name: e.name, status: e.status })),
+      };
+    }
+
+    // 2. Query tickets
+    const query: Record<string, unknown> = {
+      expoId: { $in: targetExpoIds },
+    };
+
+    if (filters?.status && filters.status !== 'all') {
+      query.status = filters.status;
+    }
+
+    const tickets = await TicketModel.getCollection()
+      .find(query)
+      .sort({ registeredAt: -1 })
+      .toArray();
+
+    // 3. Populate attendee users
+    const attendeeIds = tickets.map((t) => t.attendeeId);
+    const users = await UserModel.getCollection()
+      .find({ _id: { $in: attendeeIds } })
+      .toArray();
+
+    const userMap = new Map(users.map((u) => [u._id.toString(), u]));
+
+    // 4. Assemble attendee list
+    let attendeesList = tickets.map((t) => {
+      const user = userMap.get(t.attendeeId.toString());
+      const expo = expoMap.get(t.expoId.toString());
+      const checkInList = t.checkIns || (t.checkedInAt ? [{ checkedInAt: t.checkedInAt }] : []);
+
+      return {
+        _id: t._id.toString(),
+        ticketId: t.ticketId,
+        expoId: t.expoId.toString(),
+        expoName: expo?.name || 'Unknown Expo',
+        attendeeId: t.attendeeId.toString(),
+        fullName: user?.fullName || 'Unknown Attendee',
+        email: user?.email || '',
+        status: t.status,
+        registeredAt: t.registeredAt,
+        checkedInAt: t.checkedInAt,
+        checkIns: checkInList,
+        checkInCount: checkInList.length,
+      };
+    });
+
+    if (filters?.search && filters.search.trim()) {
+      const q = filters.search.toLowerCase().trim();
+      attendeesList = attendeesList.filter(
+        (a) =>
+          a.fullName.toLowerCase().includes(q) ||
+          a.email.toLowerCase().includes(q) ||
+          a.ticketId.toLowerCase().includes(q) ||
+          a.expoName.toLowerCase().includes(q)
+      );
+    }
+
+    return {
+      attendees: attendeesList,
+      expos: expos.map((e) => ({ _id: e._id.toString(), name: e.name, status: e.status })),
+    };
   }
 }
 

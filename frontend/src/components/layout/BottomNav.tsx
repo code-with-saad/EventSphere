@@ -30,8 +30,9 @@ const NAV_LINKS: Record<string, NavLink[]> = {
   organizer: [
     { label: 'Dashboard', path: '/dashboard/organizer', icon: BarChart3 },
     { label: 'My Expos',  path: '/organizer/expos',      icon: CalendarDays },
-    { label: 'Scanner',   path: '/organizer/scanner',   icon: ScanLine },
-    { label: 'Expos',     path: '/expos',               icon: Compass },
+    { label: 'Attendees', path: '/organizer/attendees',  icon: Users },
+    { label: 'Scanner',   path: '/organizer/scanner',    icon: ScanLine },
+    { label: 'Expos',     path: '/expos',                icon: Compass },
   ],
   exhibitor: [
     { label: 'Dashboard',    path: '/dashboard/exhibitor',     icon: Store },

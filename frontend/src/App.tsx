@@ -43,6 +43,7 @@ import BookmarksPage from './pages/attendee/BookmarksPage';
 import MySchedulePage from './pages/attendee/MySchedulePage';
 import MyFeedbackPage from './pages/feedback/MyFeedbackPage';
 import OrganizerExhibitorsPage from './pages/organizer/OrganizerExhibitorsPage';
+import OrganizerAttendeesPage from './pages/organizer/OrganizerAttendeesPage';
 
 /**
  * Single source of truth for where an authenticated user should land.
@@ -137,6 +138,7 @@ function App() {
             <Route path="/organizer/scanner" element={<ProtectedRoute allowedRoles={['organizer']}><ScannerPage /></ProtectedRoute>} />
             <Route path="/organizer/analytics" element={<ProtectedRoute allowedRoles={['organizer']}><OrganizerAnalyticsPage /></ProtectedRoute>} />
             <Route path="/organizer/exhibitors" element={<ProtectedRoute allowedRoles={['organizer']}><OrganizerExhibitorsPage /></ProtectedRoute>} />
+            <Route path="/organizer/attendees" element={<ProtectedRoute allowedRoles={['organizer']}><OrganizerAttendeesPage /></ProtectedRoute>} />
 
             {/* -- Phase 2: Exhibitor Routes -- */}
             <Route path="/exhibitor/applications" element={<ProtectedRoute allowedRoles={['exhibitor']}><MyApplicationsPage /></ProtectedRoute>} />

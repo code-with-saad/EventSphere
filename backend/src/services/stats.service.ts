@@ -688,7 +688,7 @@ class StatsService {
     ] = await Promise.all([
       userColl.countDocuments({}),
       expoColl.countDocuments({}),
-      appColl.countDocuments({}),
+      appColl.countDocuments({ status: { $ne: 'withdrawn' } }),
       ticketColl.countDocuments({ status: { $ne: 'cancelled' } }),
       ticketColl.countDocuments({
         $or: [{ status: 'checked_in' }, { checkedInAt: { $exists: true } }],

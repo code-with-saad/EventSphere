@@ -280,6 +280,73 @@ describe('PATCH /api/expos/:id — update expo (13b)', () => {
     expect(res.status).toBe(404);
     expect(res.body.success).toBe(false);
   });
+
+  it('13b-4: completed/archived expo cannot be updated → 400 EXPO_COMPLETED_LOCKED', async () => {
+    const { expoId, token } = await createOrganizerAndExpo();
+
+    const db = getTestDb();
+    await db.collection('expos').updateOne(
+      { _id: new ObjectId(expoId) },
+      { $set: { status: 'completed' } }
+    );
+
+    const res = await request(app)
+      .patch(`/api/expos/${expoId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Attempted edit after completion' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.code).toBe('EXPO_COMPLETED_LOCKED');
+  });
+
+  it('13b-5: ongoing expo allows updating name, description, bannerUrl, endDate', async () => {
+    const { expoId, token } = await createOrganizerAndExpo();
+
+    const db = getTestDb();
+    await db.collection('expos').updateOne(
+      { _id: new ObjectId(expoId) },
+      { $set: { status: 'ongoing' } }
+    );
+
+    const newEndDate = futureDate(35);
+    const res = await request(app)
+      .patch(`/api/expos/${expoId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'Ongoing Expo Renamed',
+        description: 'New ongoing description',
+        bannerUrl: 'https://example.com/banner.png',
+        endDate: newEndDate,
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.expo.name).toBe('Ongoing Expo Renamed');
+    expect(res.body.data.expo.description).toBe('New ongoing description');
+    expect(res.body.data.expo.bannerUrl).toBe('https://example.com/banner.png');
+  });
+
+  it('13b-6: ongoing expo rejects updating locked fields (venueName, startDate, zones, etc.) → 400 EXPO_ONGOING_FIELD_LOCKED', async () => {
+    const { expoId, token } = await createOrganizerAndExpo();
+
+    const db = getTestDb();
+    await db.collection('expos').updateOne(
+      { _id: new ObjectId(expoId) },
+      { $set: { status: 'ongoing' } }
+    );
+
+    const res = await request(app)
+      .patch(`/api/expos/${expoId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        venueName: 'Brand New Venue Center',
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.code).toBe('EXPO_ONGOING_FIELD_LOCKED');
+  });
 });
 
 // ── 13c — Status transitions ──────────────────────────────────────────────────

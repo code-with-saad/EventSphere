@@ -289,6 +289,21 @@ class ExpoService {
       );
     }
 
+    // Ongoing expo edit restriction: only name, description, bannerUrl, endDate can be modified
+    if (expo.status === 'ongoing') {
+      const allowedOngoingFields = ['name', 'description', 'bannerUrl', 'endDate'];
+      const submittedFields = Object.keys(data).filter((k) => (data as any)[k] !== undefined);
+      const invalidFields = submittedFields.filter((k) => !allowedOngoingFields.includes(k));
+
+      if (invalidFields.length > 0) {
+        throw createError(
+          `Cannot modify ${invalidFields.join(', ')} while expo is ongoing. Only End Date, Name, Description, and Banner Image can be changed.`,
+          'EXPO_ONGOING_FIELD_LOCKED',
+          400
+        );
+      }
+    }
+
     // If zones are provided, calculate totalBooths from zones
     let totalBooths = data.totalBooths;
     if (data.zones && Array.isArray(data.zones) && data.zones.length > 0) {
@@ -341,7 +356,13 @@ class ExpoService {
       if (data.endDate !== undefined && isNaN(new Date(data.endDate).getTime())) {
         throw createError('endDate is not a valid date', 'INVALID_DATE_RANGE', 400);
       }
-      if (data.startDate !== undefined && startDate <= new Date()) {
+
+      // Check if startDate actually changed from current expo.startDate
+      const isStartDateChanged =
+        data.startDate !== undefined &&
+        new Date(data.startDate).getTime() !== new Date(expo.startDate).getTime();
+
+      if (isStartDateChanged && startDate <= new Date()) {
         throw createError('startDate must be in the future', 'INVALID_DATE_RANGE', 400);
       }
       if (endDate <= startDate) {

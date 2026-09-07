@@ -160,12 +160,13 @@ export default function OrganizerExpoCard({
           <div className="grid grid-cols-4 gap-1">
             <button
               type="button"
-              onClick={() => navigate(`/organizer/expos/${expo._id}/edit`)}
-              className={actionBtnClass}
-              title={isEnded ? 'View Expo Details (Read-Only)' : 'Edit Expo Details'}
+              disabled={isEnded}
+              onClick={() => !isEnded && navigate(`/organizer/expos/${expo._id}/edit`)}
+              className={`${actionBtnClass} ${isEnded ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}`}
+              title={isEnded ? 'Completed/Archived expos cannot be edited' : 'Edit Expo Details'}
             >
               <Edit3 className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">{isEnded ? 'View' : 'Edit'}</span>
+              <span className="truncate">Edit</span>
             </button>
 
             <button
