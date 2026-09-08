@@ -44,8 +44,11 @@ pnpm-debug.log*
 .vercel/
 
 # design & architecture (managed by Kiro)
-# .kiro/
+.kiro/
 
-# Archive folder - not for committing
+# Archive folder 
 /_archive/
+
+# Specification documents
 eventsphere-spec-roadmap.md
+EventSphere_Presentation_Gamma.md
