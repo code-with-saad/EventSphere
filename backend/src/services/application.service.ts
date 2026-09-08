@@ -2,6 +2,8 @@ import { ObjectId } from 'mongodb';
 import ApplicationModel from '../models/Application.model';
 import ExpoModel from '../models/Expo.model';
 import FeedbackModel from '../models/Feedback.model';
+import UserModel from '../models/User.model';
+import emailService from './email.service';
 import type { IApplication, IApplicationCreate } from '../models/Application.model';
 
 /**
@@ -363,6 +365,21 @@ class ApplicationService {
       throw createError('Application not found', 'APPLICATION_NOT_FOUND', 404);
     }
 
+    // Fire-and-forget status-change email notification
+    UserModel.findById(application.exhibitorId)
+      .then((exhibitorUser) => {
+        if (exhibitorUser?.email) {
+          emailService.sendApplicationStatusEmail(
+            exhibitorUser.email,
+            application.companyName,
+            expo.name,
+            'approved',
+            boothLabel
+          ).catch((e) => console.error('Error sending approval email:', e));
+        }
+      })
+      .catch((e) => console.error('Error looking up exhibitor user for email:', e));
+
     // 9. Return with warning flag
     return { ...updated, overfillWarning };
   }
@@ -440,6 +457,21 @@ class ApplicationService {
     if (!updated) {
       throw createError('Application not found', 'APPLICATION_NOT_FOUND', 404);
     }
+
+    // Fire-and-forget status-change email notification
+    UserModel.findById(application.exhibitorId)
+      .then((exhibitorUser) => {
+        if (exhibitorUser?.email) {
+          emailService.sendApplicationStatusEmail(
+            exhibitorUser.email,
+            application.companyName,
+            expo.name,
+            'rejected',
+            reason
+          ).catch((e) => console.error('Error sending rejection email:', e));
+        }
+      })
+      .catch((e) => console.error('Error looking up exhibitor user for email:', e));
 
     return updated;
   }

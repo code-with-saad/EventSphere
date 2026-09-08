@@ -8,6 +8,7 @@
  */
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import morgan from 'morgan';
 import env from './config/env';
 import { isDatabaseConnected } from './config/database';
 import authRoutes from './routes/auth.routes';
@@ -26,6 +27,11 @@ import favoriteRoutes from './routes/favorite.routes';
 import errorHandler, { notFoundHandler } from './middleware/error.middleware';
 
 const app = express();
+
+// ── HTTP Request Logger ───────────────────────────────────────────────────────
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan('dev'));
+}
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 const corsOptions = {

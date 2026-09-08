@@ -51,6 +51,7 @@ function organizerPayload(overrides = {}) {
     password: 'Password123',
     fullName: 'Test Organizer',
     role: 'organizer',
+    consent: true,
     ...overrides,
   };
 }
@@ -61,6 +62,7 @@ function exhibitorPayload(overrides = {}) {
     password: 'Password123',
     fullName: 'Test Exhibitor',
     role: 'exhibitor',
+    consent: true,
     ...overrides,
   };
 }
@@ -110,6 +112,7 @@ describe('POST /api/auth/register', () => {
       password: 'Password123',
       fullName: 'Test Attendee',
       role: 'attendee',
+      consent: true,
     });
 
     expect(res.status).toBe(201);

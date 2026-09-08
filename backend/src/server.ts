@@ -11,6 +11,7 @@ import FeedbackModel from './models/Feedback.model';
 import FavoriteModel from './models/Favorite.model';
 import SessionRegistrationModel from './models/SessionRegistration.model';
 import DirectMessageModel from './models/DirectMessage.model';
+import SessionWaitlistModel from './models/SessionWaitlist.model';
 import app from './app';
 
 const PORT = env.PORT;
@@ -39,6 +40,7 @@ async function startServer() {
     await SessionModel.createIndexes();
     await BookmarkModel.createIndexes();
     await SessionRegistrationModel.createIndexes();
+    await SessionWaitlistModel.createIndexes();
     await MessageModel.createIndexes();
     await DirectMessageModel.createIndexes();
     await FeedbackModel.createIndexes();

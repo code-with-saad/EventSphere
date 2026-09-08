@@ -120,7 +120,7 @@ async function createSession(
     .set('Authorization', `Bearer ${organizerToken}`)
     .send({
       title: 'Test Session',
-      speakerName: 'Speaker',
+      speakerName: overrides.speakerName || `Speaker ${Math.random().toString(36).substring(2, 7)}`,
       ...makeTimes(0),
       room: 'Hall A',
       ...overrides,
@@ -672,12 +672,15 @@ describe('GET /api/expos/:expoId/sessions — list', () => {
     expect(res.body.data.sessions.length).toBe(1);
   });
 
-  it('list-5: unauthenticated → 401', async () => {
+  it('list-5: unauthenticated → 200 (public access)', async () => {
     const expoId = await insertExpo(organizer._id.toString());
+    await createSession(expoId, organizerToken);
 
     const res = await request(app)
       .get(`/api/expos/${expoId}/sessions`);
 
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.sessions.length).toBe(1);
   });
 });

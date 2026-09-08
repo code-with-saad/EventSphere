@@ -556,5 +556,109 @@ router.get(
   })
 );
 
+/**
+ * GET /api/expos/:id/schedule.ics
+ *
+ * Generate an RFC 5545 iCalendar file for all sessions in an expo.
+ * Each session becomes a VEVENT. The expo itself is the VCALENDAR wrapper.
+ *
+ * Access: Public (no auth required)
+ */
+router.get(
+  '/:id/schedule.ics',
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const expo = await ExpoService.getPublicDetail(req.params.id as string);
+    if (!expo) return res.status(404).json({ success: false, message: 'Expo not found' });
+
+    // Fetch sessions for this expo
+    const SessionModel = (await import('../models/Session.model')).default;
+    const sessions = await SessionModel.findByExpo(req.params.id as string);
+
+    /**
+     * Format a JS Date to iCal DATETIME format: YYYYMMDDTHHmmssZ (UTC)
+     */
+    function toIcalDate(d: Date): string {
+      return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    }
+
+    /**
+     * Escape special characters per RFC 5545 §3.3.11
+     */
+    function icalEscape(str: string): string {
+      return (str || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+    }
+
+    const now = toIcalDate(new Date());
+    const calName = icalEscape(expo.name);
+    const calDesc = icalEscape(expo.description || '');
+    const location = icalEscape(`${expo.venueName}, ${expo.venueAddress}`);
+    const uid_base = `eventsphere-${expo._id}`;
+
+    const vevents = sessions.map((s) => {
+      const start = toIcalDate(new Date(s.startTime));
+      const end = toIcalDate(new Date(s.endTime));
+      const uid = `${uid_base}-session-${s._id}@eventsphere`;
+      const summary = icalEscape(s.title);
+      const description = icalEscape(
+        [s.description, s.speakerName ? `Speaker: ${s.speakerName}` : '', s.track ? `Track: ${s.track}` : '']
+          .filter(Boolean)
+          .join('\\n')
+      );
+      const sessionLocation = icalEscape(s.room ? `${s.room}, ${expo.venueName}` : expo.venueName);
+      return [
+        'BEGIN:VEVENT',
+        `UID:${uid}`,
+        `DTSTAMP:${now}`,
+        `DTSTART:${start}`,
+        `DTEND:${end}`,
+        `SUMMARY:${summary}`,
+        `DESCRIPTION:${description}`,
+        `LOCATION:${sessionLocation}`,
+        s.track ? `CATEGORIES:${icalEscape(s.track)}` : '',
+        'STATUS:CONFIRMED',
+        'TRANSP:OPAQUE',
+        'END:VEVENT',
+      ].filter(Boolean).join('\r\n');
+    });
+
+    // If no sessions, still generate a single all-day event for the expo itself
+    if (vevents.length === 0) {
+      const startDay = new Date(expo.startDate).toISOString().slice(0, 10).replace(/-/g, '');
+      const endDayDate = new Date(expo.endDate);
+      endDayDate.setDate(endDayDate.getDate() + 1);
+      const endDay = endDayDate.toISOString().slice(0, 10).replace(/-/g, '');
+      vevents.push([
+        'BEGIN:VEVENT',
+        `UID:${uid_base}-main@eventsphere`,
+        `DTSTAMP:${now}`,
+        `DTSTART;VALUE=DATE:${startDay}`,
+        `DTEND;VALUE=DATE:${endDay}`,
+        `SUMMARY:${calName}`,
+        `DESCRIPTION:${calDesc}`,
+        `LOCATION:${location}`,
+        'STATUS:CONFIRMED',
+        'END:VEVENT',
+      ].join('\r\n'));
+    }
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//EventSphere//Schedule Export//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      `X-WR-CALNAME:${calName} — Schedule`,
+      `X-WR-CALDESC:${calDesc}`,
+      ...vevents,
+      'END:VCALENDAR',
+    ].join('\r\n');
+
+    const filename = `${expo.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_schedule.ics`;
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.status(200).send(icsContent);
+  })
+);
+
 export default router;
 

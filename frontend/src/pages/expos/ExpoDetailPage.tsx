@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Calendar, MapPin, Building2, Globe, Clock, CheckCircle2, AlertCircle, Heart, Map, Tag } from 'lucide-react';
+import { Calendar, MapPin, Building2, Globe, Clock, CheckCircle2, AlertCircle, Heart, Map, Tag, Download } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { expoService } from '../../services/expoService';
@@ -48,6 +48,7 @@ export default function ExpoDetailPage() {
   const [selectedExhibitor, setSelectedExhibitor] = useState<any | null>(null);
   const [registering, setRegistering] = useState(false);
   const [registerMessage, setRegisterMessage] = useState<{ text: string; type: 'success' | 'warn' } | null>(null);
+  const [icsDownloading, setIcsDownloading] = useState(false);
 
   // ── Rating modal state ─────────────────────────────────────────────────────
   const [ratingTarget, setRatingTarget] = useState<{ id: string; name: string; boothLabel?: string } | null>(null);
@@ -373,17 +374,42 @@ export default function ExpoDetailPage() {
                   <h2 id="schedule-heading" className={`text-lg-token font-semibold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
                     Event Schedule
                   </h2>
-                  <button
-                    onClick={() => navigate(`/expos/${id}/schedule`)}
-                    className={`inline-flex items-center gap-1.5 px-sm-token py-1.5 rounded-md-token text-xs-token font-semibold border transition-colors cursor-pointer ${
-                      isDarkMode
-                        ? 'border-brand-primary-dark text-brand-primary-dark hover:bg-brand-primary-dark/10'
-                        : 'border-brand-primary-light text-brand-primary-light hover:bg-brand-primary-light/10'
-                    }`}
-                  >
-                    <span>View Full Schedule & Bookmarks</span>
-                    <span>→</span>
-                  </button>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      onClick={async () => {
+                        if (!expo || icsDownloading) return;
+                        setIcsDownloading(true);
+                        try {
+                          await expoService.downloadScheduleIcs(id!, expo.name);
+                          toast.success('Schedule downloaded!');
+                        } catch {
+                          toast.error('Failed to download schedule.');
+                        } finally {
+                          setIcsDownloading(false);
+                        }
+                      }}
+                      disabled={icsDownloading}
+                      className={`inline-flex items-center gap-1.5 px-sm-token py-1.5 rounded-md-token text-xs-token font-semibold border transition-colors cursor-pointer disabled:opacity-50 ${
+                        isDarkMode
+                          ? 'border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10'
+                          : 'border-emerald-600/50 text-emerald-700 hover:bg-emerald-600/10'
+                      }`}
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>{icsDownloading ? 'Exporting…' : 'Export .ics'}</span>
+                    </button>
+                    <button
+                      onClick={() => navigate(`/expos/${id}/schedule`)}
+                      className={`inline-flex items-center gap-1.5 px-sm-token py-1.5 rounded-md-token text-xs-token font-semibold border transition-colors cursor-pointer ${
+                        isDarkMode
+                          ? 'border-brand-primary-dark text-brand-primary-dark hover:bg-brand-primary-dark/10'
+                          : 'border-brand-primary-light text-brand-primary-light hover:bg-brand-primary-light/10'
+                      }`}
+                    >
+                      <span>View Full Schedule & Bookmarks</span>
+                      <span>→</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="relative pl-6 md:pl-8 space-y-md-token before:absolute before:left-[11px] md:before:left-[15px] before:top-3 before:bottom-3 before:w-[2px] before:bg-brand-primary-dark/40">

@@ -3,7 +3,10 @@ import SessionModel from '../models/Session.model';
 import ExpoModel from '../models/Expo.model';
 import BookmarkModel from '../models/Bookmark.model';
 import SessionRegistrationModel, { ISessionRegistration } from '../models/SessionRegistration.model';
+import SessionWaitlistModel, { ISessionWaitlist } from '../models/SessionWaitlist.model';
 import TicketModel from '../models/Ticket.model';
+import UserModel from '../models/User.model';
+import emailService from './email.service';
 import type { ISession, ISessionCreate } from '../models/Session.model';
 
 /**
@@ -346,15 +349,23 @@ class SessionService {
       myRegisteredSet = new Set(myRegs.map((r) => r.sessionId.toString()));
     }
 
-    // Attach registration counts and registration status
+    // Attach registration counts, waitlist status, and registration status
     const enriched = await Promise.all(
       sessions.map(async (s) => {
         const registrationCount = await SessionRegistrationModel.countBySession(s._id);
+        const waitlistCount = await SessionWaitlistModel.countBySession(s._id);
         const isRegistered = myRegisteredSet.has(s._id.toString());
+        const waitlistPosition = attendeeId
+          ? await SessionWaitlistModel.getPosition(s._id, attendeeId)
+          : null;
+
         return {
           ...s,
           registrationCount,
+          waitlistCount,
           isRegistered,
+          isWaitlisted: waitlistPosition !== null,
+          waitlistPosition,
           isFull: s.capacity ? registrationCount >= s.capacity : false,
         };
       })
@@ -364,13 +375,16 @@ class SessionService {
   }
 
   // -------------------------------------------------------------------------
-  // Session Registration Methods
+  // Session Registration & Waitlist Methods
   // -------------------------------------------------------------------------
 
   /**
-   * Register an attendee for a session.
+   * Register an attendee for a session (or join waitlist if full).
    */
-  async registerSession(sessionId: string, attendeeId: string): Promise<ISessionRegistration> {
+  async registerSession(
+    sessionId: string,
+    attendeeId: string
+  ): Promise<{ type: 'registered' | 'waitlisted'; registration?: ISessionRegistration; waitlist?: ISessionWaitlist; position?: number }> {
     const session = await SessionModel.findById(sessionId);
     if (!session) {
       throw createError('Session not found', 'SESSION_NOT_FOUND', 404);
@@ -394,29 +408,93 @@ class SessionService {
     // Check if already registered
     const existing = await SessionRegistrationModel.findBySessionAndAttendee(sessionId, attendeeId);
     if (existing) {
-      return existing;
+      return { type: 'registered', registration: existing };
     }
 
-    // Check capacity limit
+    // Check if session capacity is set and full
     if (session.capacity && session.capacity > 0) {
       const currentCount = await SessionRegistrationModel.countBySession(sessionId);
       if (currentCount >= session.capacity) {
-        throw createError('This session has reached full capacity', 'SESSION_CAPACITY_FULL', 409);
+        // Session full -> automatically add to waitlist
+        const existingWaitlist = await SessionWaitlistModel.findBySessionAndAttendee(sessionId, attendeeId);
+        if (existingWaitlist) {
+          const position = await SessionWaitlistModel.getPosition(sessionId, attendeeId);
+          return { type: 'waitlisted', waitlist: existingWaitlist, position: position ?? 1 };
+        }
+
+        const waitlist = await SessionWaitlistModel.create({
+          sessionId: session._id,
+          expoId: session.expoId,
+          attendeeId: new ObjectId(attendeeId),
+        });
+        const position = await SessionWaitlistModel.getPosition(sessionId, attendeeId);
+        return { type: 'waitlisted', waitlist, position: position ?? 1 };
       }
     }
 
-    return SessionRegistrationModel.create({
+    // If on waitlist previously, remove from waitlist
+    await SessionWaitlistModel.deleteBySessionAndAttendee(sessionId, attendeeId);
+
+    const registration = await SessionRegistrationModel.create({
       sessionId: session._id,
       expoId: session.expoId,
       attendeeId: new ObjectId(attendeeId),
     });
+
+    return { type: 'registered', registration };
   }
 
   /**
-   * Cancel an attendee's registration for a session.
+   * Cancel an attendee's registration for a session (promotes next person on waitlist).
    */
   async unregisterSession(sessionId: string, attendeeId: string): Promise<boolean> {
-    return SessionRegistrationModel.deleteBySessionAndAttendee(sessionId, attendeeId);
+    const deleted = await SessionRegistrationModel.deleteBySessionAndAttendee(sessionId, attendeeId);
+
+    // Also remove from waitlist if present
+    await SessionWaitlistModel.deleteBySessionAndAttendee(sessionId, attendeeId);
+
+    // If a confirmed registration was deleted, promote next person in line
+    if (deleted) {
+      const session = await SessionModel.findById(sessionId);
+      if (session) {
+        const nextInLine = await SessionWaitlistModel.getNextInLine(sessionId);
+        if (nextInLine) {
+          // Promote waitlisted attendee to registered
+          await SessionRegistrationModel.create({
+            sessionId: session._id,
+            expoId: session.expoId,
+            attendeeId: nextInLine.attendeeId,
+          });
+          await SessionWaitlistModel.deleteById(nextInLine._id);
+
+          // Trigger email notification for promoted attendee
+          Promise.all([
+            UserModel.findById(nextInLine.attendeeId),
+            ExpoModel.findById(session.expoId),
+          ])
+            .then(([attendeeUser, expoDoc]) => {
+              if (attendeeUser?.email && expoDoc) {
+                emailService.sendWaitlistPromotedEmail(
+                  attendeeUser.email,
+                  attendeeUser.fullName || 'Attendee',
+                  session.title,
+                  expoDoc.name
+                ).catch((e) => console.error('Error sending waitlist promotion email:', e));
+              }
+            })
+            .catch((e) => console.error('Error finding user for waitlist notification:', e));
+        }
+      }
+    }
+
+    return deleted;
+  }
+
+  /**
+   * Leave a session waitlist.
+   */
+  async leaveWaitlist(sessionId: string, attendeeId: string): Promise<boolean> {
+    return SessionWaitlistModel.deleteBySessionAndAttendee(sessionId, attendeeId);
   }
 
   /**

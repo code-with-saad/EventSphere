@@ -105,15 +105,19 @@ router.post(
   authenticate,
   authorize('attendee'),
   asyncHandler(async (req: AuthRequest, res: Response) => {
-    const registration = await SessionService.registerSession(
+    const result = await SessionService.registerSession(
       req.params.id as string,
       req.user!.userId
     );
 
+    const message = result.type === 'waitlisted'
+      ? `Session capacity full. You are #${result.position} on the waitlist.`
+      : 'Successfully registered for session';
+
     return res.status(201).json({
       success: true,
-      message: 'Successfully registered for session',
-      data: { registration },
+      message,
+      data: result,
     });
   })
 );
@@ -121,7 +125,7 @@ router.post(
 /**
  * DELETE /:expoId/sessions/:id/register
  *
- * Cancel registration for a session.
+ * Cancel registration for a session (promotes next waitlisted attendee).
  *
  * Access: Authenticated attendee
  */
@@ -138,6 +142,30 @@ router.delete(
     return res.status(200).json({
       success: true,
       message: 'Session registration cancelled successfully',
+    });
+  })
+);
+
+/**
+ * DELETE /:expoId/sessions/:id/waitlist
+ *
+ * Leave a session waitlist.
+ *
+ * Access: Authenticated attendee
+ */
+router.delete(
+  '/:expoId/sessions/:id/waitlist',
+  authenticate,
+  authorize('attendee'),
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    await SessionService.leaveWaitlist(
+      req.params.id as string,
+      req.user!.userId
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Removed from session waitlist',
     });
   })
 );

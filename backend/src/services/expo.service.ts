@@ -3,6 +3,8 @@ import ExpoModel from '../models/Expo.model';
 import ApplicationModel from '../models/Application.model';
 import TicketModel from '../models/Ticket.model';
 import FeedbackModel from '../models/Feedback.model';
+import UserModel from '../models/User.model';
+import EmailService from './email.service';
 import type { IExpo, ExpoStatus, IExpoSpatialLayout } from '../models/Expo.model';
 
 /**
@@ -445,7 +447,46 @@ class ExpoService {
     if (!updated) {
       throw createError('Expo not found', 'EXPO_NOT_FOUND', 404);
     }
+
+    // Fire-and-forget: notify all ticket holders when expo is published
+    if (newStatus === 'published') {
+      this._notifyTicketHoldersOnPublish(updated).catch((err) =>
+        console.error('[ExpoService] Failed to send publish notifications:', err)
+      );
+    }
+
     return updated;
+  }
+
+  /**
+   * Fire-and-forget helper: email all active ticket holders when expo transitions to published.
+   */
+  private async _notifyTicketHoldersOnPublish(expo: IExpo): Promise<void> {
+    const tickets = await TicketModel.getCollection()
+      .find({ expoId: expo._id, status: { $ne: 'cancelled' } })
+      .toArray();
+    if (tickets.length === 0) return;
+
+    const attendeeIds = tickets.map((t) => t.attendeeId);
+    const attendees = await UserModel.getCollection()
+      .find({ _id: { $in: attendeeIds } })
+      .toArray();
+
+    const startDateStr = expo.startDate
+      ? new Date(expo.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+      : 'TBD';
+
+    await Promise.all(
+      attendees.map((a) =>
+        EmailService.sendExpoPublishedEmail(
+          a.email,
+          a.fullName || 'Attendee',
+          expo.name,
+          startDateStr,
+          expo.venueName
+        ).catch(() => { /* per-attendee failures are non-fatal */ })
+      )
+    );
   }
 
   // -------------------------------------------------------------------------

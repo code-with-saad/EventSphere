@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, Bookmark } from 'lucide-react';
+import { Calendar, Bookmark, Download } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { sessionService } from '../../services/sessionService';
+import { expoService } from '../../services/expoService';
 import { bookmarkService } from '../../services/bookmarkService';
 import { feedbackService, MyRatingItem } from '../../services/feedbackService';
 import { useTickets } from '../../hooks/useTickets';
@@ -97,6 +98,7 @@ export default function ScheduleBrowsePage() {
   // ── Bookmarks ──────────────────────────────────────────────────────────────
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
   const [bookmarkPending, setBookmarkPending] = useState<Set<string>>(new Set());
+  const [icsDownloading, setIcsDownloading] = useState(false);
 
   // ── Session Registrations (RSVP) ──────────────────────────────────────────
   const [registerPending, setRegisterPending] = useState<Set<string>>(new Set());
@@ -372,12 +374,40 @@ export default function ScheduleBrowsePage() {
 
         {/* ── Page header ─────────────────────────────────────────────────── */}
         <div className="mb-xl-token">
-          <h1 className={`text-xl-token font-semibold leading-tight-token mb-xs-token ${textPrimary}`}>
-            Session schedule
-          </h1>
-          <p className={`text-sm-token ${textSecondary}`}>
-            Browse sessions and plan your visit
-          </p>
+          <div className="flex flex-wrap items-start justify-between gap-sm-token">
+            <div>
+              <h1 className={`text-xl-token font-semibold leading-tight-token mb-xs-token ${textPrimary}`}>
+                Session schedule
+              </h1>
+              <p className={`text-sm-token ${textSecondary}`}>
+                Browse sessions and plan your visit
+              </p>
+            </div>
+            {sessions.length > 0 && (
+              <button
+                onClick={async () => {
+                  if (!expoId || icsDownloading) return;
+                  setIcsDownloading(true);
+                  try {
+                    await expoService.downloadScheduleIcs(expoId, 'expo');
+                  } catch {
+                    // silently ignore
+                  } finally {
+                    setIcsDownloading(false);
+                  }
+                }}
+                disabled={icsDownloading}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg-token text-xs-token font-semibold border transition-colors cursor-pointer disabled:opacity-50 ${
+                  isDarkMode
+                    ? 'border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10'
+                    : 'border-emerald-600/50 text-emerald-700 hover:bg-emerald-600/10'
+                }`}
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>{icsDownloading ? 'Exporting…' : 'Export to Calendar (.ics)'}</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* ── Loading ──────────────────────────────────────────────────────── */}

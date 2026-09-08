@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Bookmark, Clock, Search, Compass, Sparkles } from 'lucide-react';
+import { Calendar, Bookmark, Clock, Search, Compass, Sparkles, Download } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { sessionService } from '../../services/sessionService';
+import { expoService } from '../../services/expoService';
 import { favoriteService, ExpoFavoriteItem } from '../../services/favoriteService';
 import { bookmarkService } from '../../services/bookmarkService';
 import { feedbackService, MyRatingItem } from '../../services/feedbackService';
@@ -80,6 +81,7 @@ export default function MySchedulePage() {
   const [viewMode, setViewMode] = useState<ViewMode>('all');
   const [selectedTrack, setSelectedTrack] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [icsDownloading, setIcsDownloading] = useState(false);
 
   // Bookmarks
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
@@ -350,6 +352,26 @@ export default function MySchedulePage() {
                     className="text-xs-token font-medium text-brand-primary-dark hover:underline"
                   >
                     View Expo Details →
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (!activeExpo || icsDownloading) return;
+                      setIcsDownloading(true);
+                      try {
+                        await expoService.downloadScheduleIcs(selectedExpoId, activeExpo.name);
+                      } catch {
+                        // silently fail — no toast import on this page
+                      } finally {
+                        setIcsDownloading(false);
+                      }
+                    }}
+                    disabled={icsDownloading}
+                    className={`inline-flex items-center gap-1 text-xs-token font-medium transition-colors disabled:opacity-50 ${
+                      isDarkMode ? 'text-emerald-400 hover:text-emerald-300' : 'text-emerald-700 hover:text-emerald-600'
+                    }`}
+                  >
+                    <Download className="w-3 h-3" />
+                    <span>{icsDownloading ? 'Exporting…' : 'Export .ics'}</span>
                   </button>
                 </div>
               )}

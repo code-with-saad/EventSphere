@@ -139,7 +139,7 @@ export default function TicketDetailPage() {
                         {expoName}
                       </h2>
                       <p className={`text-xs-token mt-1 ${isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}`}>
-                        General Admission Pass
+                        General Entry Pass
                       </p>
                     </div>
                     <TicketStatusBadge

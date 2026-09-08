@@ -487,9 +487,13 @@ class TicketService {
       return { result: 'invalid_ticket' };
     }
 
-    // If organizerId is provided, verify scanning organizer owns this expo
-    if (organizerId && expo.organizerId.toString() !== organizerId) {
-      return { result: 'wrong_event' };
+    // If organizerId is provided, check if it's the organizer ID or direct expoId matching
+    if (organizerId) {
+      const isOrganizerOwner = expo.organizerId.toString() === organizerId;
+      const isMatchingExpoId = ticket.expoId.toString() === organizerId;
+      if (!isOrganizerOwner && !isMatchingExpoId) {
+        return { result: 'wrong_event' };
+      }
     }
 
     // If explicit expoId was passed, verify it matches

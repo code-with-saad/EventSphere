@@ -120,5 +120,25 @@ export const expoService = {
     link.remove();
     window.URL.revokeObjectURL(downloadUrl);
   },
+
+  /**
+   * Download the full expo schedule as an RFC 5545 .ics calendar file.
+   * Compatible with Google Calendar, Apple Calendar, Outlook, etc.
+   */
+  downloadScheduleIcs: async (expoId: string, expoName: string) => {
+    const response = await api.get(`/api/expos/${expoId}/schedule.ics`, {
+      responseType: 'blob',
+    });
+    const blob = new Blob([response.data], { type: 'text/calendar; charset=utf-8' });
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    const safeFilename = `${expoName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_schedule.ics`;
+    link.setAttribute('download', safeFilename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+  },
 };
 

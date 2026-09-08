@@ -129,7 +129,7 @@ async function createSession(
     .set('Authorization', `Bearer ${token}`)
     .send({
       title: 'Prop Session',
-      speakerName: 'Speaker',
+      speakerName: overrides.speakerName || `Speaker ${Math.random().toString(36).substring(2, 7)}`,
       ...makeTimes(0),
       room: 'Hall A',
       ...overrides,
@@ -255,7 +255,7 @@ describe('Property 15: overlapping sessions in same room always rejected (27b)',
               .set('Authorization', `Bearer ${organizer.token}`)
               .send({
                 title: 'Session B',
-                speakerName: 'Speaker',
+                speakerName: `Speaker B ${Math.random().toString(36).substring(2, 7)}`,
                 ...makeTimes(bStartOffset, 1),
                 room: bRoom,
               });

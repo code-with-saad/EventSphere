@@ -359,7 +359,162 @@ EventSphere Team
 This is an automated message, please do not reply to this email.
     `.trim();
   }
+  /**
+   * Send notification when an exhibitor's application is approved or rejected
+   */
+  async sendApplicationStatusEmail(
+    email: string,
+    companyName: string,
+    expoName: string,
+    status: 'approved' | 'rejected',
+    reasonOrBooth?: string
+  ): Promise<boolean> {
+    try {
+      const isApproved = status === 'approved';
+      const subject = isApproved
+        ? `Application Approved: ${companyName} at ${expoName}`
+        : `Application Update: ${companyName} at ${expoName}`;
+
+      const html = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+          <h2 style="color: #6366f1; margin-top: 0;">EventSphere Expo Portal</h2>
+          <p>Hello <strong>${companyName}</strong>,</p>
+          <p>Your exhibitor application for <strong>${expoName}</strong> has been <strong>${status.toUpperCase()}</strong>.</p>
+          ${
+            isApproved
+              ? `<div style="background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px; margin: 16px 0; border-radius: 4px;">
+                  <p style="margin: 0; color: #166534; font-weight: bold;">🎉 Welcome to the Expo!</p>
+                  ${reasonOrBooth ? `<p style="margin: 4px 0 0 0; color: #166534;">Assigned Booth: <strong>${reasonOrBooth}</strong></p>` : ''}
+                </div>
+                <p>Log in to your Exhibitor Dashboard to manage your booth profile and view the floor plan.</p>`
+              : `<div style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 12px; margin: 16px 0; border-radius: 4px;">
+                  <p style="margin: 0; color: #991b1b; font-weight: bold;">Application Status: Rejected</p>
+                  ${reasonOrBooth ? `<p style="margin: 4px 0 0 0; color: #991b1b;">Reason: ${reasonOrBooth}</p>` : ''}
+                </div>`
+          }
+          <p style="color: #64748b; font-size: 12px; border-top: 1px solid #e2e8f0; padding-top: 12px; margin-top: 24px;">
+            EventSphere Automated Notifications &bull; Please do not reply directly.
+          </p>
+        </div>
+      `.trim();
+
+      const text = `Hello ${companyName},\n\nYour application for ${expoName} has been ${status.toUpperCase()}.\n${
+        isApproved ? (reasonOrBooth ? `Booth: ${reasonOrBooth}\n` : '') : (reasonOrBooth ? `Reason: ${reasonOrBooth}\n` : '')
+      }\nBest regards,\nEventSphere Team`;
+
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: email,
+        subject,
+        html,
+        text,
+      });
+
+      console.log(`Status email sent to ${email} for ${companyName} (${status})`);
+      return true;
+    } catch (error) {
+      console.error(`Failed to send status email to ${email}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Send notification when an attendee is promoted from session waitlist to confirmed registration
+   */
+  async sendWaitlistPromotedEmail(
+    email: string,
+    attendeeName: string,
+    sessionTitle: string,
+    expoName: string
+  ): Promise<boolean> {
+    try {
+      const subject = `Confirmed: You've been registered for ${sessionTitle}!`;
+      const html = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+          <h2 style="color: #6366f1; margin-top: 0;">EventSphere Schedule Alert</h2>
+          <p>Hello <strong>${attendeeName}</strong>,</p>
+          <p>Great news! A spot opened up and you have been promoted from the waitlist to confirmed registration for:</p>
+          <div style="background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px; margin: 16px 0; border-radius: 4px;">
+            <p style="margin: 0; font-weight: bold; color: #166534;">${sessionTitle}</p>
+            <p style="margin: 4px 0 0 0; color: #166534; font-size: 13px;">Expo: ${expoName}</p>
+          </div>
+          <p>Check your attendee dashboard under My Schedule to view session details and rooms.</p>
+          <p style="color: #64748b; font-size: 12px; border-top: 1px solid #e2e8f0; padding-top: 12px; margin-top: 24px;">
+            EventSphere Automated Notifications
+          </p>
+        </div>
+      `.trim();
+
+      const text = `Hello ${attendeeName},\n\nA spot opened up and you have been registered for "${sessionTitle}" at ${expoName}!\n\nBest regards,\nEventSphere Team`;
+
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: email,
+        subject,
+        html,
+        text,
+      });
+
+      console.log(`Waitlist promotion email sent to ${email} for session ${sessionTitle}`);
+      return true;
+    } catch (error) {
+      console.error(`Failed to send waitlist promotion email to ${email}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Send notification to all ticket holders when an expo is published
+   */
+  async sendExpoPublishedEmail(
+    email: string,
+    attendeeName: string,
+    expoName: string,
+    startDate: string,
+    venueName: string
+  ): Promise<boolean> {
+    try {
+      const subject = `📣 ${expoName} is Now Live — You're Registered!`;
+      const html = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+          <h2 style="color: #6366f1; margin-top: 0;">EventSphere Update</h2>
+          <p>Hello <strong>${attendeeName}</strong>,</p>
+          <p>Great news! The expo you registered for has officially been published and is now live:</p>
+          <div style="background: #f0f4ff; border-left: 4px solid #6366f1; padding: 16px; margin: 16px 0; border-radius: 6px;">
+            <p style="margin: 0; font-size: 18px; font-weight: bold; color: #3730a3;">${expoName}</p>
+            <p style="margin: 6px 0 0 0; color: #4338ca; font-size: 14px;">📅 ${startDate}</p>
+            <p style="margin: 4px 0 0 0; color: #4338ca; font-size: 14px;">📍 ${venueName}</p>
+          </div>
+          <p>Log in to your attendee dashboard to view the full schedule, exhibitor list, and floor plan.</p>
+          <p style="color: #64748b; font-size: 12px; border-top: 1px solid #e2e8f0; padding-top: 12px; margin-top: 24px;">
+            EventSphere Automated Notifications &bull; Please do not reply directly.
+          </p>
+        </div>
+      `.trim();
+
+      const text = `Hello ${attendeeName},\n\n${expoName} has been published!\n\nDate: ${startDate}\nVenue: ${venueName}\n\nLog in to view the full details.\n\nBest regards,\nEventSphere Team`;
+
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: email,
+        subject,
+        html,
+        text,
+      });
+
+      console.log(`Expo published email sent to ${email} for ${expoName}`);
+      return true;
+    } catch (error) {
+      console.error(`Failed to send expo published email to ${email}:`, error);
+      return false;
+    }
+  }
 }
+
+/**
+ * Singleton instance of EmailService
+ */
+export default new EmailService();
 
 /**
  * Factory function to create EmailService instance
