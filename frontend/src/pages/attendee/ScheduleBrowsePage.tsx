@@ -13,6 +13,7 @@ import BackButton from '../../components/layout/BackButton';
 import DayTabs from '../../components/session/DayTabs';
 import ScheduleGrid from '../../components/session/ScheduleGrid';
 import AttendeeRatingModal from '../../components/common/AttendeeRatingModal';
+import toast from 'react-hot-toast';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -25,7 +26,10 @@ type Session = {
   room: string;
   capacity?: number;
   registrationCount?: number;
+  waitlistCount?: number;
   isRegistered?: boolean;
+  isWaitlisted?: boolean;
+  waitlistPosition?: number | null;
   isFull?: boolean;
   track?: string;
   description?: string;
@@ -242,50 +246,26 @@ export default function ScheduleBrowsePage() {
     async (sessionId: string, isCurrentlyRegistered: boolean) => {
       if (!expoId || registerPending.has(sessionId)) return;
 
-      // Optimistic update
-      setSessions((prev) =>
-        prev.map((s) => {
-          if (s._id === sessionId) {
-            const nextCount = isCurrentlyRegistered
-              ? Math.max(0, (s.registrationCount ?? 1) - 1)
-              : (s.registrationCount ?? 0) + 1;
-            return {
-              ...s,
-              isRegistered: !isCurrentlyRegistered,
-              registrationCount: nextCount,
-              isFull: s.capacity ? nextCount >= s.capacity : false,
-            };
-          }
-          return s;
-        })
-      );
+      const targetSession = sessions.find(s => s._id === sessionId);
+      const isCurrentlyWaitlisted = targetSession?.isWaitlisted;
 
       setRegisterPending((prev) => new Set(prev).add(sessionId));
 
       try {
-        if (isCurrentlyRegistered) {
+        if (isCurrentlyRegistered || isCurrentlyWaitlisted) {
           await sessionService.unregister(expoId, sessionId);
+          toast.success(isCurrentlyWaitlisted ? 'Left session waitlist' : 'Session registration cancelled');
         } else {
-          await sessionService.register(expoId, sessionId);
+          const res = await sessionService.register(expoId, sessionId);
+          if (res?.data?.type === 'waitlisted') {
+            toast.success(`Session full. You joined the waitlist (#${res.data.position || 1})!`);
+          } else {
+            toast.success('Registered for session successfully!');
+          }
         }
+        await fetchSessions();
       } catch (err: any) {
-        // Revert optimistic update on failure
-        setSessions((prev) =>
-          prev.map((s) => {
-            if (s._id === sessionId) {
-              const prevCount = isCurrentlyRegistered
-                ? (s.registrationCount ?? 0) + 1
-                : Math.max(0, (s.registrationCount ?? 1) - 1);
-              return {
-                ...s,
-                isRegistered: isCurrentlyRegistered,
-                registrationCount: prevCount,
-                isFull: s.capacity ? prevCount >= s.capacity : false,
-              };
-            }
-            return s;
-          })
-        );
+        toast.error(err?.response?.data?.message || err?.message || 'Failed to update session status');
       } finally {
         setRegisterPending((prev) => {
           const next = new Set(prev);
@@ -294,7 +274,7 @@ export default function ScheduleBrowsePage() {
         });
       }
     },
-    [expoId, registerPending]
+    [expoId, registerPending, sessions, fetchSessions]
   );
 
   // ── Bookmark toggle ────────────────────────────────────────────────────────

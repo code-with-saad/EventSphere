@@ -10,7 +10,10 @@ interface Session {
   room: string;
   capacity?: number;
   registrationCount?: number;
+  waitlistCount?: number;
   isRegistered?: boolean;
+  isWaitlisted?: boolean;
+  waitlistPosition?: number | null;
   isFull?: boolean;
   track?: string;
   description?: string;

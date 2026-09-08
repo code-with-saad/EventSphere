@@ -12,7 +12,10 @@ interface SessionCardProps {
     room: string;
     capacity?: number;
     registrationCount?: number;
+    waitlistCount?: number;
     isRegistered?: boolean;
+    isWaitlisted?: boolean;
+    waitlistPosition?: number | null;
     isFull?: boolean;
     track?: string;
     description?: string;
@@ -101,7 +104,7 @@ export default function SessionCard({
             <span
               className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${
                 session.isFull && !session.isRegistered
-                  ? 'bg-red-500/10 text-red-500 border border-red-500/20'
+                  ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
                   : isDarkMode
                     ? 'bg-white/5 text-text-secondary-dark border border-white/10'
                     : 'bg-gray-100 text-text-secondary-light border border-gray-200'
@@ -109,7 +112,8 @@ export default function SessionCard({
             >
               <Users className="w-3 h-3" />
               {session.registrationCount ?? 0}/{session.capacity} spots
-              {session.isFull && !session.isRegistered && ' (Full)'}
+              {session.isFull && ' (Full)'}
+              {(session.waitlistCount ?? 0) > 0 && ` · ${session.waitlistCount} waitlisted`}
             </span>
           )}
         </div>
@@ -118,20 +122,39 @@ export default function SessionCard({
           {showRegister && onRegisterToggle && (
             <button
               type="button"
-              disabled={registerPending || (session.isFull && !session.isRegistered)}
+              disabled={registerPending}
               onClick={handleRegister}
-              className={`px-2.5 py-1 rounded-md-token text-xs font-semibold flex items-center gap-1 transition-all ${
+              title={
                 session.isRegistered
-                  ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25'
-                  : session.isFull
-                    ? 'bg-gray-200 dark:bg-gray-800 text-gray-400 border border-transparent cursor-not-allowed'
-                    : isDarkMode
-                      ? 'bg-brand-primary-dark/20 text-brand-primary-dark hover:bg-brand-primary-dark/30 border border-brand-primary-dark/40'
-                      : 'bg-brand-primary-light/15 text-brand-primary-light hover:bg-brand-primary-light/25 border border-brand-primary-light/30'
+                  ? 'Click to cancel registration (Unregister)'
+                  : session.isWaitlisted
+                    ? 'Click to leave waitlist'
+                    : session.isFull
+                      ? 'Session full — Click to join waitlist'
+                      : 'Click to RSVP / Register'
+              }
+              className={`px-2.5 py-1 rounded-md-token text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer ${
+                session.isRegistered
+                  ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 hover:bg-red-500/15 hover:text-red-500 hover:border-red-500/30 group/btn'
+                  : session.isWaitlisted
+                    ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 hover:bg-red-500/15 hover:text-red-500 hover:border-red-500/30 group/btn'
+                    : session.isFull
+                      ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20'
+                      : isDarkMode
+                        ? 'bg-brand-primary-dark/20 text-brand-primary-dark hover:bg-brand-primary-dark/30 border border-brand-primary-dark/40'
+                        : 'bg-brand-primary-light/15 text-brand-primary-light hover:bg-brand-primary-light/25 border border-brand-primary-light/30'
               }`}
             >
               <UserCheck className="w-3.5 h-3.5" />
-              <span>{session.isRegistered ? 'Registered' : session.isFull ? 'Full' : 'RSVP / Register'}</span>
+              <span>
+                {session.isRegistered
+                  ? 'Registered (Cancel)'
+                  : session.isWaitlisted
+                    ? `Waitlist #${session.waitlistPosition ?? 1} (Leave)`
+                    : session.isFull
+                      ? 'Join Waitlist'
+                      : 'RSVP / Register'}
+              </span>
             </button>
           )}
 
