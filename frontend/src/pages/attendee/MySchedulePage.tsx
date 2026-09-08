@@ -140,30 +140,23 @@ export default function MySchedulePage() {
   const expoTabs = useMemo<ExpoTabItem[]>(() => {
     const map = new Map<string, ExpoTabItem>();
 
-    // Add ticketed expos first
+    // Add ticketed expos (only active/checked_in tickets for upcoming/ongoing expos)
     (tickets || []).forEach((t: any) => {
-      const eid =
-        (typeof t.expoId === 'object' && t.expoId?._id ? t.expoId._id : t.expoId) ||
-        (typeof t.expo === 'object' && t.expo?._id ? t.expo._id : t.expo) ||
-        '';
+      if (t.status === 'cancelled') return;
+
+      const expoObj = t.expo || (typeof t.expoId === 'object' ? t.expoId : null);
+      const eid = expoObj?._id || t.expoId || t.expo;
       const idStr = eid ? eid.toString() : '';
       if (!idStr) return;
 
-      const name =
-        (typeof t.expoId === 'object' && t.expoId?.name ? t.expoId.name : null) ||
-        (typeof t.expo === 'object' && t.expo?.name ? t.expo.name : null) ||
-        t.expoName ||
-        'My Expo';
-      
-      const venue =
-        (typeof t.expoId === 'object' && t.expoId?.venueName ? t.expoId.venueName : null) ||
-        (typeof t.expo === 'object' && t.expo?.venueName ? t.expo.venueName : null) ||
-        '';
+      // Exclude completed or archived expos from schedule tabs
+      if (expoObj?.status === 'completed' || expoObj?.status === 'archived') {
+        return;
+      }
 
-      const category =
-        (typeof t.expoId === 'object' && t.expoId?.category ? t.expoId.category : null) ||
-        (typeof t.expo === 'object' && t.expo?.category ? t.expo.category : null) ||
-        '';
+      const name = expoObj?.name || t.expoName || 'Expo Event';
+      const venue = expoObj?.venueName || '';
+      const category = expoObj?.category || '';
 
       map.set(idStr, {
         expoId: idStr,
@@ -174,8 +167,12 @@ export default function MySchedulePage() {
       });
     });
 
-    // Add favorited expos
+    // Add favorited expos (only if not completed/archived)
     (favorites || []).forEach((f) => {
+      if (f.expo?.status === 'completed' || f.expo?.status === 'archived') {
+        return;
+      }
+
       if (!map.has(f.expoId)) {
         map.set(f.expoId, {
           expoId: f.expoId,

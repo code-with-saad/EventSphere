@@ -136,14 +136,33 @@ export class TicketModel {
   /**
    * Find all tickets for a given attendee, sorted by registration date descending
    *
-   * Supports REQ-5.7: attendee views their ticket history.
+   * Supports REQ-5.7: attendee views their ticket history with populated expo details.
    *
    * @param attendeeId Attendee user ID
-   * @returns Array of ticket documents for that attendee
+   * @returns Array of ticket documents for that attendee with populated expo object
    */
-  async findByAttendee(attendeeId: ObjectId | string): Promise<ITicket[]> {
+  async findByAttendee(attendeeId: ObjectId | string): Promise<any[]> {
     const aid = typeof attendeeId === 'string' ? new ObjectId(attendeeId) : attendeeId;
-    return this.collection.find({ attendeeId: aid }).sort({ registeredAt: -1 }).toArray();
+    return this.collection
+      .aggregate([
+        { $match: { attendeeId: aid } },
+        { $sort: { registeredAt: -1 } },
+        {
+          $lookup: {
+            from: 'expos',
+            localField: 'expoId',
+            foreignField: '_id',
+            as: 'expo',
+          },
+        },
+        {
+          $unwind: {
+            path: '$expo',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+      ])
+      .toArray();
   }
 
   /**
