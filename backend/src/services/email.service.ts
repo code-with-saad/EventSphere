@@ -1,19 +1,87 @@
+import nodemailer, { Transporter } from 'nodemailer';
 import { Resend } from 'resend';
 import env from '../config/env';
 
 /**
  * Email Service Class
- * Handles email delivery using Resend API
+ * Handles email delivery using SMTP (Gmail / Custom SMTP) or Resend API fallback.
  */
 export class EmailService {
-  private resend: Resend;
+  private transporter: Transporter | null = null;
+  private resend: Resend | null = null;
   private fromEmail: string;
 
   constructor() {
-    // Initialize Resend client with API key from environment
-    this.resend = new Resend(env.RESEND_API_KEY);
-    // Use a default from address (can be configured in env later)
-    this.fromEmail = 'EventSphere <onboarding@resend.dev>';
+    this.fromEmail = env.SMTP_FROM || (env.SMTP_USER ? `EventSphere <${env.SMTP_USER}>` : 'EventSphere <onboarding@resend.dev>');
+
+    // 1. If SMTP credentials (such as Gmail) are provided, configure Nodemailer transporter
+    if (env.SMTP_USER && env.SMTP_PASS) {
+      if (env.SMTP_HOST) {
+        this.transporter = nodemailer.createTransport({
+          host: env.SMTP_HOST,
+          port: env.SMTP_PORT ? Number(env.SMTP_PORT) : 587,
+          secure: env.SMTP_PORT === '465',
+          auth: {
+            user: env.SMTP_USER,
+            pass: env.SMTP_PASS,
+          },
+        });
+      } else {
+        // Default to Gmail service
+        this.transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: env.SMTP_USER,
+            pass: env.SMTP_PASS,
+          },
+        });
+      }
+      console.log(`✔ EmailService configured with SMTP (${env.SMTP_USER})`);
+    } else if (env.RESEND_API_KEY) {
+      // 2. Fallback to Resend API if configured
+      this.resend = new Resend(env.RESEND_API_KEY);
+      console.log('✔ EmailService configured with Resend API');
+    } else {
+      console.warn('⚠ EmailService initialized without SMTP or Resend credentials (console fallback active).');
+    }
+  }
+
+  /**
+   * Internal helper to dispatch email through the active transport
+   */
+  private async _sendMail(options: {
+    to: string;
+    subject: string;
+    html: string;
+    text: string;
+  }): Promise<boolean> {
+    const { to, subject, html, text } = options;
+
+    if (this.transporter) {
+      await this.transporter.sendMail({
+        from: this.fromEmail,
+        to,
+        subject,
+        html,
+        text,
+      });
+      return true;
+    }
+
+    if (this.resend) {
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to,
+        subject,
+        html,
+        text,
+      });
+      return true;
+    }
+
+    // Console fallback if no transport is configured in development
+    console.log(`\n[EMAIL LOG (No SMTP configured)]\nTo: ${to}\nSubject: ${subject}\nText:\n${text}\n`);
+    return true;
   }
 
   /**
@@ -32,32 +100,23 @@ export class EmailService {
     try {
       const { subject, html, text } = this.generateEmailContent(otp, purpose);
 
-      const result = await this.resend.emails.send({
-        from: this.fromEmail,
+      await this._sendMail({
         to: email,
-        subject: subject,
-        html: html,
-        text: text,
+        subject,
+        html,
+        text,
       });
 
-      // Log success (without sensitive data)
-      console.log(`OTP email sent successfully to ${email} for ${purpose}. Message ID: ${result.data?.id}`);
-
+      console.log(`OTP email sent successfully to ${email} for ${purpose}.`);
       return true;
     } catch (error) {
-      // Log error with details
       console.error(`Failed to send OTP email to ${email} for ${purpose}:`, error);
-      
-      // Re-throw error to be handled by the caller
       throw new Error('Failed to send OTP email. Please try again later.');
     }
   }
 
   /**
    * Generate email content based on purpose
-   * @param otp - 6-digit OTP code
-   * @param purpose - Purpose of the OTP
-   * @returns Object containing subject, html, and text content
    */
   private generateEmailContent(
     otp: string,
@@ -150,37 +209,44 @@ export class EmailService {
       background-color: #f8fafc;
       padding: 20px 30px;
       text-align: center;
-      color: #64748b;
       font-size: 14px;
+      color: #94a3b8;
       border-top: 1px solid #e2e8f0;
     }
-    .footer a {
-      color: #10b981;
-      text-decoration: none;
+    .warning {
+      background-color: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 12px 16px;
+      margin: 20px 0;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #92400e;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>🎉 EventSphere</h1>
+      <h1>EventSphere</h1>
     </div>
     <div class="content">
       <p class="message">Hello,</p>
-      <p class="message">Thank you for registering with EventSphere! To complete your registration and activate your account, please use the verification code below:</p>
+      <p class="message">Thank you for registering with EventSphere! To complete your account verification, please enter the following One-Time Password (OTP):</p>
       
       <div class="otp-box">
         <div class="otp-code">${otp}</div>
-        <div class="expiry-note">⏱️ This code expires in 5 minutes</div>
+        <div class="expiry-note">⏱ This code will expire in <strong>10 minutes</strong></div>
       </div>
 
-      <p class="message">If you didn't request this code, please ignore this email and your account will remain inactive.</p>
-      
-      <p class="message">Welcome to EventSphere!<br>The EventSphere Team</p>
+      <div class="warning">
+        <strong>Security Notice:</strong> Never share this code with anyone. EventSphere support will never ask for your OTP.
+      </div>
+
+      <p class="message">If you did not request this registration, please safely ignore this email.</p>
     </div>
     <div class="footer">
+      <p>&copy; ${new Date().getFullYear()} EventSphere. All rights reserved.</p>
       <p>This is an automated message, please do not reply to this email.</p>
-      <p>&copy; 2024 EventSphere. All rights reserved.</p>
     </div>
   </div>
 </body>
@@ -193,22 +259,22 @@ export class EmailService {
    */
   private getRegistrationEmailText(otp: string): string {
     return `
+EventSphere - Account Verification
+
 Hello,
 
-Thank you for registering with EventSphere! Your verification code is:
+Thank you for registering with EventSphere! To complete your account verification, please use the following One-Time Password (OTP):
 
 ${otp}
 
-This code expires in 5 minutes.
+This code will expire in 10 minutes.
 
-If you didn't request this code, please ignore this email.
+Security Notice: Never share this code with anyone. EventSphere support will never ask for your OTP.
 
-Welcome to EventSphere!
-
-Best regards,
-EventSphere Team
+If you did not request this registration, please safely ignore this email.
 
 ---
+© ${new Date().getFullYear()} EventSphere. All rights reserved.
 This is an automated message, please do not reply to this email.
     `.trim();
   }
@@ -281,55 +347,48 @@ This is an automated message, please do not reply to this email.
       line-height: 1.8;
       margin-bottom: 20px;
     }
-    .security-notice {
-      background-color: #fef3c7;
-      border-left: 4px solid #f59e0b;
-      padding: 15px;
-      margin: 20px 0;
-      border-radius: 4px;
-    }
-    .security-notice p {
-      margin: 0;
-      color: #92400e;
-      font-size: 14px;
-    }
     .footer {
       background-color: #f8fafc;
       padding: 20px 30px;
       text-align: center;
-      color: #64748b;
       font-size: 14px;
+      color: #94a3b8;
       border-top: 1px solid #e2e8f0;
     }
-    .footer a {
-      color: #6366f1;
-      text-decoration: none;
+    .warning {
+      background-color: #fee2e2;
+      border-left: 4px solid #ef4444;
+      padding: 12px 16px;
+      margin: 20px 0;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #991b1b;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>🔐 EventSphere</h1>
+      <h1>EventSphere</h1>
     </div>
     <div class="content">
       <p class="message">Hello,</p>
-      <p class="message">We received a request to reset your EventSphere password. To proceed with the password reset, please use the verification code below:</p>
+      <p class="message">We received a request to reset your password. Please enter the following One-Time Password (OTP) to proceed with resetting your password:</p>
       
       <div class="otp-box">
         <div class="otp-code">${otp}</div>
-        <div class="expiry-note">⏱️ This code expires in 5 minutes</div>
+        <div class="expiry-note">⏱ This code will expire in <strong>10 minutes</strong></div>
       </div>
 
-      <div class="security-notice">
-        <p>⚠️ <strong>Security Notice:</strong> If you didn't request a password reset, please ignore this email. Your password will remain unchanged.</p>
+      <div class="warning">
+        <strong>Security Notice:</strong> If you did not request a password reset, please change your password immediately and contact support.
       </div>
-      
-      <p class="message">Best regards,<br>The EventSphere Team</p>
+
+      <p class="message">Do not share this code with anyone.</p>
     </div>
     <div class="footer">
+      <p>&copy; ${new Date().getFullYear()} EventSphere. All rights reserved.</p>
       <p>This is an automated message, please do not reply to this email.</p>
-      <p>&copy; 2024 EventSphere. All rights reserved.</p>
     </div>
   </div>
 </body>
@@ -342,25 +401,26 @@ This is an automated message, please do not reply to this email.
    */
   private getPasswordResetEmailText(otp: string): string {
     return `
+EventSphere - Password Reset
+
 Hello,
 
-We received a request to reset your EventSphere password. Your password reset code is:
+We received a request to reset your password. Please use the following One-Time Password (OTP) to proceed:
 
 ${otp}
 
-This code expires in 5 minutes.
+This code will expire in 10 minutes.
 
-SECURITY NOTICE: If you didn't request a password reset, please ignore this email and your password will remain unchanged.
-
-Best regards,
-EventSphere Team
+Security Notice: If you did not request a password reset, please change your password immediately and contact support. Never share this code with anyone.
 
 ---
+© ${new Date().getFullYear()} EventSphere. All rights reserved.
 This is an automated message, please do not reply to this email.
     `.trim();
   }
+
   /**
-   * Send notification when an exhibitor's application is approved or rejected
+   * Send notification when an exhibitor application is approved or rejected
    */
   async sendApplicationStatusEmail(
     email: string,
@@ -372,8 +432,8 @@ This is an automated message, please do not reply to this email.
     try {
       const isApproved = status === 'approved';
       const subject = isApproved
-        ? `Application Approved: ${companyName} at ${expoName}`
-        : `Application Update: ${companyName} at ${expoName}`;
+        ? `Application Approved: Welcome to ${expoName}!`
+        : `Update regarding your application for ${expoName}`;
 
       const html = `
         <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
@@ -402,8 +462,7 @@ This is an automated message, please do not reply to this email.
         isApproved ? (reasonOrBooth ? `Booth: ${reasonOrBooth}\n` : '') : (reasonOrBooth ? `Reason: ${reasonOrBooth}\n` : '')
       }\nBest regards,\nEventSphere Team`;
 
-      await this.resend.emails.send({
-        from: this.fromEmail,
+      await this._sendMail({
         to: email,
         subject,
         html,
@@ -447,8 +506,7 @@ This is an automated message, please do not reply to this email.
 
       const text = `Hello ${attendeeName},\n\nA spot opened up and you have been registered for "${sessionTitle}" at ${expoName}!\n\nBest regards,\nEventSphere Team`;
 
-      await this.resend.emails.send({
-        from: this.fromEmail,
+      await this._sendMail({
         to: email,
         subject,
         html,
@@ -459,6 +517,51 @@ This is an automated message, please do not reply to this email.
       return true;
     } catch (error) {
       console.error(`Failed to send waitlist promotion email to ${email}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Send a registration confirmation email when an attendee successfully registers for an expo
+   */
+  async sendTicketRegistrationEmail(
+    email: string,
+    attendeeName: string,
+    expoName: string,
+    startDate: string,
+    venueName: string,
+    ticketId: string
+  ): Promise<boolean> {
+    try {
+      const subject = `🎟️ You're Registered for ${expoName}!`;
+      const html = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+          <h2 style="color: #6366f1; margin-top: 0;">EventSphere — Registration Confirmed</h2>
+          <p>Hello <strong>${attendeeName}</strong>,</p>
+          <p>You're officially registered for:</p>
+          <div style="background: #f0f4ff; border-left: 4px solid #6366f1; padding: 16px; margin: 16px 0; border-radius: 6px;">
+            <p style="margin: 0; font-size: 18px; font-weight: bold; color: #3730a3;">${expoName}</p>
+            <p style="margin: 6px 0 0 0; color: #4338ca; font-size: 14px;">📅 ${startDate}</p>
+            <p style="margin: 4px 0 0 0; color: #4338ca; font-size: 14px;">📍 ${venueName}</p>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 16px 0; text-align: center;">
+            <p style="margin: 0 0 8px 0; font-size: 13px; color: #64748b;">Your Ticket ID</p>
+            <p style="margin: 0; font-family: monospace; font-size: 15px; font-weight: bold; color: #1e293b; word-break: break-all;">${ticketId}</p>
+          </div>
+          <p>Log in to your attendee dashboard to view your QR code for check-in, browse the session schedule, and explore exhibitor booths.</p>
+          <p style="color: #64748b; font-size: 12px; border-top: 1px solid #e2e8f0; padding-top: 12px; margin-top: 24px;">
+            EventSphere Automated Notifications &bull; Please do not reply directly.
+          </p>
+        </div>
+      `.trim();
+
+      const text = `Hello ${attendeeName},\n\nYou are registered for ${expoName}!\n\nDate: ${startDate}\nVenue: ${venueName}\nTicket ID: ${ticketId}\n\nLog in to your dashboard to view your QR code.\n\nBest regards,\nEventSphere Team`;
+
+      await this._sendMail({ to: email, subject, html, text });
+      console.log(`Ticket registration email sent to ${email} for ${expoName}`);
+      return true;
+    } catch (error) {
+      console.error(`Failed to send ticket registration email to ${email}:`, error);
       return false;
     }
   }
@@ -494,8 +597,7 @@ This is an automated message, please do not reply to this email.
 
       const text = `Hello ${attendeeName},\n\n${expoName} has been published!\n\nDate: ${startDate}\nVenue: ${venueName}\n\nLog in to view the full details.\n\nBest regards,\nEventSphere Team`;
 
-      await this.resend.emails.send({
-        from: this.fromEmail,
+      await this._sendMail({
         to: email,
         subject,
         html,

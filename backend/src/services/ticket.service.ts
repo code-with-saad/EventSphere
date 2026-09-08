@@ -6,6 +6,7 @@ import TicketModel from '../models/Ticket.model';
 import ExpoModel from '../models/Expo.model';
 import UserModel from '../models/User.model';
 import type { ITicket } from '../models/Ticket.model';
+import EmailService from './email.service';
 
 /**
  * TicketService
@@ -157,7 +158,20 @@ class TicketService {
       attendeeId: new ObjectId(attendeeId),
     });
 
-    // 8. Return full registration response
+    // 8. Fire-and-forget: send registration confirmation email to attendee
+    const startDateStr = expo.startDate
+      ? new Date(expo.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+      : 'TBD';
+    EmailService.sendTicketRegistrationEmail(
+      attendee.email,
+      attendee.fullName || 'Attendee',
+      expo.name,
+      startDateStr,
+      expo.venueName,
+      ticketId
+    ).catch((err) => console.error('[TicketService] Failed to send registration email:', err));
+
+    // 9. Return full registration response
     return {
       ticket,
       qrCodeDataUrl,

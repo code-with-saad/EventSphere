@@ -21,8 +21,13 @@ const envSchema = z.object({
   // JWT Configuration
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters long'),
 
-  // Email Service Configuration (Resend)
-  RESEND_API_KEY: z.string().min(1, 'RESEND_API_KEY is required'),
+  // Email Service Configuration (SMTP / Gmail / Resend)
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.string().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().optional(),
+  RESEND_API_KEY: z.string().optional(),
 
   // SuperAdmin Seed Configuration
   SUPERADMIN_EMAIL: z.string().email('SUPERADMIN_EMAIL must be a valid email address'),

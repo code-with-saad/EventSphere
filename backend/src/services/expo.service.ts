@@ -462,9 +462,13 @@ class ExpoService {
    * Fire-and-forget helper: email all active ticket holders when expo transitions to published.
    */
   private async _notifyTicketHoldersOnPublish(expo: IExpo): Promise<void> {
+    console.log(`[ExpoService] _notifyTicketHoldersOnPublish: expo._id=${expo._id}, name="${expo.name}"`);
+
     const tickets = await TicketModel.getCollection()
       .find({ expoId: expo._id, status: { $ne: 'cancelled' } })
       .toArray();
+
+    console.log(`[ExpoService] Found ${tickets.length} ticket(s) for expo ${expo._id}`);
     if (tickets.length === 0) return;
 
     const attendeeIds = tickets.map((t) => t.attendeeId);
@@ -472,21 +476,28 @@ class ExpoService {
       .find({ _id: { $in: attendeeIds } })
       .toArray();
 
+    console.log(`[ExpoService] Resolved ${attendees.length} attendee(s) to notify`);
+
     const startDateStr = expo.startDate
       ? new Date(expo.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
       : 'TBD';
 
     await Promise.all(
-      attendees.map((a) =>
-        EmailService.sendExpoPublishedEmail(
+      attendees.map((a) => {
+        console.log(`[ExpoService] Sending publish email to: ${a.email}`);
+        return EmailService.sendExpoPublishedEmail(
           a.email,
           a.fullName || 'Attendee',
           expo.name,
           startDateStr,
           expo.venueName
-        ).catch(() => { /* per-attendee failures are non-fatal */ })
-      )
+        ).catch((err) => {
+          console.error(`[ExpoService] Failed to send publish email to ${a.email}:`, err);
+        });
+      })
     );
+
+    console.log(`[ExpoService] Publish notifications dispatched for expo "${expo.name}"`);
   }
 
   // -------------------------------------------------------------------------
