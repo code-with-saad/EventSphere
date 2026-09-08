@@ -43,6 +43,8 @@ export interface ExpoCardDTO {
   venueAddress: string;
   bannerUrl?: string;
   approvedExhibitorCount?: number;
+  attendeeCount?: number;
+  totalBooths?: number;
   category?: string;
   zones?: IExpoZone[];
   spatialLayout?: IExpoSpatialLayout;

@@ -41,12 +41,15 @@ export interface ExpoCardDTO {
   bannerUrl?: string;
   category?: string;
   approvedExhibitorCount: number;
+  attendeeCount: number;
+  totalBooths?: number;
 }
 
 export interface ExpoDetailDTO extends Omit<IExpo, '_id' | 'organizerId'> {
   _id: string;
   organizerId: string;
   approvedApplications: ApprovedExhibitorDTO[];
+  attendeeCount: number;
 }
 
 export interface ApprovedExhibitorDTO {
@@ -708,9 +711,12 @@ class ExpoService {
       total = count;
     }
 
-    // Fetch approvedExhibitorCount for each expo on this page
+    // Fetch approvedExhibitorCount and attendeeCount for each expo on this page
     const expoIds = docs.map((d) => d._id);
-    const approvedCounts = await this._getApprovedExhibitorCounts(expoIds);
+    const [approvedCounts, attendeeCounts] = await Promise.all([
+      this._getApprovedExhibitorCounts(expoIds),
+      this._getActiveTicketCounts(expoIds),
+    ]);
 
     const expos: ExpoCardDTO[] = docs.map((expo) => ({
       _id: expo._id.toString(),
@@ -723,7 +729,9 @@ class ExpoService {
       venueAddress: expo.venueAddress,
       bannerUrl: expo.bannerUrl,
       category: expo.category,
+      totalBooths: expo.totalBooths,
       approvedExhibitorCount: approvedCounts.get(expo._id.toString()) ?? 0,
+      attendeeCount: attendeeCounts.get(expo._id.toString()) ?? 0,
     }));
 
     return {
@@ -784,6 +792,12 @@ class ExpoService {
       };
     });
 
+    // Fetch attendeeCount for the detail view
+    const attendeeCount = await TicketModel.getCollection().countDocuments({
+      expoId: expo._id,
+      status: { $ne: 'cancelled' },
+    });
+
     return {
       _id: expo._id.toString(),
       organizerId: expo.organizerId.toString(),
@@ -805,6 +819,7 @@ class ExpoService {
       createdAt: expo.createdAt,
       updatedAt: expo.updatedAt,
       approvedApplications: exhibitors,
+      attendeeCount,
     };
   }
 
@@ -953,6 +968,29 @@ class ExpoService {
     const results = await ApplicationModel.getCollection()
       .aggregate<{ _id: ObjectId; count: number }>([
         { $match: { expoId: { $in: expoIds }, status: 'approved' } },
+        { $group: { _id: '$expoId', count: { $sum: 1 } } },
+      ])
+      .toArray();
+
+    const map = new Map<string, number>();
+    for (const r of results) {
+      map.set(r._id.toString(), r.count);
+    }
+    return map;
+  }
+
+  /**
+   * Fetch the count of active (non-cancelled) tickets for each expo in the given list.
+   * Returns a Map<expoId string, count>.
+   */
+  private async _getActiveTicketCounts(
+    expoIds: ObjectId[]
+  ): Promise<Map<string, number>> {
+    if (expoIds.length === 0) return new Map();
+
+    const results = await TicketModel.getCollection()
+      .aggregate<{ _id: ObjectId; count: number }>([
+        { $match: { expoId: { $in: expoIds }, status: { $ne: 'cancelled' } } },
         { $group: { _id: '$expoId', count: { $sum: 1 } } },
       ])
       .toArray();

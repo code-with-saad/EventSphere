@@ -60,7 +60,7 @@ EventSphere is a full-stack web application built with React 19 (frontend) and E
 
 ### Phase 1 - Auth Foundation
 - Registration for all four roles with role-specific routing
-- Email OTP verification (Exhibitor and Attendee) via [Resend](https://resend.com)
+- Email OTP verification (Exhibitor and Attendee) via [Resend](https://resend.com) and Nodemailer
 - SuperAdmin approval workflow for Organizer accounts
 - JWT authentication: 15-minute access token (in-memory) + 7-day refresh token (localStorage, rotated on every use)
 - Silent token refresh with automatic retry on 401
@@ -109,7 +109,7 @@ EventSphere is a full-stack web application built with React 19 (frontend) and E
 | MongoDB driver | 7.x | Database client |
 | bcrypt | 6.x | Password hashing |
 | jsonwebtoken | 9.x | JWT generation and verification |
-| Resend | 6.x | Transactional email (OTP) |
+| Resend + Nodemailer | 6.x | Transactional email (OTP) |
 | Zod | 4.x | Environment variable validation |
 | tsx | 4.x | TypeScript dev runtime |
 | nodemon | 3.x | Dev server hot reload |

@@ -5,7 +5,7 @@ import { expoService } from '../../services/expoService';
 import { favoriteService } from '../../services/favoriteService';
 import ExpoCard from '../../components/expo/ExpoCard';
 import PublicNavBar from '../../components/layout/PublicNavBar';
-import { Search, Sparkles, Calendar, MapPin } from 'lucide-react';
+import { Search, Sparkles, Calendar, MapPin, Users, Building2, Flame } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 type StatusFilter = '' | 'upcoming' | 'ongoing' | 'completed';
@@ -185,6 +185,14 @@ export default function ExpoListingPage() {
                           {featuredExpo.category}
                         </span>
                       )}
+                      {featuredExpo.status !== 'completed' &&
+                        featuredExpo.status !== 'archived' &&
+                        ((featuredExpo.attendeeCount || 0) >= 5 || (featuredExpo.approvedExhibitorCount || 0) >= 3) && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs-token font-bold uppercase tracking-wider bg-orange-500/90 text-white shadow-sm">
+                          <Flame className="w-3 h-3 text-yellow-200 fill-yellow-200" />
+                          Trending
+                        </span>
+                      )}
                     </div>
                     <h2 className={`text-xl-token md:text-2xl-token font-bold mb-xs-token group-hover:text-brand-primary-dark transition-colors ${
                       isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'
@@ -196,15 +204,45 @@ export default function ExpoListingPage() {
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap gap-md-token text-xs-token pt-sm-token border-t border-glass-border-dark/50">
-                    <span className="flex items-center gap-xs-token font-medium">
-                      <Calendar className="w-4 h-4 text-brand-primary-dark" aria-hidden="true" />
-                      {formatDate(featuredExpo.startDate)} – {formatDate(featuredExpo.endDate)}
-                    </span>
-                    <span className="flex items-center gap-xs-token">
-                      <MapPin className="w-4 h-4 text-brand-primary-dark" aria-hidden="true" />
-                      {featuredExpo.venueName}
-                    </span>
+                  <div className="flex flex-col gap-sm-token pt-sm-token border-t border-glass-border-dark/50">
+                    <div className="flex flex-wrap gap-md-token text-xs-token">
+                      <span className="flex items-center gap-xs-token font-medium">
+                        <Calendar className="w-4 h-4 text-brand-primary-dark" aria-hidden="true" />
+                        {formatDate(featuredExpo.startDate)} – {formatDate(featuredExpo.endDate)}
+                      </span>
+                      <span className="flex items-center gap-xs-token">
+                        <MapPin className="w-4 h-4 text-brand-primary-dark" aria-hidden="true" />
+                        {featuredExpo.venueName}
+                      </span>
+                    </div>
+
+                    {/* Spotlight Social Proof Traction */}
+                    {((featuredExpo.attendeeCount || 0) > 0 || (featuredExpo.approvedExhibitorCount || 0) > 0) && (
+                      <div className="flex items-center gap-3 text-xs-token pt-1">
+                        {(featuredExpo.attendeeCount || 0) > 0 && (
+                          <span className="flex items-center gap-1.5 font-medium">
+                            <Users className="w-3.5 h-3.5 text-brand-primary-dark" />
+                            <span className={isDarkMode ? 'text-text-primary-dark font-semibold' : 'text-text-primary-light font-semibold'}>
+                              {featuredExpo.attendeeCount}
+                            </span>
+                            <span className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>
+                              registered attendees
+                            </span>
+                          </span>
+                        )}
+                        {(featuredExpo.approvedExhibitorCount || 0) > 0 && (
+                          <span className="flex items-center gap-1.5 font-medium">
+                            <Building2 className="w-3.5 h-3.5 text-cyan-400" />
+                            <span className={isDarkMode ? 'text-text-primary-dark font-semibold' : 'text-text-primary-light font-semibold'}>
+                              {featuredExpo.approvedExhibitorCount}
+                            </span>
+                            <span className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>
+                              confirmed exhibitors
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 

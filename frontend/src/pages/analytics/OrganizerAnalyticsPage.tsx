@@ -261,7 +261,7 @@ export default function OrganizerAnalyticsPage() {
                 <span className="text-2xl font-bold">
                   {loading ? '...' : `$${(analytics?.totalEstimatedValue ?? 0).toLocaleString()}`}
                 </span>
-                <span className="text-[11px] text-text-secondary-dark">$5/check-in — provisional</span>
+                <span className="text-[11px] text-text-secondary-dark">$5/check-in</span>
               </div>
             </BentoCard>
           </div>

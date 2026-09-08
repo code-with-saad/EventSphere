@@ -228,7 +228,7 @@ export default function SuperAdminAnalyticsPage() {
                       </span>
                     </div>
                     <div className="mt-2 flex items-center gap-2 text-xs text-gray-400">
-                      <span>$5/check-in — provisional</span>
+                      <span>$5/check-in</span>
                     </div>
                   </BentoCard>
                 </div>

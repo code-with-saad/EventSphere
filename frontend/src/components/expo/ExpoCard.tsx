@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, MapPin, Heart } from 'lucide-react';
+import { Calendar, MapPin, Heart, Users, Building2, Flame } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { favoriteService } from '../../services/favoriteService';
@@ -19,6 +19,8 @@ interface ExpoCardProps {
     venueAddress: string;
     bannerUrl?: string;
     approvedExhibitorCount?: number;
+    attendeeCount?: number;
+    totalBooths?: number;
   };
   isFavoritedInitially?: boolean;
 }
@@ -68,6 +70,17 @@ export default function ExpoCard({ expo, isFavoritedInitially = false }: ExpoCar
     }
   };
 
+  const attendeeCount = expo.attendeeCount || 0;
+  const exhibitorCount = expo.approvedExhibitorCount || 0;
+  const totalBooths = expo.totalBooths || 0;
+  const boothFillPercent = totalBooths > 0 ? Math.min(100, Math.round((exhibitorCount / totalBooths) * 100)) : 0;
+  
+  // Trending condition: active/upcoming/ongoing with good attendee momentum or high exhibitor interest
+  const isTrending =
+    expo.status !== 'completed' &&
+    expo.status !== 'archived' &&
+    (attendeeCount >= 5 || exhibitorCount >= 3 || (totalBooths > 0 && exhibitorCount / totalBooths >= 0.5));
+
   return (
     <Link
       to={`/expos/${expo._id}`}
@@ -86,11 +99,23 @@ export default function ExpoCard({ expo, isFavoritedInitially = false }: ExpoCar
             alt={expo.name}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           />
+          {isTrending && (
+            <div className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs-token font-bold uppercase tracking-wider bg-orange-500/90 text-white backdrop-blur-sm shadow-md z-10 animate-pulse">
+              <Flame className="w-3 h-3 text-yellow-200 fill-yellow-200" />
+              <span>Trending</span>
+            </div>
+          )}
         </div>
       ) : (
-        <div className={`w-full h-40 flex items-center justify-center ${
+        <div className={`relative w-full h-40 flex items-center justify-center ${
           isDarkMode ? 'bg-bg-hover-dark' : 'bg-bg-hover-light'
         }`}>
+          {isTrending && (
+            <div className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs-token font-bold uppercase tracking-wider bg-orange-500/90 text-white backdrop-blur-sm shadow-md z-10">
+              <Flame className="w-3 h-3 text-yellow-200 fill-yellow-200" />
+              <span>Trending</span>
+            </div>
+          )}
           <span
             className={`text-xl-token font-bold ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`}
             aria-hidden="true"
@@ -145,11 +170,41 @@ export default function ExpoCard({ expo, isFavoritedInitially = false }: ExpoCar
           </span>
         </div>
 
-        {expo.approvedExhibitorCount !== undefined && expo.approvedExhibitorCount > 0 && (
-          <div className={`mt-sm-token pt-sm-token border-t text-xs-token font-medium ${
-            isDarkMode ? 'border-border-base-dark text-brand-primary-dark' : 'border-border-base-light text-brand-primary-light'
+        {/* Social Proof Stats Bar */}
+        {(attendeeCount > 0 || exhibitorCount > 0 || totalBooths > 0) && (
+          <div className={`mt-sm-token pt-sm-token border-t flex items-center justify-between gap-2 text-2xs-token font-medium ${
+            isDarkMode ? 'border-border-base-dark/60 text-text-secondary-dark' : 'border-border-base-light/60 text-text-secondary-light'
           }`}>
-            {expo.approvedExhibitorCount} exhibitor{expo.approvedExhibitorCount !== 1 ? 's' : ''}
+            <div className="flex items-center gap-2 flex-wrap">
+              {attendeeCount > 0 && (
+                <span className="flex items-center gap-1" title={`${attendeeCount} attendees registered`}>
+                  <Users className={`w-3.5 h-3.5 ${isDarkMode ? 'text-brand-primary-dark' : 'text-brand-primary-light'}`} />
+                  <span className={isDarkMode ? 'text-text-primary-dark font-semibold' : 'text-text-primary-light font-semibold'}>
+                    {attendeeCount}
+                  </span>
+                  <span>attendee{attendeeCount !== 1 ? 's' : ''}</span>
+                </span>
+              )}
+              {exhibitorCount > 0 && (
+                <span className="flex items-center gap-1" title={`${exhibitorCount} exhibitors confirmed`}>
+                  <Building2 className={`w-3.5 h-3.5 ${isDarkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
+                  <span className={isDarkMode ? 'text-text-primary-dark font-semibold' : 'text-text-primary-light font-semibold'}>
+                    {exhibitorCount}
+                  </span>
+                  <span>exhibitor{exhibitorCount !== 1 ? 's' : ''}</span>
+                </span>
+              )}
+            </div>
+
+            {totalBooths > 0 && (
+              <span className={`px-1.5 py-0.5 rounded text-2xs-token ${
+                boothFillPercent >= 80
+                  ? isDarkMode ? 'bg-red-500/20 text-red-300 font-semibold' : 'bg-red-100 text-red-700 font-semibold'
+                  : isDarkMode ? 'bg-bg-hover-dark text-text-secondary-dark' : 'bg-bg-hover-light text-text-secondary-light'
+              }`}>
+                {boothFillPercent}% filled
+              </span>
+            )}
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Calendar, MapPin, Building2, Globe, Clock, CheckCircle2, AlertCircle, Heart, Map, Tag, Download } from 'lucide-react';
+import { Calendar, MapPin, Building2, Globe, Clock, CheckCircle2, AlertCircle, Heart, Map, Tag, Download, Users, Flame } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { expoService } from '../../services/expoService';
@@ -552,6 +552,70 @@ export default function ExpoDetailPage() {
                           {expo.totalBooths} Booths Total
                         </span>
                       </div>
+                    </div>
+                  )}
+
+                  {/* ── Event Traction & Live Popularity ── */}
+                  {((expo.attendeeCount || 0) > 0 || exhibitors.length > 0 || (expo.totalBooths && expo.totalBooths > 0)) && (
+                    <div className={`p-sm-token rounded-lg-token border ${
+                      isDarkMode ? 'bg-bg-hover-dark/50 border-glass-border-dark' : 'bg-bg-hover-light/50 border-glass-border-light'
+                    }`}>
+                      <div className="flex items-center justify-between mb-xs-token">
+                        <span className={`text-xs-token font-semibold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                          Event Traction
+                        </span>
+                        {expo.status !== 'completed' &&
+                          expo.status !== 'archived' &&
+                          ((expo.attendeeCount || 0) >= 5 || exhibitors.length >= 3 || (expo.totalBooths && (exhibitors.length / expo.totalBooths) >= 0.5)) && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs-token font-bold uppercase tracking-wider bg-orange-500 text-white shadow-sm">
+                            <Flame className="w-3 h-3 text-yellow-200 fill-yellow-200" />
+                            Trending
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 mb-2">
+                        <div className={`p-2 rounded-md ${isDarkMode ? 'bg-bg-surface-dark' : 'bg-white'}`}>
+                          <div className="flex items-center gap-1.5 text-xs-token text-brand-primary-dark font-medium">
+                            <Users className="w-3.5 h-3.5" />
+                            <span>Attendees</span>
+                          </div>
+                          <div className={`text-base-token font-bold mt-0.5 ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                            {expo.attendeeCount || 0}
+                          </div>
+                        </div>
+
+                        <div className={`p-2 rounded-md ${isDarkMode ? 'bg-bg-surface-dark' : 'bg-white'}`}>
+                          <div className="flex items-center gap-1.5 text-xs-token text-cyan-400 font-medium">
+                            <Building2 className="w-3.5 h-3.5" />
+                            <span>Exhibitors</span>
+                          </div>
+                          <div className={`text-base-token font-bold mt-0.5 ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                            {exhibitors.length}
+                          </div>
+                        </div>
+                      </div>
+
+                      {expo.totalBooths && expo.totalBooths > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between text-2xs-token mb-1">
+                            <span className={isDarkMode ? 'text-text-secondary-dark' : 'text-text-secondary-light'}>Booth Occupancy</span>
+                            <span className={`font-semibold ${isDarkMode ? 'text-text-primary-dark' : 'text-text-primary-light'}`}>
+                              {Math.min(100, Math.round((exhibitors.length / expo.totalBooths) * 100))}% ({exhibitors.length}/{expo.totalBooths})
+                            </span>
+                          </div>
+                          <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-bg-surface-dark' : 'bg-gray-200'}`}>
+                            <div
+                              className={`h-full transition-all duration-500 ${
+                                (exhibitors.length / expo.totalBooths) >= 0.8
+                                  ? 'bg-amber-500'
+                                  : 'bg-brand-primary-dark'
+                              }`}
+                              style={{ width: `${Math.min(100, (exhibitors.length / expo.totalBooths) * 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
